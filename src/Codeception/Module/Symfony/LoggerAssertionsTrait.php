@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Codeception\Module\Symfony;
 
+use Codeception\Module\Symfony\DataCollectorName;
 use Symfony\Component\HttpKernel\DataCollector\LoggerDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
 use function sprintf;
@@ -52,6 +53,6 @@ trait LoggerAssertionsTrait
 
     protected function grabLoggerCollector(string $function): LoggerDataCollector
     {
-        return $this->grabCollector('logger', $function);
+        return $this->grabCollector(DataCollectorName::LOGGER, $function);
     }
 }

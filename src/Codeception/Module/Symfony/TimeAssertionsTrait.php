@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Codeception\Module\Symfony;
 
+use Codeception\Module\Symfony\DataCollectorName;
 use Symfony\Component\HttpKernel\DataCollector\TimeDataCollector;
 use function round;
 use function sprintf;
@@ -45,6 +46,6 @@ trait TimeAssertionsTrait
 
     protected function grabTimeCollector(string $function): TimeDataCollector
     {
-        return $this->grabCollector('time', $function);
+        return $this->grabCollector(DataCollectorName::TIME, $function);
     }
 }

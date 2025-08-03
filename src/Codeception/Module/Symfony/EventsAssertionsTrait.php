@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Codeception\Module\Symfony;
 
+use Codeception\Module\Symfony\DataCollectorName;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpKernel\DataCollector\EventDataCollector;
 
@@ -304,6 +305,6 @@ trait EventsAssertionsTrait
 
     protected function grabEventCollector(string $function): EventDataCollector
     {
-        return $this->grabCollector('events', $function);
+        return $this->grabCollector(DataCollectorName::EVENTS, $function);
     }
 }

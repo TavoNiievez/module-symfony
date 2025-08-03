@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Codeception\Module\Symfony;
 
+use Codeception\Module\Symfony\DataCollectorName;
 use Symfony\Component\Form\Extension\DataCollector\FormDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
 use function is_array;
@@ -227,6 +228,6 @@ trait FormAssertionsTrait
 
     protected function grabFormCollector(string $function): FormDataCollector
     {
-        return $this->grabCollector('form', $function);
+        return $this->grabCollector(DataCollectorName::FORM, $function);
     }
 }

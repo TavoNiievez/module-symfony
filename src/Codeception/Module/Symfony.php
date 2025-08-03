@@ -31,7 +31,8 @@ use Codeception\Module\Symfony\TwigAssertionsTrait;
 use Codeception\Module\Symfony\ValidatorAssertionsTrait;
 use Codeception\TestInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use Exception;
+use Codeception\Module\Symfony\DataCollectorName;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Assert;
 use ReflectionClass;
 use ReflectionException;
@@ -378,6 +379,9 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         );
     }
 
+    /**
+     * @throws AssertionFailedError
+     */
     protected function getProfile(): ?Profile
     {
         /** @var Profiler|null $profiler */
@@ -391,31 +395,29 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             return $profiler->loadProfileFromResponse($this->getClient()->getResponse());
         } catch (BadMethodCallException) {
             Assert::fail('You must perform a request before using this method.');
-        } catch (Exception $e) {
-            Assert::fail($e->getMessage());
         }
     }
 
     /**
      * Grab a Symfony Data Collector from the current profile.
      *
-     * @return EventDataCollector|FormDataCollector|HttpClientDataCollector|LoggerDataCollector|TimeDataCollector|TranslationDataCollector|TwigDataCollector|DataCollectorInterface|SecurityDataCollector|MessageDataCollector
-     *
      * @phpstan-return (
-     *     $collector is 'events' ? EventDataCollector :
-     *     ($collector is 'form' ? FormDataCollector :
-     *     ($collector is 'http_client' ? HttpClientDataCollector :
-     *     ($collector is 'logger' ? LoggerDataCollector :
-     *     ($collector is 'time' ? TimeDataCollector :
-     *     ($collector is 'translation' ? TranslationDataCollector :
-     *     ($collector is 'twig' ? TwigDataCollector :
-     *     ($collector is 'security' ? SecurityDataCollector :
-     *     ($collector is 'mailer' ? MessageDataCollector :
+     *     $collector is DataCollectorName::EVENTS ? EventDataCollector :
+     *     ($collector is DataCollectorName::FORM ? FormDataCollector :
+     *     ($collector is DataCollectorName::HTTP_CLIENT ? HttpClientDataCollector :
+     *     ($collector is DataCollectorName::LOGGER ? LoggerDataCollector :
+     *     ($collector is DataCollectorName::TIME ? TimeDataCollector :
+     *     ($collector is DataCollectorName::TRANSLATION ? TranslationDataCollector :
+     *     ($collector is DataCollectorName::TWIG ? TwigDataCollector :
+     *     ($collector is DataCollectorName::SECURITY ? SecurityDataCollector :
+     *     ($collector is DataCollectorName::MAILER ? MessageDataCollector :
      *      DataCollectorInterface
      *     ))))))))
      * )
+     *
+     * @throws AssertionFailedError
      */
-    protected function grabCollector(string $collector, string $function, ?string $message = null): DataCollectorInterface
+    protected function grabCollector(DataCollectorName $collector, string $function, ?string $message = null): DataCollectorInterface
     {
         $profile = $this->getProfile();
 
@@ -423,11 +425,17 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             Assert::fail(sprintf("The Profile is needed to use the '%s' function.", $function));
         }
 
-        if (!$profile->hasCollector($collector)) {
-            Assert::fail($message ?: "The '{$collector}' collector is needed to use the '{$function}' function.");
+        if (!$profile->hasCollector($collector->value)) {
+            Assert::fail(
+                $message ?: sprintf(
+                    "The '%s' collector is needed to use the '%s' function.",
+                    $collector->value,
+                    $function
+                )
+            );
         }
 
-        return $profile->getCollector($collector);
+        return $profile->getCollector($collector->value);
     }
 
     /**
@@ -442,22 +450,22 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             return;
         }
 
-        if ($profile->hasCollector('security')) {
-            $securityCollector = $profile->getCollector('security');
+        if ($profile->hasCollector(DataCollectorName::SECURITY->value)) {
+            $securityCollector = $profile->getCollector(DataCollectorName::SECURITY->value);
             if ($securityCollector instanceof SecurityDataCollector) {
                 $this->debugSecurityData($securityCollector);
             }
         }
 
-        if ($profile->hasCollector('mailer')) {
-            $mailerCollector = $profile->getCollector('mailer');
+        if ($profile->hasCollector(DataCollectorName::MAILER->value)) {
+            $mailerCollector = $profile->getCollector(DataCollectorName::MAILER->value);
             if ($mailerCollector instanceof MessageDataCollector) {
                 $this->debugMailerData($mailerCollector);
             }
         }
 
-        if ($profile->hasCollector('time')) {
-            $timeCollector = $profile->getCollector('time');
+        if ($profile->hasCollector(DataCollectorName::TIME->value)) {
+            $timeCollector = $profile->getCollector(DataCollectorName::TIME->value);
             if ($timeCollector instanceof TimeDataCollector) {
                 $this->debugTimeData($timeCollector);
             }

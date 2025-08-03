@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Codeception\Module\Symfony;
 
+use Codeception\Module\Symfony\DataCollectorName;
 use Symfony\Component\HttpClient\DataCollector\HttpClientDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
 use function array_change_key_case;
@@ -156,6 +157,6 @@ trait HttpClientAssertionsTrait
 
     protected function grabHttpClientCollector(string $function): HttpClientDataCollector
     {
-        return $this->grabCollector('http_client', $function);
+        return $this->grabCollector(DataCollectorName::HTTP_CLIENT, $function);
     }
 }

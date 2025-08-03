@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Codeception\Module\Symfony;
 
+use Codeception\Module\Symfony\DataCollectorName;
 use Symfony\Component\Translation\DataCollector\TranslationDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
 
@@ -173,6 +174,6 @@ trait TranslationAssertionsTrait
 
     protected function grabTranslationCollector(string $function): TranslationDataCollector
     {
-        return $this->grabCollector('translation', $function);
+        return $this->grabCollector(DataCollectorName::TRANSLATION, $function);
     }
 }
