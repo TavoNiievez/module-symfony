@@ -68,7 +68,6 @@ use function ini_get;
 use function ini_set;
 use function is_object;
 use function iterator_to_array;
-use function number_format;
 use function sprintf;
 
 /**
@@ -540,7 +539,7 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
 
     private function debugTimeData(TimeDataCollector $timeCollector): void
     {
-        $this->debugSection('Time', sprintf('%.2f ms', number_format($timeCollector->getDuration(), 2)));
+        $this->debugSection('Time', sprintf('%.2f ms', $timeCollector->getDuration()));
     }
 
     /**

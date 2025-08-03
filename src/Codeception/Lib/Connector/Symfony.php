@@ -12,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Test\TestContainer;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelBrowser;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
@@ -31,7 +32,8 @@ class Symfony extends HttpKernelBrowser
      * @param array<string, object> $persistentServices
      */
     public function __construct(
-        $kernel,
+        HttpKernelInterface $kernel,
+        /** @var array<string, object> */
         public array $persistentServices = [],
         private bool $reboot = true
     ) {
