@@ -112,8 +112,7 @@ trait RouterAssertionsTrait
     {
         $this->assertRouteExists($routeName);
 
-        $url  = $this->grabFromCurrentUrl();
-        Assert::assertIsString($url, 'Unable to obtain current URL.');
+        $url  = $this->getClient()->getRequest()->getRequestUri();
         $path = (string) parse_url($url, PHP_URL_PATH);
 
         /** @var array<string, mixed> $match */
@@ -143,7 +142,7 @@ trait RouterAssertionsTrait
     /** @param array<string, mixed> $params */
     private function openRoute(string $routeName, array $params = []): void
     {
-        $this->amOnPage($this->grabRouterService()->generate($routeName, $params));
+        $this->getClient()->request('GET', $this->grabRouterService()->generate($routeName, $params));
     }
 
     protected function grabRouterService(): RouterInterface

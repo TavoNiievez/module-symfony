@@ -309,8 +309,8 @@ trait BrowserAssertionsTrait
     public function seePageIsAvailable(?string $url = null): void
     {
         if ($url !== null) {
-            $this->amOnPage($url);
-            $this->seeInCurrentUrl($url);
+            $this->getClient()->request('GET', $url);
+            $this->assertStringContainsString($url, $this->getClient()->getRequest()->getRequestUri());
         }
 
         $this->assertResponseIsSuccessful();
@@ -328,12 +328,12 @@ trait BrowserAssertionsTrait
     {
         $client = $this->getClient();
         $client->followRedirects(false);
-        $this->amOnPage($page);
+        $client->request('GET', $page);
 
         $this->assertThatForResponse(new ResponseIsRedirected(), 'The response is not a redirection.');
 
         $client->followRedirect();
-        $this->seeInCurrentUrl($redirectsTo);
+        $this->assertStringContainsString($redirectsTo, $client->getRequest()->getRequestUri());
     }
 
     /**
@@ -362,9 +362,16 @@ trait BrowserAssertionsTrait
             $params[$name . $key] = $value;
         }
 
-        $button = sprintf('%s_submit', $name);
+        if (method_exists($this, 'submitForm')) { // @phpstan-ignore-line
+            $button = sprintf('%s_submit', $name);
+            $this->submitForm($selector, $params, $button);
+            return;
+        }
 
-        $this->submitForm($selector, $params, $button);
+        $node = $this->getClient()->getCrawler()->filter($selector);
+        $this->assertNotEmpty($node, sprintf('Form "%s" not found.', $selector));
+        $form = $node->form();
+        $this->getClient()->submit($form, $params);
     }
 
     protected function assertThatForClient(Constraint $constraint, string $message = ''): void
