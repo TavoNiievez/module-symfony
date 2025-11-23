@@ -18,9 +18,9 @@ class TwigAssertionsTest extends KernelTestCase
 
     protected function setUp(): void
     {
-        self::bootKernel();
+        self::bootKernel(['debug' => true]);
         $this->client = new KernelBrowser(self::$kernel);
-        $this->client->request('GET', '/twig');
+        $this->client->enableProfiler();
     }
 
     protected static function getKernelClass(): string
@@ -43,19 +43,34 @@ class TwigAssertionsTest extends KernelTestCase
         return self::getContainer();
     }
 
-    public function testTwigAssertions(): void
+    public function testDontSeeRenderedTemplate(): void
     {
-        $this->seeRenderedTemplate('home.html.twig');
+        $this->client->request('GET', '/register');
+
+        $this->dontSeeRenderedTemplate('security/login.html.twig');
+    }
+
+    public function testSeeCurrentTemplateIs(): void
+    {
+        $this->client->request('GET', '/login');
+
+        $this->seeCurrentTemplateIs('security/login.html.twig');
+    }
+
+    public function testSeeRenderedTemplate(): void
+    {
+        $this->client->request('GET', '/login');
+
         $this->seeRenderedTemplate('layout.html.twig');
-        $this->dontSeeRenderedTemplate('other.html.twig');
-        $this->seeCurrentTemplateIs('home.html.twig');
+        $this->seeRenderedTemplate('security/login.html.twig');
     }
 
     protected function grabCollector(DataCollectorName $name, string $function): DataCollectorInterface
     {
         /** @var Profiler $profiler */
         $profiler = self::getContainer()->get('profiler');
-        $profile = $profiler->collect($this->client->getRequest(), $this->client->getResponse());
+        $profile = $this->client->getProfile() ?? $profiler->collect($this->client->getRequest(), $this->client->getResponse());
+
         return $profile->getCollector($name->value);
     }
 

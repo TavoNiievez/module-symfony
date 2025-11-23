@@ -38,6 +38,11 @@ class ParameterAssertionsTest extends KernelTestCase
         $this->assertSame('value', $this->grabParameter('app.param'));
     }
 
+    public function testGrabBusinessNameParameter(): void
+    {
+        $this->assertSame('Codeception', $this->grabParameter('app.business_name'));
+    }
+
     protected function tearDown(): void
     {
         restore_exception_handler();

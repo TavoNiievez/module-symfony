@@ -20,7 +20,7 @@ class TimeAssertionsTest extends KernelTestCase
     {
         self::bootKernel();
         $this->client = new KernelBrowser(self::$kernel);
-        $this->client->request('GET', '/sample');
+        $this->client->request('GET', '/register');
     }
 
     protected static function getKernelClass(): string
@@ -45,7 +45,8 @@ class TimeAssertionsTest extends KernelTestCase
 
     public function testRequestTime(): void
     {
-        $this->seeRequestTimeIsLessThan(500);
+        $this->assertStringContainsString('register', $this->client->getRequest()->getPathInfo());
+        $this->seeRequestTimeIsLessThan(400);
     }
 
     protected function grabCollector(DataCollectorName $name, string $function): DataCollectorInterface

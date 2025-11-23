@@ -2,12 +2,19 @@
 namespace Tests\Functional;
 
 use Tests\FunctionalTester;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class ServicesCest
 {
-    public function servicesAssertions(FunctionalTester $I): void
+    public function grabService(FunctionalTester $I): void
     {
-        $I->grabService('router');
+        $securityHelper = $I->grabService('security.helper');
+
+        $I->assertInstanceOf(Security::class, $securityHelper);
+    }
+
+    public function servicesPersistence(FunctionalTester $I): void
+    {
         $I->persistService('router');
         $I->persistPermanentService('router');
         $I->unpersistService('router');

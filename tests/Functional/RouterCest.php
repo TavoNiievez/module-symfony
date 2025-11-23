@@ -5,15 +5,39 @@ use Tests\FunctionalTester;
 
 class RouterCest
 {
-    public function routerAssertions(FunctionalTester $I): void
+    public function amOnAction(FunctionalTester $I): void
     {
-        $I->amOnRoute('sample');
-        $I->seeCurrentRouteIs('sample');
-        $I->seeInCurrentRoute('sample');
-        $I->seeCurrentActionIs('TestKernel::sample');
-
         $I->amOnAction('TestKernel::index');
-        $I->seeCurrentRouteIs('index');
+        $I->see('Hello World!');
+    }
+
+    public function amOnRoute(FunctionalTester $I): void
+    {
+        $I->amOnRoute('index');
+        $I->see('Hello World!');
+    }
+
+    public function seeCurrentActionIs(FunctionalTester $I): void
+    {
+        $I->amOnPage('/');
+        $I->seeCurrentActionIs('TestKernel::index');
+    }
+
+    public function seeCurrentRouteIs(FunctionalTester $I): void
+    {
+        $I->amOnPage('/login');
+        $I->seeCurrentRouteIs('app_login');
+    }
+
+    public function seeInCurrentRoute(FunctionalTester $I): void
+    {
+        $I->amOnPage('/register');
+        $I->seeInCurrentRoute('app_register');
+    }
+
+    public function invalidateRouterCache(FunctionalTester $I): void
+    {
+        $I->amOnRoute('index');
         $I->invalidateCachedRouter();
     }
 }

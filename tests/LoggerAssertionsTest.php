@@ -2,11 +2,15 @@
 
 namespace Tests;
 
+require_once __DIR__ . '/_app/TestKernel.php';
+
 use Codeception\Module\Symfony\LoggerAssertionsTrait;
 use Codeception\Module\Symfony\DataCollectorName;
+use PHPUnit\Framework\AssertionFailedError;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
+use Symfony\Component\HttpKernel\DataCollector\LoggerDataCollector;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 
 class LoggerAssertionsTest extends KernelTestCase
@@ -47,6 +51,17 @@ class LoggerAssertionsTest extends KernelTestCase
         $this->dontSeeDeprecations();
     }
 
+    public function testDeprecationsAreReported(): void
+    {
+        $this->client->request('GET', '/deprecated');
+        try {
+            $this->dontSeeDeprecations();
+            self::fail('Expected deprecations to be reported.');
+        } catch (AssertionFailedError $error) {
+            $this->assertStringContainsString('deprecation', $error->getMessage());
+        }
+    }
+
 
     protected function tearDown(): void
     {
@@ -56,6 +71,14 @@ class LoggerAssertionsTest extends KernelTestCase
 
     protected function grabCollector(DataCollectorName $name, string $function): DataCollectorInterface
     {
+        if ($name === DataCollectorName::LOGGER) {
+            $collector = new LoggerDataCollector($this->grabService('logger'));
+            $collector->collect($this->client->getRequest(), $this->client->getResponse());
+            $collector->lateCollect();
+
+            return $collector;
+        }
+
         /** @var Profiler $profiler */
         $profiler = self::getContainer()->get('profiler');
         $profile = $profiler->collect($this->client->getRequest(), $this->client->getResponse());

@@ -16,7 +16,7 @@ class DomCrawlerAssertionsTest extends KernelTestCase
     {
         self::bootKernel();
         $this->client = new KernelBrowser(self::$kernel);
-        $this->client->request('GET', '/sample');
+        $this->client->request('GET', '/test_page');
     }
 
     protected function tearDown(): void
@@ -35,18 +35,43 @@ class DomCrawlerAssertionsTest extends KernelTestCase
         return \TestKernel::class;
     }
 
-    public function testDomCrawlerAssertions(): void
+    public function testAssertCheckboxChecked(): void
     {
-        $this->assertCheckboxChecked('agree');
-        $this->assertCheckboxNotChecked('subscribe');
-        $this->assertInputValueSame('username', 'john');
-        $this->assertInputValueNotSame('username', 'doe');
-        $this->assertPageTitleContains('Test');
-        $this->assertPageTitleSame('Test Page');
-        $this->assertSelectorExists('#greeting');
-        $this->assertSelectorNotExists('#missing');
-        $this->assertSelectorTextContains('#greeting', 'Hello');
-        $this->assertSelectorTextNotContains('#greeting', 'Bye');
-        $this->assertSelectorTextSame('#greeting', 'Hello World');
+        $this->assertCheckboxChecked('exampleCheckbox', 'The checkbox should be checked.');
+    }
+
+    public function testAssertCheckboxNotChecked(): void
+    {
+        $this->assertCheckboxNotChecked('nonExistentCheckbox', 'This checkbox should not be checked.');
+    }
+
+    public function testAssertInputValueSame(): void
+    {
+        $this->assertInputValueSame('exampleInput', 'Expected Value', 'The input value should be "Expected Value".');
+    }
+
+    public function testAssertPageTitleContains(): void
+    {
+        $this->assertPageTitleContains('Test', 'The page title should contain "Test".');
+    }
+
+    public function testAssertPageTitleSame(): void
+    {
+        $this->assertPageTitleSame('Test Page', 'The page title should be "Test Page".');
+    }
+
+    public function testAssertSelectorExists(): void
+    {
+        $this->assertSelectorExists('h1', 'The <h1> element should be present.');
+    }
+
+    public function testAssertSelectorNotExists(): void
+    {
+        $this->assertSelectorNotExists('.non-existent-class', 'This selector should not exist.');
+    }
+
+    public function testAssertSelectorTextSame(): void
+    {
+        $this->assertSelectorTextSame('h1', 'Test Page', 'The text in the <h1> tag should be exactly "Test Page".');
     }
 }

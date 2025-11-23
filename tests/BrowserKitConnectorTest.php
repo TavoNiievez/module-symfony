@@ -15,7 +15,7 @@ class BrowserKitConnectorTest extends TestCase
         $browser->request('GET', '/');
 
         $this->assertSame(200, $browser->getResponse()->getStatusCode());
-        $this->assertSame('OK', $browser->getResponse()->getContent());
+        $this->assertSame('Hello World!', $browser->getResponse()->getContent());
     }
 
     protected function tearDown(): void

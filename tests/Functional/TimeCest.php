@@ -7,7 +7,8 @@ class TimeCest
 {
     public function timeAssertions(FunctionalTester $I): void
     {
-        $I->amOnRoute('sample');
-        $I->seeRequestTimeIsLessThan(500);
+        $I->amOnRoute('app_register');
+        $I->seeInCurrentUrl('register');
+        $I->seeRequestTimeIsLessThan(400);
     }
 }

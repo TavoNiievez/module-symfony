@@ -3,14 +3,17 @@
 namespace Tests;
 
 use Codeception\Module\Symfony\SessionAssertionsTrait;
+use Codeception\Module\Symfony\SecurityAssertionsTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
-use Symfony\Component\Security\Core\User\InMemoryUser;
+use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;
+use Tests\_app\Entity\User;
+use Tests\_app\Repository\UserRepository;
 
 class SessionAssertionsTest extends KernelTestCase
 {
+    use SecurityAssertionsTrait;
     use SessionAssertionsTrait;
 
     private KernelBrowser $client;
@@ -41,12 +44,35 @@ class SessionAssertionsTest extends KernelTestCase
         return self::getContainer();
     }
 
+    public function testAmLoggedInAsShowsDashboard(): void
+    {
+        $user = $this->getTestUser();
+
+        $this->amLoggedInAs($user);
+        $this->client->request('GET', '/dashboard');
+
+        $this->seeAuthentication();
+        $this->assertSame(200, $this->client->getResponse()->getStatusCode());
+        $this->assertStringContainsString('You are in the Dashboard!', $this->client->getResponse()->getContent());
+    }
+
+    public function testAmLoggedInWithTokenShowsDashboard(): void
+    {
+        $user = $this->getTestUser();
+        $token = new PostAuthenticationToken($user, 'main', $user->getRoles());
+
+        $this->amLoggedInWithToken($token);
+        $this->client->request('GET', '/dashboard');
+
+        $this->seeAuthentication();
+        $this->assertStringContainsString('You are in the Dashboard!', $this->client->getResponse()->getContent());
+    }
+
     public function testSessionAssertions(): void
     {
-        $container = self::getContainer();
-        $factory = $container->get('session.factory');
+        $factory = self::getContainer()->get('session.factory');
         $session = $factory->createSession();
-        $container->set('session', $session);
+        self::getContainer()->set('session', $session);
         $session->set('key1', 'value1');
         $session->set('key2', 'value2');
         $session->save();
@@ -59,24 +85,50 @@ class SessionAssertionsTest extends KernelTestCase
         $this->seeSessionHasValues(['key1' => 'value1', 'key2' => 'value2']);
     }
 
-    public function testLoginAndLogoutAssertions(): void
+    public function testDontSeeInSessionWhenAnonymous(): void
     {
-        $user = new InMemoryUser('john@example.com', null, ['ROLE_USER']);
+        $this->client->request('GET', '/');
 
-        $this->amLoggedInAs($user);
-        $this->seeInSession('_security_main');
-        $this->logout();
         $this->dontSeeInSession('_security_main');
+    }
 
-        $token = new UsernamePasswordToken($user, 'main', ['ROLE_USER']);
-        $this->amLoggedInWithToken($token);
-        $this->seeInSession('_security_main');
+    public function testGoToLogoutPath(): void
+    {
+        $user = $this->getTestUser();
+        $this->amLoggedInAs($user);
+        $this->client->request('GET', '/dashboard');
+        $this->assertStringContainsString('You are in the Dashboard!', $this->client->getResponse()->getContent());
+
         $this->goToLogoutPath();
+        $this->assertSame('/logout', $this->client->getRequest()->getPathInfo());
+        $this->assertSame(302, $this->client->getResponse()->getStatusCode());
+        $this->client->followRedirect();
 
+        $this->dontSeeAuthentication();
+        $this->assertSame('/', $this->client->getRequest()->getPathInfo());
+    }
+
+    public function testLogoutProgrammatically(): void
+    {
+        $user = $this->getTestUser();
         $this->amLoggedInAs($user);
-        $this->seeInSession('_security_main');
+
         $this->logoutProgrammatically();
-        $this->dontSeeInSession('_security_main');
+        $this->client->request('GET', '/dashboard');
+
+        $this->dontSeeAuthentication();
+        $this->assertSame(302, $this->client->getResponse()->getStatusCode());
+        $this->assertSame('/login', $this->client->getResponse()->headers->get('Location'));
+    }
+
+    private function getTestUser(): User
+    {
+        /** @var UserRepository $repository */
+        $repository = self::getContainer()->get(UserRepository::class);
+        $user = $repository->getByEmail('john_doe@gmail.com');
+        $this->assertNotNull($user);
+
+        return $user;
     }
 
     protected function tearDown(): void
