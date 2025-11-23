@@ -72,7 +72,7 @@ class TestKernel extends BaseKernel
             'secret' => 'test',
             'test' => true,
             'profiler' => ['enabled' => true, 'collect' => true, 'collect_serializer_data' => true],
-            'property_info' => ['with_constructor_extractor' => false],
+            'property_info' => ['enabled' => true],
             'session' => [
                 'handler_id' => null,
                 'storage_factory_id' => 'session.storage.factory.mock_file',

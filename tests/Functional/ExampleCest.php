@@ -9,6 +9,6 @@ class ExampleCest
     {
         $I->amOnPage('/');
         $I->seeResponseCodeIs(200);
-        $I->see('OK');
+        $I->see('Hello World!');
     }
 }
