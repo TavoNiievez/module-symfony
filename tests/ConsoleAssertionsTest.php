@@ -4,6 +4,7 @@ namespace Tests;
 
 use Codeception\Module\Symfony\ConsoleAssertionsTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Tests\_app\DoctrineFixturesLoadCommand;
 
 class ConsoleAssertionsTest extends KernelTestCase
 {
@@ -26,8 +27,24 @@ class ConsoleAssertionsTest extends KernelTestCase
 
     public function testRunSymfonyConsoleCommand(): void
     {
-        $output = $this->runSymfonyConsoleCommand('app:hello', ['name' => 'Codeception']);
-        $this->assertStringContainsString('Hello Codeception', $output);
+        $output = $this->runSymfonyConsoleCommand('app:example-command');
+        $this->assertStringContainsString('Hello world!', $output);
+
+        $output = $this->runSymfonyConsoleCommand('app:example-command', ['-s' => true]);
+        $this->assertStringContainsString('Bye world!', $output);
+
+        $output = $this->runSymfonyConsoleCommand('app:example-command', ['--something' => true]);
+        $this->assertStringContainsString('Bye world!', $output);
+    }
+
+    public function testRunSymfonyConsoleCommandWithQuietOption(): void
+    {
+        DoctrineFixturesLoadCommand::reset();
+
+        $output = $this->runSymfonyConsoleCommand('doctrine:fixtures:load', ['-q']);
+
+        $this->assertSame('', $output);
+        $this->assertSame(1, DoctrineFixturesLoadCommand::runs());
     }
 
     protected function tearDown(): void

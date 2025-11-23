@@ -38,17 +38,40 @@ class RouterAssertionsTest extends KernelTestCase
         // no-op for tests
     }
 
-    public function testRouterAssertions(): void
+    public function testAmOnAction(): void
     {
-        $this->amOnRoute('sample');
-        $this->seeCurrentRouteIs('sample');
-        $this->seeInCurrentRoute('sample');
-        $this->seeCurrentActionIs('TestKernel::sample');
-
         $this->amOnAction('TestKernel::index');
-        $this->seeCurrentRouteIs('index');
 
-        $this->invalidateCachedRouter();
+        $this->assertSame(200, $this->client->getResponse()->getStatusCode());
+        $this->assertStringContainsString('Hello World!', $this->client->getResponse()->getContent());
+    }
+
+    public function testAmOnRoute(): void
+    {
+        $this->amOnRoute('index');
+
+        $this->assertStringContainsString('Hello World!', $this->client->getResponse()->getContent());
+    }
+
+    public function testSeeCurrentActionIs(): void
+    {
+        $this->client->request('GET', '/');
+
+        $this->seeCurrentActionIs('TestKernel::index');
+    }
+
+    public function testSeeCurrentRouteIs(): void
+    {
+        $this->client->request('GET', '/login');
+
+        $this->seeCurrentRouteIs('app_login');
+    }
+
+    public function testSeeInCurrentRoute(): void
+    {
+        $this->client->request('GET', '/register');
+
+        $this->seeInCurrentRoute('app_register');
     }
 
     protected function tearDown(): void

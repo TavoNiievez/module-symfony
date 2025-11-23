@@ -18,9 +18,9 @@ class TranslationAssertionsTest extends KernelTestCase
 
     protected function setUp(): void
     {
-        self::bootKernel();
+        self::bootKernel(['debug' => true]);
         $this->client = new KernelBrowser(self::$kernel);
-        $this->client->request('GET', '/translation');
+        $this->client->enableProfiler();
     }
 
     protected static function getKernelClass(): string
@@ -43,15 +43,51 @@ class TranslationAssertionsTest extends KernelTestCase
         return self::getContainer();
     }
 
-    public function testTranslationAssertions(): void
+    public function testDontSeeFallbackTranslations(): void
     {
-        $this->dontSeeMissingTranslations();
+        $this->client->request('GET', '/register');
         $this->dontSeeFallbackTranslations();
-        $this->assertGreaterThanOrEqual(0, $this->grabDefinedTranslationsCount());
+    }
+
+    public function testDontSeeMissingTranslations(): void
+    {
+        $this->client->request('GET', '/');
+        $this->dontSeeMissingTranslations();
+    }
+
+    public function testGrabDefinedTranslationsCount(): void
+    {
+        $this->client->request('GET', '/register');
+        $this->assertSame(6, $this->grabDefinedTranslationsCount());
+    }
+
+    public function testSeeAllTranslationsDefined(): void
+    {
+        $this->client->request('GET', '/register');
         $this->seeAllTranslationsDefined();
+    }
+
+    public function testSeeDefaultLocaleIs(): void
+    {
+        $this->client->request('GET', '/register');
         $this->seeDefaultLocaleIs('en');
+    }
+
+    public function testSeeFallbackLocalesAre(): void
+    {
+        $this->client->request('GET', '/register');
         $this->seeFallbackLocalesAre(['es']);
+    }
+
+    public function testSeeFallbackTranslationsCountLessThan(): void
+    {
+        $this->client->request('GET', '/register');
         $this->seeFallbackTranslationsCountLessThan(1);
+    }
+
+    public function testSeeMissingTranslationsCountLessThan(): void
+    {
+        $this->client->request('GET', '/');
         $this->seeMissingTranslationsCountLessThan(1);
     }
 
@@ -59,7 +95,8 @@ class TranslationAssertionsTest extends KernelTestCase
     {
         /** @var Profiler $profiler */
         $profiler = self::getContainer()->get('profiler');
-        $profile = $profiler->collect($this->client->getRequest(), $this->client->getResponse());
+        $profile = $this->client->getProfile() ?? $profiler->collect($this->client->getRequest(), $this->client->getResponse());
+
         return $profile->getCollector($name->value);
     }
 

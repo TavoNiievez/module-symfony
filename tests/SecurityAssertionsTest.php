@@ -45,24 +45,68 @@ class SecurityAssertionsTest extends KernelTestCase
         return new Security(self::getContainer());
     }
 
-    public function testSecurityAssertions(): void
+    public function testDontSeeAuthentication(): void
     {
-        $this->dontSeeAuthentication();
-        $this->dontSeeRememberedAuthentication();
+        $this->client->request('GET', '/dashboard');
 
-        $hasher = $this->grabService('security.password_hasher');
-        $hashed = $hasher->hashPassword(new \TestUser('tmp', ''), 'password');
-        $user = new \TestUser('john@example.com', $hashed, ['ROLE_USER', 'ROLE_ADMIN']);
-        $this->getClient()->loginUser($user);
+        $this->dontSeeAuthentication();
+    }
+
+    public function testDontSeeRememberedAuthentication(): void
+    {
+        $user = $this->createTestUser(['ROLE_USER']);
+        $this->client->loginUser($user);
+
+        $this->dontSeeRememberedAuthentication();
+    }
+
+    public function testSeeAuthentication(): void
+    {
+        $user = $this->createTestUser(['ROLE_USER']);
+        $this->client->loginUser($user);
 
         $this->seeAuthentication();
+    }
 
-        $this->getClient()->getCookieJar()->set(new Cookie('REMEMBERME', 'test'));
+    public function testSeeRememberedAuthentication(): void
+    {
+        $user = $this->createTestUser(['ROLE_USER']);
+        $this->client->loginUser($user);
+        $this->client->getCookieJar()->set(new Cookie('REMEMBERME', 'test-remember')); 
+
         $this->seeRememberedAuthentication();
+    }
+
+    public function testSeeUserHasRole(): void
+    {
+        $user = $this->createTestUser(['ROLE_USER', 'ROLE_ADMIN']);
+        $this->client->loginUser($user);
 
         $this->seeUserHasRole('ROLE_ADMIN');
-        $this->seeUserHasRoles(['ROLE_USER', 'ROLE_ADMIN']);
+    }
+
+    public function testSeeUserHasRoles(): void
+    {
+        $user = $this->createTestUser(['ROLE_USER', 'ROLE_CUSTOMER']);
+        $this->client->loginUser($user);
+
+        $this->seeUserHasRoles(['ROLE_USER', 'ROLE_CUSTOMER']);
+    }
+
+    public function testSeeUserPasswordDoesNotNeedRehash(): void
+    {
+        $user = $this->createTestUser(['ROLE_USER']);
+        $this->client->loginUser($user);
+
         $this->seeUserPasswordDoesNotNeedRehash();
+    }
+
+    private function createTestUser(array $roles): \TestUser
+    {
+        $hasher = $this->grabService('security.password_hasher');
+        $hashed = $hasher->hashPassword(new \TestUser('tmp', ''), '123456');
+
+        return new \TestUser('john_doe@gmail.com', $hashed, $roles);
     }
 
     protected function tearDown(): void

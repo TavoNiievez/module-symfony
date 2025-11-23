@@ -6,6 +6,7 @@ use Codeception\Module\Symfony\ServicesAssertionsTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class ServicesAssertionsTest extends KernelTestCase
 {
@@ -37,9 +38,15 @@ class ServicesAssertionsTest extends KernelTestCase
         return $this->client;
     }
 
-    public function testServicesAssertions(): void
+    public function testGrabServiceReturnsSecurityHelper(): void
     {
-        $this->grabService('router');
+        $securityHelper = $this->grabService('security.helper');
+
+        $this->assertInstanceOf(Security::class, $securityHelper);
+    }
+
+    public function testPersistAndUnpersistService(): void
+    {
         $this->persistService('router');
         $this->assertArrayHasKey('router', $this->persistentServices);
 

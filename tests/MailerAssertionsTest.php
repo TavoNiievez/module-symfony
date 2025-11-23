@@ -48,37 +48,71 @@ class MailerAssertionsTest extends TestCase
         return $container->get($serviceId);
     }
 
-    public function testMailerAssertions(): void
+    public function testDontSeeEmailIsSentWithEmptyLogger(): void
     {
         $this->dontSeeEmailIsSent();
+    }
 
+    public function testQueuedEmailAssertions(): void
+    {
         $queuedEmail = (new Email())
             ->from('queued@example.com')
             ->to('queued@example.com');
         $envelope = new Envelope(new Address('queued@example.com'), [new Address('queued@example.com')]);
         $queuedEvent = new MessageEvent($queuedEmail, $envelope, 'smtp', true);
+
         /** @var MessageLoggerListener $logger */
         $logger = $this->getService('mailer.message_logger_listener');
         $logger->onMessage($queuedEvent);
 
         $this->assertQueuedEmailCount(1);
         $this->assertEmailIsQueued($queuedEvent);
+        $this->assertEmailCount(0);
+        $this->assertQueuedEmailCount(1, 'smtp', 'Queued emails can be counted by transport');
+    }
 
-        $mailer = $this->getService('mailer');
-        $mailer->send((new Email())
-            ->from('john_doe@example.com')
-            ->to('jane_doe@example.com')
-            ->subject('Test')
-            ->text('Example text body')
-            ->html('<p>HTML body</p>')
-            ->attach('Attachment content', 'test.txt')
-        );
+    public function testMailerEventAssertionsAgainstSentEmail(): void
+    {
+        $this->client->request('GET', '/send-email');
 
         $this->assertEmailCount(1);
         $this->seeEmailIsSent();
-        $this->grabLastSentEmail();
-        $this->grabSentEmails();
-        $event = $this->getMailerEvent(1);
+
+        $event = $this->getMailerEvent();
+        $this->assertInstanceOf(MessageEvent::class, $event);
         $this->assertEmailIsNotQueued($event);
+
+        $email = $this->grabLastSentEmail();
+        $this->assertInstanceOf(Email::class, $email);
+        $this->assertSame('jane_doe@example.com', $email->getTo()[0]->getAddress());
+        $this->assertEmailCount(1, $event?->getTransport());
+
+        $emails = $this->grabSentEmails();
+        $this->assertCount(1, $emails);
+    }
+
+    public function testTransportSpecificMailerEvents(): void
+    {
+        /** @var MessageLoggerListener $logger */
+        $logger = $this->getService('mailer.message_logger_listener');
+
+        $smtpEmail = (new Email())
+            ->from('smtp@example.com')
+            ->to('smtp@example.com');
+        $smtpEnvelope = new Envelope(new Address('smtp@example.com'), [new Address('smtp@example.com')]);
+        $smtpEvent = new MessageEvent($smtpEmail, $smtpEnvelope, 'smtp', false);
+
+        $nullEmail = (new Email())
+            ->from('null@example.com')
+            ->to('null@example.com');
+        $nullEnvelope = new Envelope(new Address('null@example.com'), [new Address('null@example.com')]);
+        $nullEvent = new MessageEvent($nullEmail, $nullEnvelope, 'null', false);
+
+        $logger->onMessage($smtpEvent);
+        $logger->onMessage($nullEvent);
+
+        $this->assertEmailCount(1, 'smtp');
+        $this->assertEmailCount(1, 'null');
+        $this->assertEmailCount(2);
     }
 }

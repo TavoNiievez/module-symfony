@@ -23,15 +23,7 @@ class MimeAssertionsTest extends TestCase
         $this->client = new KernelBrowser($this->kernel);
         $this->getService('mailer.message_logger_listener')->reset();
 
-        $mailer = $this->getService('mailer');
-        $mailer->send((new Email())
-            ->from('john_doe@example.com')
-            ->to('jane_doe@example.com')
-            ->subject('Test')
-            ->text('Example text body')
-            ->html('<p>HTML body</p>')
-            ->attach('Attachment content', 'test.txt')
-        );
+        $this->client->request('GET', '/send-email');
     }
 
     protected function tearDown(): void
@@ -55,17 +47,65 @@ class MimeAssertionsTest extends TestCase
         return $container->get($serviceId);
     }
 
-    public function testMimeAssertions(): void
+    public function testAssertEmailAddressContains(): void
     {
         $this->assertEmailAddressContains('To', 'jane_doe@example.com');
+    }
+
+    public function testAssertEmailAttachmentCount(): void
+    {
         $this->assertEmailAttachmentCount(1);
+    }
+
+    public function testAssertEmailHasHeader(): void
+    {
         $this->assertEmailHasHeader('To');
+    }
+
+    public function testAssertEmailHeaderSame(): void
+    {
         $this->assertEmailHeaderSame('To', 'jane_doe@example.com');
+    }
+
+    public function testAssertEmailHeaderNotSame(): void
+    {
         $this->assertEmailHeaderNotSame('To', 'john_doe@example.com');
-        $this->assertEmailHtmlBodyContains('HTML body');
-        $this->assertEmailHtmlBodyNotContains('password');
+    }
+
+    public function testAssertEmailHtmlBodyContains(): void
+    {
+        $this->assertEmailHtmlBodyContains('Example Email');
+    }
+
+    public function testAssertEmailHtmlBodyNotContains(): void
+    {
+        $this->assertEmailHtmlBodyNotContains('userpassword');
+    }
+
+    public function testAssertEmailNotHasHeader(): void
+    {
         $this->assertEmailNotHasHeader('Bcc');
+    }
+
+    public function testAssertEmailTextBodyContains(): void
+    {
         $this->assertEmailTextBodyContains('Example text body');
-        $this->assertEmailTextBodyNotContains('Secret');
+    }
+
+    public function testAssertEmailTextBodyNotContains(): void
+    {
+        $this->assertEmailTextBodyNotContains('My secret text body');
+    }
+
+    public function testAssertionsWorkWithProvidedEmail(): void
+    {
+        $email = (new Email())
+            ->from('custom@example.com')
+            ->to('custom@example.com')
+            ->text('Custom body text');
+
+        $this->assertEmailAddressContains('To', 'custom@example.com', $email);
+        $this->assertEmailTextBodyContains('Custom body text', $email);
+        $this->assertEmailNotHasHeader('Cc', $email);
     }
 }
