@@ -70,9 +70,14 @@ class SessionAssertionsTest extends KernelTestCase
 
     public function testSessionAssertions(): void
     {
-        $factory = self::getContainer()->get('session.factory');
-        $session = $factory->createSession();
-        self::getContainer()->set('session', $session);
+        if (self::getContainer()->has('session')) {
+            $session = self::getContainer()->get('session');
+        } else {
+            $factory = self::getContainer()->get('session.factory');
+            $session = $factory->createSession();
+            self::getContainer()->set('session', $session);
+        }
+
         $session->set('key1', 'value1');
         $session->set('key2', 'value2');
         $session->save();

@@ -68,6 +68,8 @@ jobs:
         env:
           MATRIX_SYMFONY: ${{ matrix.symfony }}
         run: |
+          sed -i 's/\^5.4 | \^6.4 | \^7.3/${{ env.COMP_SYMFONY }}/g' composer.json
+
           composer require --no-update \
             symfony/{finder,yaml,console,event-dispatcher,css-selector,dom-crawler,browser-kit}:${{ env.COMP_SYMFONY }} \
             vlucas/phpdotenv \
