@@ -110,7 +110,8 @@ class TestKernel extends BaseKernel
         ]);
 
         $mainFirewall = [
-            'lazy' => true,
+            'lazy' => BaseKernel::VERSION_ID >= 60000,
+            'pattern' => '^/',
             'provider' => 'doctrine_users',
             'logout' => ['path' => 'logout'],
         ];
@@ -126,6 +127,10 @@ class TestKernel extends BaseKernel
                 'remember_me_parameter' => '_remember_me',
             ];
         } else {
+            $mainFirewall['remember_me'] = [
+                'secret' => 'test',
+                'remember_me_parameter' => '_remember_me',
+            ];
             $mainFirewall['anonymous'] = true;
         }
 
@@ -173,6 +178,8 @@ class TestKernel extends BaseKernel
             ->factory([self::class, 'createUserRepository'])
             ->public();
         $services->alias(UserRepositoryInterface::class, UserRepository::class)->public();
+        $services->alias('security.password_hasher', 'security.user_password_hasher')->public();
+        $services->alias(UserPasswordHasherInterface::class, 'security.user_password_hasher')->public();
         $services->set(Security::class)
             ->public()
             ->arg('$container', service('test.service_container'));

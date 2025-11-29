@@ -6,7 +6,11 @@ namespace Codeception\Module\Symfony;
 
 use PHPUnit\Framework\Assert;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasher;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundException;
 use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -26,10 +30,9 @@ trait SecurityAssertionsTrait
     public function dontSeeAuthentication(): void
     {
         $security = $this->grabSecurityService();
-        $this->assertFalse(
-            $security->isGranted(AuthenticatedVoter::IS_AUTHENTICATED_FULLY),
-            'There is an user authenticated.'
-        );
+        $isAuthenticated = $this->isGrantedSafely(AuthenticatedVoter::IS_AUTHENTICATED_FULLY);
+
+        $this->assertFalse($isAuthenticated, 'There is an user authenticated.');
     }
 
     /**
@@ -45,7 +48,7 @@ trait SecurityAssertionsTrait
         $security  = $this->grabSecurityService();
         $client    = $this->getClient();
         $hasCookie = $client->getCookieJar()->get('REMEMBERME') !== null;
-        $hasRole   = $security->isGranted(AuthenticatedVoter::IS_AUTHENTICATED_REMEMBERED);
+        $hasRole   = $this->isGrantedSafely(AuthenticatedVoter::IS_AUTHENTICATED_REMEMBERED);
 
         $this->assertFalse($hasCookie && $hasRole, 'User does have remembered authentication.');
     }
@@ -62,7 +65,7 @@ trait SecurityAssertionsTrait
     {
         $security = $this->grabSecurityService();
         $this->assertTrue(
-            $security->isGranted(AuthenticatedVoter::IS_AUTHENTICATED_FULLY),
+            $this->isGrantedSafely(AuthenticatedVoter::IS_AUTHENTICATED_FULLY, true),
             'There is no authenticated user.'
         );
     }
@@ -80,7 +83,7 @@ trait SecurityAssertionsTrait
         $security  = $this->grabSecurityService();
         $client    = $this->getClient();
         $hasCookie = $client->getCookieJar()->get('REMEMBERME') !== null;
-        $hasRole   = $security->isGranted(AuthenticatedVoter::IS_AUTHENTICATED_REMEMBERED);
+        $hasRole   = $this->isGrantedSafely(AuthenticatedVoter::IS_AUTHENTICATED_REMEMBERED, true);
 
         $this->assertTrue($hasCookie && $hasRole, 'User does not have remembered authentication.');
     }
@@ -166,8 +169,39 @@ trait SecurityAssertionsTrait
 
     protected function grabPasswordHasherService(): UserPasswordHasherInterface
     {
-        /** @var UserPasswordHasherInterface $hasher */
-        $hasher = $this->getService('security.password_hasher');
-        return $hasher;
+        foreach (['security.password_hasher', 'security.user_password_hasher', UserPasswordHasherInterface::class] as $serviceId) {
+            try {
+                /** @var UserPasswordHasherInterface $hasher */
+                $hasher = $this->getService($serviceId);
+                return $hasher;
+            } catch (ServiceNotFoundException $exception) {
+                // Try next service identifier.
+            }
+        }
+
+        if (method_exists($this, '_getContainer')) { // @phpstan-ignore-line
+            $container = $this->_getContainer();
+            if ($container->has('security.password_hasher_factory')) {
+                /** @var PasswordHasherFactoryInterface $factory */
+                $factory = $container->get('security.password_hasher_factory');
+
+                return new UserPasswordHasher($factory);
+            }
+        }
+
+        Assert::fail('Unable to locate a password hasher service.');
+    }
+
+    private function isGrantedSafely(string $attribute, bool $failOnException = false): bool
+    {
+        try {
+            return $this->grabSecurityService()->isGranted($attribute);
+        } catch (AuthenticationCredentialsNotFoundException $exception) {
+            if ($failOnException) {
+                Assert::fail($exception->getMessage());
+            }
+
+            return false;
+        }
     }
 }

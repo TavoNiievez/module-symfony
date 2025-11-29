@@ -103,7 +103,7 @@ class SecurityAssertionsTest extends KernelTestCase
 
     private function createTestUser(array $roles): \TestUser
     {
-        $hasher = $this->grabService('security.password_hasher');
+        $hasher = $this->grabPasswordHasherService();
         $hashed = $hasher->hashPassword(new \TestUser('tmp', ''), '123456');
 
         return new \TestUser('john_doe@gmail.com', $hashed, $roles);
