@@ -27,7 +27,7 @@ class LoggerAssertionsTest extends KernelTestCase
 
     protected static function getKernelClass(): string
     {
-        return \TestKernel::class;
+        return \Tests\_app\TestKernel::class;
     }
 
     protected function getClient(): KernelBrowser

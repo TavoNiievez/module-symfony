@@ -8,7 +8,7 @@ class BrowserKitConnectorTest extends TestCase
 {
     public function testRequestReturnsSuccessfulResponse(): void
     {
-        $kernel = new \TestKernel('test', true);
+        $kernel = new \Tests\_app\TestKernel('test', true);
         $kernel->boot();
         $browser = new SymfonyConnector($kernel);
 

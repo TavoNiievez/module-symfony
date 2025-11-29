@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\_app\Entity;
+
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 

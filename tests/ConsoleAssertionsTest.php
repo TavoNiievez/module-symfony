@@ -4,7 +4,7 @@ namespace Tests;
 
 use Codeception\Module\Symfony\ConsoleAssertionsTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Tests\_app\DoctrineFixturesLoadCommand;
+use Tests\_app\Command\DoctrineFixturesLoadCommand;
 
 class ConsoleAssertionsTest extends KernelTestCase
 {
@@ -12,7 +12,7 @@ class ConsoleAssertionsTest extends KernelTestCase
 
     protected static function getKernelClass(): string
     {
-        return \TestKernel::class;
+        return \Tests\_app\TestKernel::class;
     }
 
     protected function grabService(string $serviceId): object

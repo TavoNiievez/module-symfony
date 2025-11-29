@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\_app\Repository\Model;
+namespace Tests\_app\Repository;
 
 use Tests\_app\Entity\User;
 

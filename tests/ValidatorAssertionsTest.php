@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Tests\_app\Entity\ValidEntity;
 
 class ValidatorAssertionsTest extends KernelTestCase
 {
@@ -22,7 +23,7 @@ class ValidatorAssertionsTest extends KernelTestCase
 
     protected static function getKernelClass(): string
     {
-        return \TestKernel::class;
+        return \Tests\_app\TestKernel::class;
     }
 
     protected function getClient(): KernelBrowser
@@ -42,7 +43,7 @@ class ValidatorAssertionsTest extends KernelTestCase
 
     public function testDontSeeViolatedConstraint(): void
     {
-        $user = \ValidEntity::create('test@example.com', 'password123');
+        $user = ValidEntity::create('test@example.com', 'password123');
 
         $this->dontSeeViolatedConstraint($user);
         $this->dontSeeViolatedConstraint($user, 'email');
@@ -59,7 +60,7 @@ class ValidatorAssertionsTest extends KernelTestCase
 
     public function testSeeViolatedConstraint(): void
     {
-        $user = \ValidEntity::create('invalid_email', 'password123');
+        $user = ValidEntity::create('invalid_email', 'password123');
 
         $this->seeViolatedConstraint($user);
         $this->seeViolatedConstraint($user, 'email');
@@ -73,7 +74,7 @@ class ValidatorAssertionsTest extends KernelTestCase
 
     public function testSeeViolatedConstraintCount(): void
     {
-        $user = \ValidEntity::create('invalid_email', 'weak');
+        $user = ValidEntity::create('invalid_email', 'weak');
 
         $this->seeViolatedConstraintsCount(2, $user);
         $this->seeViolatedConstraintsCount(1, $user, 'email');
@@ -86,7 +87,7 @@ class ValidatorAssertionsTest extends KernelTestCase
 
     public function testSeeViolatedConstraintMessageContains(): void
     {
-        $user = \ValidEntity::create('invalid_email', 'weak');
+        $user = ValidEntity::create('invalid_email', 'weak');
 
         $this->seeViolatedConstraintMessage('valid email', $user, 'email');
 

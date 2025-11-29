@@ -22,7 +22,7 @@ class SecurityAssertionsTest extends KernelTestCase
 
     protected static function getKernelClass(): string
     {
-        return \TestKernel::class;
+        return \Tests\_app\TestKernel::class;
     }
 
     protected function getClient(): KernelBrowser
@@ -101,12 +101,12 @@ class SecurityAssertionsTest extends KernelTestCase
         $this->seeUserPasswordDoesNotNeedRehash();
     }
 
-    private function createTestUser(array $roles): \TestUser
+    private function createTestUser(array $roles): \Tests\_app\Entity\TestUser
     {
         $hasher = $this->grabPasswordHasherService();
-        $hashed = $hasher->hashPassword(new \TestUser('tmp', ''), '123456');
+        $hashed = $hasher->hashPassword(new \Tests\_app\Entity\TestUser('tmp', ''), '123456');
 
-        return new \TestUser('john_doe@gmail.com', $hashed, $roles);
+        return new \Tests\_app\Entity\TestUser('john_doe@gmail.com', $hashed, $roles);
     }
 
     protected function tearDown(): void
