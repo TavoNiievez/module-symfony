@@ -196,10 +196,16 @@ trait EventsAssertionsTrait
         $eventCollector = $this->grabEventCollector(__FUNCTION__);
         $orphanedEvents = $eventCollector->getOrphanedEvents($this->getDefaultDispatcher());
 
-        /** @var list<string> */
-        return is_array($orphanedEvents)
+        $orphanedEvents = is_array($orphanedEvents)
             ? array_values($orphanedEvents)
             : $orphanedEvents->getValue(true);
+
+        if ($orphanedEvents !== [] && is_array($orphanedEvents[0])) {
+            return array_column($orphanedEvents, 'event');
+        }
+
+        /** @var list<string> */
+        return $orphanedEvents;
     }
 
     /** @return list<list<string>> */

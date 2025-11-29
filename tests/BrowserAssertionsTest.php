@@ -17,6 +17,7 @@ class BrowserAssertionsTest extends KernelTestCase
     {
         self::bootKernel();
         $this->client = new KernelBrowser(self::$kernel);
+        $this->client->enableProfiler();
         $this->client->followRedirects(false);
         $this->client->getCookieJar()->set(new Cookie('browser_cookie', 'value'));
     }
