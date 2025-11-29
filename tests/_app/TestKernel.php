@@ -116,7 +116,15 @@ class TestKernel extends BaseKernel
         ];
 
         if (BaseKernel::VERSION_ID >= 60000) {
-            $mainFirewall['remember_me'] = ['secret' => 'test'];
+            $mainFirewall['form_login'] = [
+                'login_path' => 'app_login',
+                'check_path' => 'app_login',
+            ];
+
+            $mainFirewall['remember_me'] = [
+                'secret' => 'test',
+                'remember_me_parameter' => '_remember_me',
+            ];
         } else {
             $mainFirewall['anonymous'] = true;
         }
