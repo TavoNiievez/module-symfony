@@ -73,7 +73,10 @@ class TestKernel extends BaseKernel
             'collect' => true,
         ];
 
-        if (BaseKernel::VERSION_ID >= 60000) {
+        if (
+            BaseKernel::VERSION_ID >= 60200
+            && class_exists(\Symfony\Component\Serializer\DataCollector\SerializerDataCollector::class)
+        ) {
             $profilerConfig['collect_serializer_data'] = true;
         }
 
