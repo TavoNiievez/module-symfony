@@ -1,6 +1,7 @@
 # Codeception Module Symfony
 
 A Codeception module for Symfony framework.
+It can be used with Codeception or as a standalone Symfony BrowserKit client.
 
 [![Actions Status](https://github.com/Codeception/module-symfony/workflows/CI/badge.svg)](https://github.com/Codeception/module-symfony/actions)
 [![Latest Stable Version](https://poser.pugx.org/codeception/module-symfony/v/stable)](https://github.com/Codeception/module-symfony/releases)
@@ -17,6 +18,9 @@ A Codeception module for Symfony framework.
 ```
 composer require "codeception/module-symfony" --dev
 ```
+
+To use the connector without Codeception, require the package and instantiate
+`Codeception\\Lib\\Connector\\Symfony` with your kernel.
 
 ## Documentation
 
