@@ -70,6 +70,10 @@ jobs:
         run: |
           sed -i 's/\^5.4 | \^6.4 | \^7.3/${{ env.COMP_SYMFONY }}/g' composer.json
 
+          if [[ "${{ env.COMP_SYMFONY }}" == "5.4.*" ]]; then
+            sed -i 's/"doctrine\/orm": "\^3.5"/"doctrine\/orm": "^2.14"/g' composer.json
+          fi
+
           composer require --dev --no-update \
             symfony/{finder,yaml,console,event-dispatcher,css-selector,dom-crawler,browser-kit}:${{ env.COMP_SYMFONY }} \
             vlucas/phpdotenv \
