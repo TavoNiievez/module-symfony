@@ -80,7 +80,10 @@ class EventsAssertionsTest extends KernelTestCase
         $this->dontSeeEvent(OrphanEvent::class);
         $this->seeEventListenerIsCalled(SampleEventListener::class, SampleEvent::class);
         $this->dontSeeEventListenerIsCalled(NamedEventListener::class, SampleEvent::class);
-        $this->dontSeeOrphanEvent();
+
+        if (\Symfony\Component\HttpKernel\Kernel::VERSION_ID >= 60000) {
+            $this->dontSeeOrphanEvent();
+        }
     }
 
     public function testNamedEventListenerFiltering(): void

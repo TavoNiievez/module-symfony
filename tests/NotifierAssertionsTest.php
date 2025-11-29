@@ -4,7 +4,9 @@ namespace Tests;
 
 use Codeception\Module\Symfony\NotifierAssertionsTrait;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\AssertionFailedError;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Notifier\Event\MessageEvent;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Tests\_app\Notifier\NotifierFixture;
@@ -49,11 +51,25 @@ class NotifierAssertionsTest extends TestCase
 
     public function testNoNotificationsSent(): void
     {
+        if (Kernel::VERSION_ID < 60200) {
+            $this->expectThrowable(AssertionFailedError::class, function () {
+                $this->dontSeeNotificationIsSent();
+            });
+            return;
+        }
+
         $this->dontSeeNotificationIsSent();
     }
 
     public function testQueuedAndSentNotifications(): void
     {
+        if (Kernel::VERSION_ID < 60200) {
+            $this->expectThrowable(AssertionFailedError::class, function () {
+                $this->assertNotificationCount(1);
+            });
+            return;
+        }
+
         /** @var NotifierFixture $fixture */
         $fixture = $this->getService(NotifierFixture::class);
 
@@ -75,6 +91,13 @@ class NotifierAssertionsTest extends TestCase
 
     public function testNotificationSubjectAndTransportAssertions(): void
     {
+        if (Kernel::VERSION_ID < 60200) {
+            $this->expectThrowable(\Error::class, function () {
+                $this->assertNotificationSubjectContains(new ChatMessage('test'), 'update');
+            });
+            return;
+        }
+
         /** @var NotifierFixture $fixture */
         $fixture = $this->getService(NotifierFixture::class);
 
@@ -92,5 +115,19 @@ class NotifierAssertionsTest extends TestCase
         $notifications = $this->grabSentNotifications();
         $this->assertCount(2, $notifications);
         $this->assertSame('chat', $this->getNotifierMessage(0)?->getTransport());
+    }
+
+    protected function expectThrowable(string $exception, callable $callback): void
+    {
+        try {
+            $callback();
+        } catch (\Throwable $e) {
+            if ($e instanceof $exception) {
+                $this->assertTrue(true);
+                return;
+            }
+            throw $e;
+        }
+        $this->fail("Expected exception $exception was not thrown");
     }
 }

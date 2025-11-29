@@ -127,6 +127,10 @@ class TestKernel extends BaseKernel
                 'remember_me_parameter' => '_remember_me',
             ];
         } else {
+            $mainFirewall['form_login'] = [
+                'login_path' => 'app_login',
+                'check_path' => 'app_login',
+            ];
             $mainFirewall['remember_me'] = [
                 'secret' => 'test',
                 'remember_me_parameter' => '_remember_me',
@@ -245,6 +249,13 @@ class TestKernel extends BaseKernel
             ->arg('$profile', service(Profile::class))
             ->tag('twig.extension')
             ->public();
+
+        if (BaseKernel::VERSION_ID < 60100) {
+            $services->defaults()
+                ->autowire()
+                ->bind(HttpClientInterface::class . ' $httpClient', service('app.http_client'))
+                ->bind(HttpClientInterface::class . ' $jsonClient', service('app.http_client.json_client'));
+        }
     }
 
     public function registerBundles(): iterable
@@ -561,7 +572,12 @@ HTML;
             return self::$entityManager;
         }
 
-        $config = ORMSetup::createAttributeMetadataConfig([__DIR__ . '/Entity'], true);
+        if (method_exists(ORMSetup::class, 'createAttributeMetadataConfig')) {
+            $config = ORMSetup::createAttributeMetadataConfig([__DIR__ . '/Entity'], true);
+        } else {
+            $config = ORMSetup::createAttributeMetadataConfiguration([__DIR__ . '/Entity'], true);
+        }
+
         $proxyDir = sys_get_temp_dir() . '/doctrine-proxies';
         if (!is_dir($proxyDir)) {
             mkdir($proxyDir, 0777, true);
@@ -575,7 +591,11 @@ HTML;
             'memory' => true,
         ]);
 
-        $entityManager = new EntityManager($connection, $config);
+        if (method_exists(EntityManager::class, 'create')) {
+            $entityManager = EntityManager::create($connection, $config);
+        } else {
+            $entityManager = new EntityManager($connection, $config);
+        }
 
         $schemaTool = new SchemaTool($entityManager);
         $metadata = [$entityManager->getClassMetadata(User::class)];
