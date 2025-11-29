@@ -4,7 +4,7 @@ namespace Tests\_app\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Tests\_app\Entity\User;
-use Tests\_app\Repository\Model\UserRepositoryInterface;
+use Tests\_app\Repository\UserRepositoryInterface;
 
 class UserRepository extends EntityRepository implements UserRepositoryInterface
 {

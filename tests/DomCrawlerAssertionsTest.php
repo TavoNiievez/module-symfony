@@ -32,7 +32,7 @@ class DomCrawlerAssertionsTest extends KernelTestCase
 
     protected static function getKernelClass(): string
     {
-        return \TestKernel::class;
+        return \Tests\_app\TestKernel::class;
     }
 
     public function testAssertCheckboxChecked(): void

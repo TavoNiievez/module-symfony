@@ -7,7 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Tests\_app\Entity\User;
-use Tests\_app\Repository\Model\UserRepositoryInterface;
+use Tests\_app\Repository\UserRepositoryInterface;
 use Tests\_app\Repository\UserRepository;
 
 class DoctrineAssertionsTest extends KernelTestCase
@@ -16,7 +16,7 @@ class DoctrineAssertionsTest extends KernelTestCase
 
     protected static function getKernelClass(): string
     {
-        return \TestKernel::class;
+        return \Tests\_app\TestKernel::class;
     }
 
     protected function grabService(string $serviceId): object

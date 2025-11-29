@@ -14,11 +14,11 @@ class MimeAssertionsTest extends TestCase
     use MimeAssertionsTrait;
 
     private KernelBrowser $client;
-    private \TestKernel $kernel;
+    private \Tests\_app\TestKernel $kernel;
 
     protected function setUp(): void
     {
-        $this->kernel = new \TestKernel('test', true);
+        $this->kernel = new \Tests\_app\TestKernel('test', true);
         $this->kernel->boot();
         $this->client = new KernelBrowser($this->kernel);
         $this->getService('mailer.message_logger_listener')->reset();

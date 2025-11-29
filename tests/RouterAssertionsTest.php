@@ -20,7 +20,7 @@ class RouterAssertionsTest extends KernelTestCase
 
     protected static function getKernelClass(): string
     {
-        return \TestKernel::class;
+        return \Tests\_app\TestKernel::class;
     }
 
     protected function getClient(): KernelBrowser
@@ -40,7 +40,7 @@ class RouterAssertionsTest extends KernelTestCase
 
     public function testAmOnAction(): void
     {
-        $this->amOnAction('TestKernel::index');
+        $this->amOnAction(\Tests\_app\Controller\TestController::class . '::index');
 
         $this->assertSame(200, $this->client->getResponse()->getStatusCode());
         $this->assertStringContainsString('Hello World!', $this->client->getResponse()->getContent());
@@ -57,7 +57,7 @@ class RouterAssertionsTest extends KernelTestCase
     {
         $this->client->request('GET', '/');
 
-        $this->seeCurrentActionIs('TestKernel::index');
+        $this->seeCurrentActionIs(\Tests\_app\Controller\TestController::class . '::index');
     }
 
     public function testSeeCurrentRouteIs(): void
