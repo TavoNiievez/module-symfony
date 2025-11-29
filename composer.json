@@ -30,7 +30,7 @@
     "require-dev": {
         "codeception/module-asserts": "^3.0",
         "codeception/module-doctrine": "^3.1",
-        "doctrine/orm": "^3.5",
+        "doctrine/orm": "^2.14 | ^3.5",
         "friendsofphp/php-cs-fixer": "^3.85",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^10.0",
@@ -72,6 +72,21 @@
         "psr-4": {
             "Codeception\\": "src/Codeception/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests",
+            "Tests\\_app\\": "tests/_app"
+        },
+        "files": [
+            "tests/_app/SecurityBundleSecurityAlias.php",
+            "tests/_app/TestKernel.php",
+            "tests/_app/ExampleCommand.php",
+            "tests/_app/DoctrineFixturesLoadCommand.php",
+            "tests/_app/HelloCommand.php",
+            "tests/_app/TestUser.php",
+            "tests/_app/ValidEntity.php"
+        ]
     },
     "config": {
         "sort-packages": true
