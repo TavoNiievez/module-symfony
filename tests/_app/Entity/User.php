@@ -80,6 +80,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
+    public function getUsername(): string
+    {
+        return $this->getUserIdentifier();
+    }
+
+    public function getSalt(): ?string
+    {
+        return null;
+    }
+
     public function eraseCredentials(): void
     {
     }

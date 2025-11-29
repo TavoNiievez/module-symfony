@@ -88,6 +88,9 @@ jobs:
         if: *only_sf_latest
         run: composer cs-check
 
+      - name: Run module tests
+        run: vendor/bin/phpunit tests
+
       - name: Run Composer Audit
         if: *only_sf_latest
         run: composer audit

@@ -17,6 +17,11 @@ class TestUser implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->userIdentifier;
     }
 
+    public function getUsername(): string
+    {
+        return $this->getUserIdentifier();
+    }
+
     public function getRoles(): array
     {
         return $this->roles;
@@ -25,6 +30,11 @@ class TestUser implements UserInterface, PasswordAuthenticatedUserInterface
     public function getPassword(): string
     {
         return $this->password;
+    }
+
+    public function getSalt(): ?string
+    {
+        return null;
     }
 
     public function eraseCredentials(): void

@@ -68,10 +68,19 @@ class TestKernel extends BaseKernel
 
     protected function configureContainer(ContainerConfigurator $container): void
     {
+        $profilerConfig = [
+            'enabled' => true,
+            'collect' => true,
+        ];
+
+        if (BaseKernel::VERSION_ID >= 60000) {
+            $profilerConfig['collect_serializer_data'] = true;
+        }
+
         $container->extension('framework', [
             'secret' => 'test',
             'test' => true,
-            'profiler' => ['enabled' => true, 'collect' => true, 'collect_serializer_data' => true],
+            'profiler' => $profilerConfig,
             'property_info' => ['enabled' => true],
             'session' => [
                 'handler_id' => null,
@@ -97,6 +106,18 @@ class TestKernel extends BaseKernel
             'debug' => true,
         ]);
 
+        $mainFirewall = [
+            'lazy' => true,
+            'provider' => 'doctrine_users',
+            'logout' => ['path' => 'logout'],
+        ];
+
+        if (BaseKernel::VERSION_ID >= 60000) {
+            $mainFirewall['remember_me'] = ['secret' => 'test'];
+        } else {
+            $mainFirewall['anonymous'] = true;
+        }
+
         $container->extension('security', [
             'password_hashers' => [
                 PasswordAuthenticatedUserInterface::class => 'auto',
@@ -107,12 +128,7 @@ class TestKernel extends BaseKernel
                 ],
             ],
             'firewalls' => [
-                'main' => [
-                    'lazy' => true,
-                    'provider' => 'doctrine_users',
-                    'remember_me' => ['secret' => 'test'],
-                    'logout' => ['path' => 'logout'],
-                ],
+                'main' => $mainFirewall,
             ],
         ]);
 

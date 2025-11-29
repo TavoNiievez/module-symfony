@@ -73,6 +73,21 @@
             "Codeception\\": "src/Codeception/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests",
+            "Tests\\_app\\": "tests/_app"
+        },
+        "files": [
+            "tests/_app/SecurityBundleSecurityAlias.php",
+            "tests/_app/TestKernel.php",
+            "tests/_app/ExampleCommand.php",
+            "tests/_app/DoctrineFixturesLoadCommand.php",
+            "tests/_app/HelloCommand.php",
+            "tests/_app/TestUser.php",
+            "tests/_app/ValidEntity.php"
+        ]
+    },
     "config": {
         "sort-packages": true
     },
