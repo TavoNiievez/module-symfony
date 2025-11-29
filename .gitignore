@@ -3,3 +3,7 @@
 /composer.lock
 /framework-tests
 /.php-cs-fixer.cache
+tests/_output/
+tests/_support/_generated/
+tests/_support/FunctionalTester.php
+var/
