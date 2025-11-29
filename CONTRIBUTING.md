@@ -97,3 +97,17 @@ If your PR fixes an existing issue, put the test into `/tests/Functional/IssuesC
 
 - In the CLI output, click on the link to `https://github.com/YourUserName/symfony-module-tests/pull/new/new_test` to create a Pull Request through `GitHub.com`.
   Don't forget to add a link to the module's Pull Request you created earlier.
+
+## Troubleshooting
+
+### Version Mismatch Errors
+
+If you are running tests from the module root against a test application (e.g., `framework-tests`) that uses a different Symfony version than your root project, you may encounter version mismatch errors (e.g., `Call to undefined method ...`).
+
+To avoid this, run the `codecept` binary from the test application's vendor directory with the `--no-redirect` option:
+
+```shell
+php framework-tests/vendor/bin/codecept run Functional -c framework-tests --no-redirect
+```
+
+This ensures that the tests run using the test application's dependencies and autoloader.
