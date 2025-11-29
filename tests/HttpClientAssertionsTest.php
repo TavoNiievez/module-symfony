@@ -21,6 +21,7 @@ class HttpClientAssertionsTest extends KernelTestCase
     {
         self::bootKernel();
         $this->client = new KernelBrowser(self::$kernel);
+        $this->client->enableProfiler();
         $this->client->request('GET', '/http-client');
     }
 
@@ -62,9 +63,12 @@ class HttpClientAssertionsTest extends KernelTestCase
 
     protected function grabCollector(DataCollectorName $name, string $function): DataCollectorInterface
     {
-        /** @var Profiler $profiler */
-        $profiler = self::getContainer()->get('profiler');
-        $profile = $profiler->collect($this->client->getRequest(), $this->client->getResponse());
+        $profile = $this->client->getProfile();
+        if (!$profile) {
+            /** @var Profiler $profiler */
+            $profiler = self::getContainer()->get('profiler');
+            $profile = $profiler->collect($this->client->getRequest(), $this->client->getResponse());
+        }
 
         return $profile->getCollector($name->value);
     }
