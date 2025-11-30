@@ -5,12 +5,17 @@ declare(strict_types=1);
 namespace Tests;
 
 use Codeception\Module\Symfony\RouterAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 use Tests\_app\Controller\AppController;
 use Tests\Support\KernelTestCase;
 
 class RouterAssertionsTest extends KernelTestCase
 {
     use RouterAssertionsTrait;
+    use ServicesAssertionsTrait;
+
+    protected array $persistentServices = [];
+    protected array $permanentServices = [];
 
     public function testAmOnAction(): void
     {
@@ -25,6 +30,15 @@ class RouterAssertionsTest extends KernelTestCase
         $this->amOnRoute('index');
 
         $this->assertStringContainsString('Hello World!', $this->client->getResponse()->getContent());
+    }
+
+    public function testInvalidateCachedRouter(): void
+    {
+        $this->persistService('router');
+        $this->assertArrayHasKey('router', $this->persistentServices);
+
+        $this->invalidateCachedRouter();
+        $this->assertArrayNotHasKey('router', $this->persistentServices);
     }
 
     public function testSeeCurrentActionIs(): void

@@ -39,13 +39,10 @@ return function (ContainerConfigurator $container): void {
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure()->public();
 
-    // Controllers
     $services->set(AppController::class);
 
-    // Commands
     $services->set(TestCommand::class)->tag('console.command', ['command' => 'app:test-command']);
 
-    // Doctrine
     $services->set('doctrine.orm.entity_manager', EntityManagerInterface::class)
         ->factory([DoctrineSetup::class, 'createEntityManager']);
     $services->alias('doctrine.orm.default_entity_manager', 'doctrine.orm.entity_manager')->public();
@@ -59,7 +56,6 @@ return function (ContainerConfigurator $container): void {
 
     $services->alias(UserRepositoryInterface::class, UserRepository::class)->public();
 
-    // Security
     $services->set('security.user.provider.test', TestUserProvider::class)
         ->arg('$repository', service(UserRepository::class))
         ->tag('security.user_provider');
@@ -72,7 +68,6 @@ return function (ContainerConfigurator $container): void {
         $services->alias('security.helper', Security::class)->public();
     }
 
-    // Mailer & Notifier
     $services->set('mailer.message_logger_listener', MessageLoggerListener::class)->tag('kernel.event_subscriber');
     $services->set('notifier.notification_logger_listener', NotificationLoggerListener::class)->tag('kernel.event_subscriber');
     $services->alias('notifier.logger_notification_listener', 'notifier.notification_logger_listener')->public();
@@ -80,20 +75,16 @@ return function (ContainerConfigurator $container): void {
     $services->set(RegistrationMailer::class)->arg('$mailer', service('mailer'));
     $services->set(NotifierFixture::class)->arg('$dispatcher', service('event_dispatcher'));
 
-    // Events & Listeners
     $services->set(TestEventListener::class)
         ->tag('kernel.event_listener', ['event' => TestEvent::class, 'method' => 'onTestEvent'])
         ->tag('kernel.event_listener', ['event' => 'named.event', 'method' => 'onNamedEvent']);
 
-    // Logger
     $services->set('logger', ArrayLogger::class);
     $services->alias(LoggerInterface::class, 'logger')->public();
 
-    // Twig Profiler
     $services->set(Profile::class);
     $services->set(ProfilerExtension::class)->arg('$profile', service(Profile::class))->tag('twig.extension');
 
-    // HTTP Client
     $services->set(MockResponseFactory::class);
 
     $services->set('app.http_client.inner', MockHttpClient::class)

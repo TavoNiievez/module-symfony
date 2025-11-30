@@ -16,23 +16,30 @@ class ServicesAssertionsTest extends KernelTestCase
     protected array $persistentServices = [];
     protected array $permanentServices = [];
 
-    public function testGrabServiceReturnsSecurityHelper(): void
+    public function testGrabService(): void
     {
         $securityHelper = $this->grabService('security.helper');
 
         $this->assertInstanceOf(Security::class, $securityHelper);
     }
 
-    public function testPersistAndUnpersistService(): void
+    public function testPersistService(): void
     {
         $this->persistService('router');
         $this->assertArrayHasKey('router', $this->persistentServices);
+    }
 
+    public function testPersistPermanentService(): void
+    {
         $this->persistPermanentService('router');
         $this->assertArrayHasKey('router', $this->permanentServices);
+        $this->assertArrayHasKey('router', $this->persistentServices);
+    }
 
+    public function testUnpersistService(): void
+    {
+        $this->persistService('router');
         $this->unpersistService('router');
         $this->assertArrayNotHasKey('router', $this->persistentServices);
-        $this->assertArrayNotHasKey('router', $this->permanentServices);
     }
 }

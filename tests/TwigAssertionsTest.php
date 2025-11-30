@@ -11,7 +11,6 @@ class TwigAssertionsTest extends KernelTestCase
 {
     use TwigAssertionsTrait;
 
-    protected array $kernelOptions = ['debug' => true];
     protected bool $profilerEnabled = true;
 
     public function testDontSeeRenderedTemplate(): void

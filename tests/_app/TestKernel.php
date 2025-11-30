@@ -32,7 +32,6 @@ class TestKernel extends BaseKernel
     {
         $this->configureExtensions($container);
 
-        // Load services from config file
         $container->import(__DIR__ . '/config/services.php');
     }
 
@@ -89,7 +88,6 @@ class TestKernel extends BaseKernel
 
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
-        // Load routes from config file
         $routes->import(__DIR__ . '/config/routes.php');
     }
 }

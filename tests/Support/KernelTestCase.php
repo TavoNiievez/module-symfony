@@ -24,7 +24,6 @@ abstract class KernelTestCase extends TestCase
         $this->kernel = new TestKernel('test', true);
         $this->kernel->boot();
 
-        // Database Setup
         /** @var \Doctrine\ORM\EntityManagerInterface $em */
         $em = $this->_getContainer()->get('doctrine.orm.entity_manager');
         TestDatabaseSetup::init($em);

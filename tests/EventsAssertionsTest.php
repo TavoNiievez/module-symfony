@@ -5,10 +5,6 @@ declare(strict_types=1);
 namespace Tests;
 
 use Codeception\Module\Symfony\EventsAssertionsTrait;
-use Codeception\Module\Symfony\DataCollectorName;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
-use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Tests\_app\Event\TestEvent;
 use Tests\_app\Listener\TestEventListener;
 use Tests\Support\KernelTestCase;
@@ -17,34 +13,60 @@ class EventsAssertionsTest extends KernelTestCase
 {
     use EventsAssertionsTrait;
 
-    protected array $kernelOptions = ['debug' => true];
     protected bool $profilerEnabled = true;
 
-    public function testEventDispatchingAndListeners(): void
+    public function testDontSeeEvent(): void
     {
-        $this->client->request('GET', '/dispatch-event');
-
-        $this->seeEvent(TestEvent::class);
-        $this->dontSeeEvent('orphan.event');
-        $this->seeEventListenerIsCalled(TestEventListener::class, TestEvent::class);
-
-        if (\Symfony\Component\HttpKernel\Kernel::VERSION_ID >= 60000) {
-            $this->dontSeeOrphanEvent();
-        }
+        $this->client->request('GET', '/dispatch-orphan-event');
+        $this->dontSeeEvent(TestEvent::class);
     }
 
-    public function testNamedEventListenerFiltering(): void
+    public function testDontSeeEventListenerIsCalled(): void
     {
-        $this->client->request('GET', '/dispatch-named-event');
+        $this->client->request('GET', '/dispatch-orphan-event');
+        $this->dontSeeEventListenerIsCalled(TestEventListener::class);
+    }
 
+    public function testDontSeeEventTriggered(): void
+    {
+        $this->client->request('GET', '/dispatch-orphan-event');
+        $this->dontSeeEventTriggered(TestEventListener::class);
+    }
+
+    public function testDontSeeOrphanEvent(): void
+    {
+        if (\Symfony\Component\HttpKernel\Kernel::VERSION_ID < 60000) {
+            $this->markTestSkipped('Orphan event detection requires Symfony 6.0+');
+        }
+
+        $this->client->request('GET', '/dispatch-event');
+        $this->dontSeeOrphanEvent();
+    }
+
+    public function testSeeEvent(): void
+    {
+        $this->client->request('GET', '/dispatch-event');
+        $this->seeEvent(TestEvent::class);
+    }
+
+    public function testSeeEventListenerIsCalled(): void
+    {
+        $this->client->request('GET', '/dispatch-event');
+        $this->seeEventListenerIsCalled(TestEventListener::class, TestEvent::class);
+
+        $this->client->request('GET', '/dispatch-named-event');
         $this->seeEventListenerIsCalled(TestEventListener::class, 'named.event');
     }
 
-    public function testOrphanEventDetection(): void
+    public function testSeeEventTriggered(): void
+    {
+        $this->client->request('GET', '/dispatch-event');
+        $this->seeEventTriggered(TestEventListener::class);
+    }
+
+    public function testSeeOrphanEvent(): void
     {
         $this->client->request('GET', '/dispatch-orphan-event');
-
         $this->seeOrphanEvent('orphan.event');
-        $this->dontSeeEvent(TestEvent::class);
     }
 }
