@@ -34,16 +34,4 @@ class HttpClientAssertionsTest extends KernelTestCase
         $this->assertHttpClientRequestCount(1, 'app.http_client.json_client');
         $this->assertNotHttpClientRequest('https://example.com/missing', 'GET', 'app.http_client');
     }
-
-    protected function grabCollector(DataCollectorName $name, string $function): DataCollectorInterface
-    {
-        $profile = $this->client->getProfile();
-        if (!$profile) {
-            /** @var Profiler $profiler */
-            $profiler = self::getContainer()->get('profiler');
-            $profile = $profiler->collect($this->client->getRequest(), $this->client->getResponse());
-        }
-
-        return $profile->getCollector($name->value);
-    }
 }

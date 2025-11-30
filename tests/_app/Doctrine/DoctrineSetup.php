@@ -9,9 +9,6 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMSetup;
-use Doctrine\ORM\Tools\SchemaTool;
-use Tests\_app\Entity\User;
-use Tests\_app\Repository\UserRepository;
 
 class DoctrineSetup
 {
@@ -47,16 +44,6 @@ class DoctrineSetup
             $entityManager = new EntityManager($connection, $config);
         }
 
-        $schemaTool = new SchemaTool($entityManager);
-        $metadata = [$entityManager->getClassMetadata(User::class)];
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
-
-        $user = User::create('john_doe@gmail.com', 'secret', ['ROLE_TEST']);
-        $entityManager->persist($user);
-        $entityManager->flush();
-        $entityManager->clear();
-
         self::$entityManager = $entityManager;
 
         return $entityManager;
@@ -65,12 +52,5 @@ class DoctrineSetup
     public static function createConnection(): Connection
     {
         return self::createEntityManager()->getConnection();
-    }
-
-    public static function createUserRepository(): UserRepository
-    {
-        /** @var UserRepository $repository */
-        $repository = self::createEntityManager()->getRepository(User::class);
-        return $repository;
     }
 }

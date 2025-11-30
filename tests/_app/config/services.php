@@ -17,14 +17,13 @@ use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Mailer\EventListener\MessageLoggerListener;
 use Symfony\Component\Notifier\EventListener\NotificationLoggerListener;
 use Symfony\Component\Security\Core\User\UserPasswordHasherInterface;
-use Tests\_app\Command\DoctrineFixturesLoadCommand;
-use Tests\_app\Command\ExampleCommand;
+use Tests\_app\Command\TestCommand;
 use Tests\_app\Controller\AppController;
 use Tests\_app\Doctrine\DoctrineSetup;
-use Tests\_app\Event\SampleEvent;
+use Tests\_app\Entity\User;
+use Tests\_app\Event\TestEvent;
 use Tests\_app\HttpClient\MockResponseFactory;
-use Tests\_app\Listener\NamedEventListener;
-use Tests\_app\Listener\SampleEventListener;
+use Tests\_app\Listener\TestEventListener;
 use Tests\_app\Logger\ArrayLogger;
 use Tests\_app\Mailer\RegistrationMailer;
 use Tests\_app\Notifier\NotifierFixture;
@@ -44,8 +43,7 @@ return function (ContainerConfigurator $container): void {
     $services->set(AppController::class);
 
     // Commands
-    $services->set(ExampleCommand::class)->tag('console.command', ['command' => 'app:example-command']);
-    $services->set(DoctrineFixturesLoadCommand::class)->tag('console.command', ['command' => 'doctrine:fixtures:load']);
+    $services->set(TestCommand::class)->tag('console.command', ['command' => 'app:test-command']);
 
     // Doctrine
     $services->set('doctrine.orm.entity_manager', EntityManagerInterface::class)
@@ -55,7 +53,10 @@ return function (ContainerConfigurator $container): void {
     $services->set('doctrine.dbal.default_connection', Connection::class)
         ->factory([DoctrineSetup::class, 'createConnection']);
 
-    $services->set(UserRepository::class)->factory([DoctrineSetup::class, 'createUserRepository']);
+    $services->set(UserRepository::class)
+        ->factory([service('doctrine.orm.entity_manager'), 'getRepository'])
+        ->arg(0, User::class);
+
     $services->alias(UserRepositoryInterface::class, UserRepository::class)->public();
 
     // Security
@@ -80,8 +81,9 @@ return function (ContainerConfigurator $container): void {
     $services->set(NotifierFixture::class)->arg('$dispatcher', service('event_dispatcher'));
 
     // Events & Listeners
-    $services->set(SampleEventListener::class)->tag('kernel.event_listener', ['event' => SampleEvent::class]);
-    $services->set(NamedEventListener::class)->tag('kernel.event_listener', ['event' => 'named.event', 'method' => 'onNamedEvent']);
+    $services->set(TestEventListener::class)
+        ->tag('kernel.event_listener', ['event' => TestEvent::class, 'method' => 'onTestEvent'])
+        ->tag('kernel.event_listener', ['event' => 'named.event', 'method' => 'onNamedEvent']);
 
     // Logger
     $services->set('logger', ArrayLogger::class);

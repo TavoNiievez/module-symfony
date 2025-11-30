@@ -10,9 +10,9 @@ use Symfony\Component\Mailer\Event\MessageEvent;
 use Symfony\Component\Mailer\EventListener\MessageLoggerListener;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
-use Tests\Support\ManualKernelTestCase;
+use Tests\Support\KernelTestCase;
 
-class MailerAssertionsTest extends ManualKernelTestCase
+class MailerAssertionsTest extends KernelTestCase
 {
     use MailerAssertionsTrait;
 

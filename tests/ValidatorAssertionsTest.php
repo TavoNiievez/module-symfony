@@ -7,7 +7,7 @@ namespace Tests;
 use Codeception\Module\Symfony\ValidatorAssertionsTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use Tests\_app\Entity\ValidEntity;
+use Tests\_app\Entity\User;
 use Tests\Support\KernelTestCase;
 
 class ValidatorAssertionsTest extends KernelTestCase
@@ -16,7 +16,7 @@ class ValidatorAssertionsTest extends KernelTestCase
 
     public function testDontSeeViolatedConstraint(): void
     {
-        $user = ValidEntity::create('test@example.com', 'password123');
+        $user = User::create('test@example.com', 'password123');
 
         $this->dontSeeViolatedConstraint($user);
         $this->dontSeeViolatedConstraint($user, 'email');
@@ -33,7 +33,7 @@ class ValidatorAssertionsTest extends KernelTestCase
 
     public function testSeeViolatedConstraint(): void
     {
-        $user = ValidEntity::create('invalid_email', 'password123');
+        $user = User::create('invalid_email', 'password123');
 
         $this->seeViolatedConstraint($user);
         $this->seeViolatedConstraint($user, 'email');
@@ -47,7 +47,7 @@ class ValidatorAssertionsTest extends KernelTestCase
 
     public function testSeeViolatedConstraintCount(): void
     {
-        $user = ValidEntity::create('invalid_email', 'weak');
+        $user = User::create('invalid_email', 'weak');
 
         $this->seeViolatedConstraintsCount(2, $user);
         $this->seeViolatedConstraintsCount(1, $user, 'email');
@@ -60,7 +60,7 @@ class ValidatorAssertionsTest extends KernelTestCase
 
     public function testSeeViolatedConstraintMessageContains(): void
     {
-        $user = ValidEntity::create('invalid_email', 'weak');
+        $user = User::create('invalid_email', 'weak');
 
         $this->seeViolatedConstraintMessage('valid email', $user, 'email');
 

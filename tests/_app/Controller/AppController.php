@@ -20,9 +20,7 @@ use Symfony\Component\Validator\Constraints\Email as EmailConstraint;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Tests\_app\Event\NamedEvent;
-use Tests\_app\Event\OrphanEvent;
-use Tests\_app\Event\SampleEvent;
+use Tests\_app\Event\TestEvent;
 use Tests\_app\Mailer\RegistrationMailer;
 use Twig\Environment;
 use Psr\Log\LoggerInterface;
@@ -41,21 +39,21 @@ class AppController extends AbstractController
 
     public function dispatchEvent(EventDispatcherInterface $dispatcher): Response
     {
-        $dispatcher->dispatch(new SampleEvent());
+        $dispatcher->dispatch(new TestEvent());
 
         return new Response('Event dispatched');
     }
 
     public function dispatchNamedEvent(EventDispatcherInterface $dispatcher): Response
     {
-        $dispatcher->dispatch(new NamedEvent(), 'named.event');
+        $dispatcher->dispatch(new TestEvent(), 'named.event');
 
         return new Response('Named event dispatched');
     }
 
     public function dispatchOrphanEvent(EventDispatcherInterface $dispatcher): Response
     {
-        $dispatcher->dispatch(new OrphanEvent());
+        $dispatcher->dispatch(new TestEvent(), 'orphan.event');
 
         return new Response('Orphan event dispatched');
     }

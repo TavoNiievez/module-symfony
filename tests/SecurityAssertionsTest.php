@@ -16,7 +16,7 @@ class SecurityAssertionsTest extends KernelTestCase
 
     protected function grabSecurityService(): Security
     {
-        return new Security(self::getContainer());
+        return new Security($this->_getContainer());
     }
 
     public function testDontSeeAuthentication(): void

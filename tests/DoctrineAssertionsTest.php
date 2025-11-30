@@ -18,7 +18,7 @@ class DoctrineAssertionsTest extends KernelTestCase
 
     protected function _getEntityManager(): EntityManagerInterface
     {
-        return self::getContainer()->get('doctrine.orm.entity_manager');
+        return $this->_getContainer()->get('doctrine.orm.entity_manager');
     }
 
     public function testGrabNumRecords(): void

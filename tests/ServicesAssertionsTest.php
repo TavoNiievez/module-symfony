@@ -16,11 +16,6 @@ class ServicesAssertionsTest extends KernelTestCase
     protected array $persistentServices = [];
     protected array $permanentServices = [];
 
-    protected function _getContainer(): ContainerInterface
-    {
-        return self::getContainer();
-    }
-
     public function testGrabServiceReturnsSecurityHelper(): void
     {
         $securityHelper = $this->grabService('security.helper');

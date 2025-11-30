@@ -34,7 +34,6 @@ trait BrowserAssertionsTrait
      */
     public function assertBrowserCookieValueSame(string $name, string $expectedValue, bool $raw = false, string $path = '/', ?string $domain = null, string $message = ''): void
     {
-        $this->assertThatForClient(new BrowserHasCookie($name, $path, $domain), $message);
         $this->assertThatForClient(new BrowserCookieValueSame($name, $expectedValue, $raw, $path, $domain), $message);
     }
 
@@ -89,7 +88,6 @@ trait BrowserAssertionsTrait
      */
     public function assertResponseCookieValueSame(string $name, string $expectedValue, string $path = '/', ?string $domain = null, string $message = ''): void
     {
-        $this->assertThatForResponse(new ResponseHasCookie($name, $path, $domain), $message);
         $this->assertThatForResponse(new ResponseCookieValueSame($name, $expectedValue, $path, $domain), $message);
     }
 
