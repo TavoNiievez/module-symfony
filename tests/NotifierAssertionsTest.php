@@ -28,9 +28,8 @@ class NotifierAssertionsTest extends ManualKernelTestCase
     public function testNoNotificationsSent(): void
     {
         if (Kernel::VERSION_ID < 60200) {
-            $this->expectThrowable(AssertionFailedError::class, function () {
-                $this->dontSeeNotificationIsSent();
-            });
+            $this->expectException(AssertionFailedError::class);
+            $this->dontSeeNotificationIsSent();
             return;
         }
 
@@ -40,9 +39,8 @@ class NotifierAssertionsTest extends ManualKernelTestCase
     public function testNotificationSubjectAndTransportAssertions(): void
     {
         if (Kernel::VERSION_ID < 60200) {
-            $this->expectThrowable(\Error::class, function () {
-                $this->assertNotificationSubjectContains(new ChatMessage('test'), 'update');
-            });
+            $this->expectException(\Error::class);
+            $this->assertNotificationSubjectContains(new ChatMessage('test'), 'update');
             return;
         }
 
@@ -68,9 +66,8 @@ class NotifierAssertionsTest extends ManualKernelTestCase
     public function testQueuedAndSentNotifications(): void
     {
         if (Kernel::VERSION_ID < 60200) {
-            $this->expectThrowable(AssertionFailedError::class, function () {
-                $this->assertNotificationCount(1);
-            });
+            $this->expectException(AssertionFailedError::class);
+            $this->assertNotificationCount(1);
             return;
         }
 
@@ -91,19 +88,5 @@ class NotifierAssertionsTest extends ManualKernelTestCase
         $firstEvent = $this->getNotifierEvent();
         $this->assertInstanceOf(MessageEvent::class, $firstEvent);
         $this->assertNotificationIsNotQueued($firstEvent);
-    }
-
-    protected function expectThrowable(string $exception, callable $callback): void
-    {
-        try {
-            $callback();
-        } catch (\Throwable $e) {
-            if ($e instanceof $exception) {
-                $this->assertTrue(true);
-                return;
-            }
-            throw $e;
-        }
-        $this->fail("Expected exception $exception was not thrown");
     }
 }

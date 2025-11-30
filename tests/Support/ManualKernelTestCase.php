@@ -22,7 +22,6 @@ abstract class ManualKernelTestCase extends TestCase
     protected function tearDown(): void
     {
         $this->kernel->shutdown();
-        restore_exception_handler();
         parent::tearDown();
     }
 

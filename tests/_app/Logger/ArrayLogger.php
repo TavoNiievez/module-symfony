@@ -53,7 +53,7 @@ final class ArrayLogger extends AbstractLogger implements DebugLoggerInterface
     {
         return count(array_filter(
             $this->logs,
-            static fn (array $log): bool => $log['priority'] >= 400,
+            static fn(array $log): bool => $log['priority'] >= 400,
         ));
     }
 

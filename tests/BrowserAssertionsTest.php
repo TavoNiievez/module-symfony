@@ -32,7 +32,7 @@ class BrowserAssertionsTest extends KernelTestCase
 
     public function testAssertBrowserNotHasCookie(): void
     {
-        $this->client->getCookieJar()->clear('browser_cookie');
+        $this->client->getCookieJar()->expire('browser_cookie');
 
         $this->assertBrowserNotHasCookie('browser_cookie');
     }
