@@ -39,11 +39,6 @@ class EventsAssertionsTest extends KernelTestCase
         return $this->getProfile()->getCollector($name->value);
     }
 
-    protected function _getContainer(): ContainerInterface
-    {
-        return self::getContainer();
-    }
-
     private function getProfile(): \Symfony\Component\HttpKernel\Profiler\Profile
     {
         if ($this->client->getProfile() !== null) {

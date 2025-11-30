@@ -13,11 +13,6 @@ class SecurityAssertionsTest extends KernelTestCase
 {
     use SecurityAssertionsTrait;
 
-    protected function getService(string $serviceId): object
-    {
-        return self::getContainer()->get($serviceId);
-    }
-
     protected function grabSecurityService()
     {
         return new Security(self::getContainer());

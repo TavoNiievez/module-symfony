@@ -32,9 +32,9 @@ abstract class KernelTestCase extends BaseKernelTestCase
         return self::getContainer()->get($serviceId);
     }
 
-    protected function unpersistService(string $serviceName): void
+    protected function getService(string $serviceId): ?object
     {
-        // no-op for tests
+        return $this->grabService($serviceId);
     }
 
     protected function tearDown(): void

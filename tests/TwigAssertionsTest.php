@@ -22,11 +22,6 @@ class TwigAssertionsTest extends KernelTestCase
         $this->client->enableProfiler();
     }
 
-    protected function _getContainer(): ContainerInterface
-    {
-        return self::getContainer();
-    }
-
     public function testDontSeeRenderedTemplate(): void
     {
         $this->client->request('GET', '/register');

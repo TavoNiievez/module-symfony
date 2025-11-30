@@ -35,11 +35,6 @@ class FormAssertionsTest extends KernelTestCase
         return $profile->getCollector($name->value);
     }
 
-    protected function _getContainer(): ContainerInterface
-    {
-        return self::getContainer();
-    }
-
     public function testFormErrorAssertions(): void
     {
         $this->client->request('POST', '/form', [

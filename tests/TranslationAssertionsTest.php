@@ -22,11 +22,6 @@ class TranslationAssertionsTest extends KernelTestCase
         $this->client->enableProfiler();
     }
 
-    protected function _getContainer(): ContainerInterface
-    {
-        return self::getContainer();
-    }
-
     public function testDontSeeFallbackTranslations(): void
     {
         $this->client->request('GET', '/register');
