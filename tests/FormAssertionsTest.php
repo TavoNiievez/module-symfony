@@ -5,17 +5,12 @@ declare(strict_types=1);
 namespace Tests;
 
 use Codeception\Module\Symfony\FormAssertionsTrait;
-use Codeception\Module\Symfony\DataCollectorName;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
-use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Tests\Support\KernelTestCase;
 
 class FormAssertionsTest extends KernelTestCase
 {
     use FormAssertionsTrait;
 
-    protected array $kernelOptions = ['debug' => true];
     protected bool $profilerEnabled = true;
 
     protected function setUp(): void
@@ -24,30 +19,17 @@ class FormAssertionsTest extends KernelTestCase
         $this->client->request('GET', '/sample');
     }
 
-    public function testFormErrorAssertions(): void
-    {
-        $this->client->request('POST', '/form', [
-            'registration_form' => [
-                'email' => 'not-an-email',
-                'password' => '',
-            ],
-        ]);
-
-        $this->seeFormHasErrors();
-        $this->seeFormErrorMessage('email', 'valid email address');
-        $this->seeFormErrorMessages([
-            'email' => 'valid email address',
-            'password' => 'not be blank',
-        ]);
-    }
-
-    public function testFormValues(): void
+    public function testAssertFormValue(): void
     {
         $this->assertFormValue('#testForm', 'field1', 'value1');
+    }
+
+    public function testAssertNoFormValue(): void
+    {
         $this->assertNoFormValue('#testForm', 'missing_field');
     }
 
-    public function testFormWithoutErrors(): void
+    public function testDontSeeFormErrors(): void
     {
         $this->client->request('POST', '/form', [
             'registration_form' => [
@@ -57,5 +39,44 @@ class FormAssertionsTest extends KernelTestCase
         ]);
 
         $this->dontSeeFormErrors();
+    }
+
+    public function testSeeFormErrorMessage(): void
+    {
+        $this->client->request('POST', '/form', [
+            'registration_form' => [
+                'email' => 'not-an-email',
+                'password' => '',
+            ],
+        ]);
+
+        $this->seeFormErrorMessage('email', 'valid email address');
+    }
+
+    public function testSeeFormErrorMessages(): void
+    {
+        $this->client->request('POST', '/form', [
+            'registration_form' => [
+                'email' => 'not-an-email',
+                'password' => '',
+            ],
+        ]);
+
+        $this->seeFormErrorMessages([
+            'email' => 'valid email address',
+            'password' => 'not be blank',
+        ]);
+    }
+
+    public function testSeeFormHasErrors(): void
+    {
+        $this->client->request('POST', '/form', [
+            'registration_form' => [
+                'email' => 'not-an-email',
+                'password' => '',
+            ],
+        ]);
+
+        $this->seeFormHasErrors();
     }
 }

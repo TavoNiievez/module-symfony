@@ -17,7 +17,7 @@ class TimeAssertionsTest extends KernelTestCase
         $this->client->request('GET', '/register');
     }
 
-    public function testRequestTime(): void
+    public function testSeeRequestTimeIsLessThan(): void
     {
         $this->assertStringContainsString('register', $this->client->getRequest()->getPathInfo());
         $this->seeRequestTimeIsLessThan(400);

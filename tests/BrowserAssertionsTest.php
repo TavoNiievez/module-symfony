@@ -141,6 +141,11 @@ class BrowserAssertionsTest extends KernelTestCase
         $this->assertRouteSame('app_login');
     }
 
+    public function testRebootClientKernel(): void
+    {
+        $this->markTestSkipped('This method relies on Codeception\Lib\Connector\Symfony::rebootKernel(), which is not available in KernelBrowser.');
+    }
+
     public function testSeePageIsAvailable(): void
     {
         $this->seePageIsAvailable('/login');
