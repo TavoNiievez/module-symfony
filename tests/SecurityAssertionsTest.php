@@ -79,11 +79,11 @@ class SecurityAssertionsTest extends KernelTestCase
         $this->seeUserPasswordDoesNotNeedRehash();
     }
 
-    private function createTestUser(array $roles): \Tests\_app\Entity\TestUser
+    private function createTestUser(array $roles): \Tests\_app\Entity\User
     {
         $hasher = $this->grabPasswordHasherService();
-        $hashed = $hasher->hashPassword(new \Tests\_app\Entity\TestUser('tmp', ''), '123456');
+        $hashed = $hasher->hashPassword(\Tests\_app\Entity\User::create('tmp', ''), '123456');
 
-        return new \Tests\_app\Entity\TestUser('john_doe@gmail.com', $hashed, $roles);
+        return \Tests\_app\Entity\User::create('john_doe@gmail.com', $hashed, $roles);
     }
 }
