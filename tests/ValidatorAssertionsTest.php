@@ -14,11 +14,6 @@ class ValidatorAssertionsTest extends KernelTestCase
 {
     use ValidatorAssertionsTrait;
 
-    protected function _getContainer(): ContainerInterface
-    {
-        return self::getContainer();
-    }
-
     public function testDontSeeViolatedConstraint(): void
     {
         $user = ValidEntity::create('test@example.com', 'password123');

@@ -15,11 +15,12 @@ class FormAssertionsTest extends KernelTestCase
 {
     use FormAssertionsTrait;
 
+    protected array $kernelOptions = ['debug' => true];
+    protected bool $profilerEnabled = true;
+
     protected function setUp(): void
     {
-        static::bootKernel(['debug' => true]);
-        $this->client = new \Symfony\Bundle\FrameworkBundle\KernelBrowser(self::$kernel);
-        $this->client->enableProfiler();
+        parent::setUp();
         $this->client->request('GET', '/sample');
     }
 
@@ -33,11 +34,6 @@ class FormAssertionsTest extends KernelTestCase
         }
 
         return $profile->getCollector($name->value);
-    }
-
-    protected function _getContainer(): ContainerInterface
-    {
-        return self::getContainer();
     }
 
     public function testFormErrorAssertions(): void

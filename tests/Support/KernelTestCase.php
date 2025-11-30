@@ -10,11 +10,17 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase as BaseKernelTestCase;
 abstract class KernelTestCase extends BaseKernelTestCase
 {
     protected KernelBrowser $client;
+    protected array $kernelOptions = [];
+    protected bool $profilerEnabled = false;
 
     protected function setUp(): void
     {
-        self::bootKernel();
+        self::bootKernel($this->kernelOptions);
         $this->client = new KernelBrowser(self::$kernel);
+
+        if ($this->profilerEnabled) {
+            $this->client->enableProfiler();
+        }
     }
 
     protected static function getKernelClass(): string
@@ -32,9 +38,9 @@ abstract class KernelTestCase extends BaseKernelTestCase
         return self::getContainer()->get($serviceId);
     }
 
-    protected function unpersistService(string $serviceName): void
+    protected function getService(string $serviceId): ?object
     {
-        // no-op for tests
+        return $this->grabService($serviceId);
     }
 
     protected function tearDown(): void

@@ -21,11 +21,6 @@ class TimeAssertionsTest extends KernelTestCase
         $this->client->request('GET', '/register');
     }
 
-    protected function _getContainer(): ContainerInterface
-    {
-        return self::getContainer();
-    }
-
     public function testRequestTime(): void
     {
         $this->assertStringContainsString('register', $this->client->getRequest()->getPathInfo());
