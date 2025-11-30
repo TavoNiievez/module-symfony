@@ -10,7 +10,6 @@ use Codeception\Module\Symfony\LoggerAssertionsTrait;
 use Codeception\Module\Symfony\DataCollectorName;
 use PHPUnit\Framework\AssertionFailedError;
 use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
-use Symfony\Component\HttpKernel\DataCollector\LoggerDataCollector;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Tests\Support\KernelTestCase;
 
@@ -37,17 +36,13 @@ class LoggerAssertionsTest extends KernelTestCase
 
     protected function grabCollector(DataCollectorName $name, string $function): DataCollectorInterface
     {
-        if ($name === DataCollectorName::LOGGER) {
-            $collector = new LoggerDataCollector($this->grabService('logger'));
-            $collector->collect($this->client->getRequest(), $this->client->getResponse());
-            $collector->lateCollect();
-
-            return $collector;
+        $profile = $this->client->getProfile();
+        if (!$profile) {
+            /** @var Profiler $profiler */
+            $profiler = self::getContainer()->get('profiler');
+            $profile = $profiler->collect($this->client->getRequest(), $this->client->getResponse());
         }
 
-        /** @var Profiler $profiler */
-        $profiler = self::getContainer()->get('profiler');
-        $profile = $profiler->collect($this->client->getRequest(), $this->client->getResponse());
         return $profile->getCollector($name->value);
     }
 }

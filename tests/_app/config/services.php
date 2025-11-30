@@ -19,7 +19,6 @@ use Symfony\Component\Notifier\EventListener\NotificationLoggerListener;
 use Symfony\Component\Security\Core\User\UserPasswordHasherInterface;
 use Tests\_app\Command\DoctrineFixturesLoadCommand;
 use Tests\_app\Command\ExampleCommand;
-use Tests\_app\Command\HelloCommand;
 use Tests\_app\Controller\AppController;
 use Tests\_app\Doctrine\DoctrineSetup;
 use Tests\_app\Event\SampleEvent;
@@ -45,7 +44,6 @@ return function (ContainerConfigurator $container): void {
     $services->set(AppController::class);
 
     // Commands
-    $services->set(HelloCommand::class)->tag('console.command', ['command' => 'app:hello']);
     $services->set(ExampleCommand::class)->tag('console.command', ['command' => 'app:example-command']);
     $services->set(DoctrineFixturesLoadCommand::class)->tag('console.command', ['command' => 'doctrine:fixtures:load']);
 
