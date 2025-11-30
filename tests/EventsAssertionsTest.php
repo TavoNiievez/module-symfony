@@ -20,28 +20,12 @@ class EventsAssertionsTest extends KernelTestCase
 {
     use EventsAssertionsTrait;
 
-    protected function setUp(): void
-    {
-        // Must explicitly pass options to bootKernel, which KernelTestCase::setUp does not support directly if we want to change them.
-        // But the base class uses self::bootKernel(). We can set options before calling parent::setUp or just override.
-        // Actually, BaseKernelTestCase::bootKernel($options) works.
-        // Our Support\KernelTestCase::setUp() calls self::bootKernel().
-        // If we want debug=true, we might need to override setUp completely here or modify Support\KernelTestCase to accept options.
-        // For simplicity, I'll override setUp here.
-
-        static::bootKernel(['debug' => true]);
-        $this->client = new \Symfony\Bundle\FrameworkBundle\KernelBrowser(self::$kernel);
-        $this->client->enableProfiler();
-    }
+    protected array $kernelOptions = ['debug' => true];
+    protected bool $profilerEnabled = true;
 
     protected function grabCollector(DataCollectorName $name, string $function): DataCollectorInterface
     {
         return $this->getProfile()->getCollector($name->value);
-    }
-
-    protected function _getContainer(): ContainerInterface
-    {
-        return self::getContainer();
     }
 
     private function getProfile(): \Symfony\Component\HttpKernel\Profiler\Profile

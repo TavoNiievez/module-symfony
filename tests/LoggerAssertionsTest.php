@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests;
 
-require_once __DIR__ . '/_app/TestKernel.php';
-
 use Codeception\Module\Symfony\LoggerAssertionsTrait;
 use Codeception\Module\Symfony\DataCollectorName;
 use PHPUnit\Framework\AssertionFailedError;

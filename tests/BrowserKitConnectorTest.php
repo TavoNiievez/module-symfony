@@ -21,9 +21,4 @@ class BrowserKitConnectorTest extends TestCase
         $this->assertSame('Hello World!', $browser->getResponse()->getContent());
     }
 
-    protected function tearDown(): void
-    {
-        restore_exception_handler();
-        parent::tearDown();
-    }
 }

@@ -16,11 +16,6 @@ class DoctrineAssertionsTest extends KernelTestCase
 {
     use DoctrineAssertionsTrait;
 
-    protected function _getContainer(): ContainerInterface
-    {
-        return self::getContainer();
-    }
-
     protected function _getEntityManager(): EntityManagerInterface
     {
         return self::getContainer()->get('doctrine.orm.entity_manager');

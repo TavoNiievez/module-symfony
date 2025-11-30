@@ -15,17 +15,8 @@ class TranslationAssertionsTest extends KernelTestCase
 {
     use TranslationAssertionsTrait;
 
-    protected function setUp(): void
-    {
-        static::bootKernel(['debug' => true]);
-        $this->client = new \Symfony\Bundle\FrameworkBundle\KernelBrowser(self::$kernel);
-        $this->client->enableProfiler();
-    }
-
-    protected function _getContainer(): ContainerInterface
-    {
-        return self::getContainer();
-    }
+    protected array $kernelOptions = ['debug' => true];
+    protected bool $profilerEnabled = true;
 
     public function testDontSeeFallbackTranslations(): void
     {
