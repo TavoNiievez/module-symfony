@@ -1,38 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Codeception\Module\Symfony\DomCrawlerAssertionsTrait;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Tests\Support\KernelTestCase;
 
 class DomCrawlerAssertionsTest extends KernelTestCase
 {
     use DomCrawlerAssertionsTrait;
 
-    private KernelBrowser $client;
-
     protected function setUp(): void
     {
-        self::bootKernel();
-        $this->client = new KernelBrowser(self::$kernel);
+        parent::setUp();
         $this->client->request('GET', '/test_page');
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        restore_exception_handler();
-    }
-
-    protected function getClient(): KernelBrowser
-    {
-        return $this->client;
-    }
-
-    protected static function getKernelClass(): string
-    {
-        return \Tests\_app\TestKernel::class;
     }
 
     public function testAssertCheckboxChecked(): void

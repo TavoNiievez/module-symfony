@@ -268,7 +268,7 @@ trait BrowserAssertionsTrait
         $this->assertThat($request, new RequestAttributeValueSame('_route', $expectedRoute));
 
         foreach ($parameters as $key => $value) {
-            $this->assertThat($request, new RequestAttributeValueSame($key, (string)$value), $message);
+            $this->assertThat($request, new RequestAttributeValueSame($key, (string) $value), $message);
         }
     }
 

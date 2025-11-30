@@ -1,52 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Codeception\Module\Symfony\NotifierAssertionsTrait;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\AssertionFailedError;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Notifier\Event\MessageEvent;
+use Symfony\Component\Notifier\EventListener\NotificationLoggerListener;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Tests\_app\Notifier\NotifierFixture;
+use Tests\Support\ManualKernelTestCase;
 
-class NotifierAssertionsTest extends TestCase
+class NotifierAssertionsTest extends ManualKernelTestCase
 {
     use NotifierAssertionsTrait;
 
-    private KernelBrowser $client;
-
-    private \Tests\_app\TestKernel $kernel;
-
     protected function setUp(): void
     {
-        $this->kernel = new \Tests\_app\TestKernel('test', true);
-        $this->kernel->boot();
-        $this->client = new KernelBrowser($this->kernel);
-        $this->getService('notifier.notification_logger_listener')->reset();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->kernel->shutdown();
-        restore_exception_handler();
-        parent::tearDown();
-    }
-
-    protected function getClient(): KernelBrowser
-    {
-        return $this->client;
-    }
-
-    protected function getService(string $serviceId): object
-    {
-        $container = $this->kernel->getContainer();
-        if ($container->has('test.service_container')) {
-            $container = $container->get('test.service_container');
-        }
-
-        return $container->get($serviceId);
+        parent::setUp();
+        /** @var NotificationLoggerListener $logger */
+        $logger = $this->getService('notifier.notification_logger_listener');
+        $logger->reset();
     }
 
     public function testNoNotificationsSent(): void

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\_app\Notifier;
 
 use Symfony\Component\Notifier\Event\MessageEvent;

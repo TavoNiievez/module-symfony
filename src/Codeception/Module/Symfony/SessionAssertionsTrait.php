@@ -221,7 +221,7 @@ trait SessionAssertionsTrait
         $roles = $user->getRoles();
 
         if ($this->getSymfonyMajorVersion() >= 6 && ($this->config['authenticator'] ?? false) === true) {
-            $passport = new SelfValidatingPassport(new UserBadge($user->getUserIdentifier(), static fn () => $user));
+            $passport = new SelfValidatingPassport(new UserBadge($user->getUserIdentifier(), static fn() => $user));
             return $this->getAuthenticator()->createToken($passport, $firewallName);
         }
 

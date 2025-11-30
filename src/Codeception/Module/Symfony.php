@@ -349,8 +349,8 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         if (!file_exists($path)) {
             throw new ModuleRequireException(
                 self::class,
-                "Can't load Kernel from {$path}.\n" .
-                'Directory does not exist. Set `app_path` in your suite configuration to a valid application path.'
+                "Can't load Kernel from {$path}.\n"
+                . 'Directory does not exist. Set `app_path` in your suite configuration to a valid application path.'
             );
         }
 
@@ -367,8 +367,8 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
 
         throw new ModuleRequireException(
             self::class,
-            "Kernel class was not found at {$path}.\n" .
-            'Specify directory where file with Kernel class for your application is located with `app_path` parameter.'
+            "Kernel class was not found at {$path}.\n"
+            . 'Specify directory where file with Kernel class for your application is located with `app_path` parameter.'
         );
     }
 

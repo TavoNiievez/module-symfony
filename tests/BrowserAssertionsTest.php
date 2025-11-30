@@ -1,41 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Codeception\Module\Symfony\BrowserAssertionsTrait;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\BrowserKit\Cookie;
+use Tests\Support\KernelTestCase;
 
 class BrowserAssertionsTest extends KernelTestCase
 {
     use BrowserAssertionsTrait;
 
-    private KernelBrowser $client;
-
     protected function setUp(): void
     {
-        self::bootKernel();
-        $this->client = new KernelBrowser(self::$kernel);
+        parent::setUp();
         $this->client->enableProfiler();
         $this->client->followRedirects(false);
         $this->client->getCookieJar()->set(new Cookie('browser_cookie', 'value'));
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        restore_exception_handler();
-    }
-
-    protected function getClient(): KernelBrowser
-    {
-        return $this->client;
-    }
-
-    protected static function getKernelClass(): string
-    {
-        return \Tests\_app\TestKernel::class;
     }
 
     public function testAssertBrowserCookieValueSame(): void

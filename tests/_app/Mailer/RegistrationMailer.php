@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\_app\Mailer;
 
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;

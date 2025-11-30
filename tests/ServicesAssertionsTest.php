@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Codeception\Module\Symfony\ServicesAssertionsTrait;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Tests\Support\KernelTestCase;
 
 class ServicesAssertionsTest extends KernelTestCase
 {
@@ -15,27 +16,9 @@ class ServicesAssertionsTest extends KernelTestCase
     protected array $persistentServices = [];
     protected array $permanentServices = [];
 
-    private KernelBrowser $client;
-
-    protected function setUp(): void
-    {
-        self::bootKernel();
-        $this->client = new KernelBrowser(self::$kernel);
-    }
-
-    protected static function getKernelClass(): string
-    {
-        return \Tests\_app\TestKernel::class;
-    }
-
     protected function _getContainer(): ContainerInterface
     {
         return self::getContainer();
-    }
-
-    protected function getClient(): KernelBrowser
-    {
-        return $this->client;
     }
 
     public function testGrabServiceReturnsSecurityHelper(): void
@@ -56,11 +39,5 @@ class ServicesAssertionsTest extends KernelTestCase
         $this->unpersistService('router');
         $this->assertArrayNotHasKey('router', $this->persistentServices);
         $this->assertArrayNotHasKey('router', $this->permanentServices);
-    }
-
-    protected function tearDown(): void
-    {
-        restore_exception_handler();
-        parent::tearDown();
     }
 }
