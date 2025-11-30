@@ -24,18 +24,6 @@ class FormAssertionsTest extends KernelTestCase
         $this->client->request('GET', '/sample');
     }
 
-    protected function grabCollector(DataCollectorName $name, string $function): DataCollectorInterface
-    {
-        $profile = $this->client->getProfile();
-        if ($profile === false) {
-            /** @var Profiler $profiler */
-            $profiler = self::getContainer()->get('profiler');
-            $profile  = $profiler->collect($this->client->getRequest(), $this->client->getResponse());
-        }
-
-        return $profile->getCollector($name->value);
-    }
-
     public function testFormErrorAssertions(): void
     {
         $this->client->request('POST', '/form', [

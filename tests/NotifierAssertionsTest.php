@@ -11,9 +11,9 @@ use Symfony\Component\Notifier\Event\MessageEvent;
 use Symfony\Component\Notifier\EventListener\NotificationLoggerListener;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Tests\_app\Notifier\NotifierFixture;
-use Tests\Support\ManualKernelTestCase;
+use Tests\Support\KernelTestCase;
 
-class NotifierAssertionsTest extends ManualKernelTestCase
+class NotifierAssertionsTest extends KernelTestCase
 {
     use NotifierAssertionsTrait;
 

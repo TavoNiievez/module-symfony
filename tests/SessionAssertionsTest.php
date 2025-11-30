@@ -17,11 +17,6 @@ class SessionAssertionsTest extends KernelTestCase
     use SecurityAssertionsTrait;
     use SessionAssertionsTrait;
 
-    protected function _getContainer(): ContainerInterface
-    {
-        return self::getContainer();
-    }
-
     public function testAmLoggedInAsShowsDashboard(): void
     {
         $user = $this->getTestUser();
@@ -84,12 +79,12 @@ class SessionAssertionsTest extends KernelTestCase
 
     public function testSessionAssertions(): void
     {
-        if (self::getContainer()->has('session')) {
-            $session = self::getContainer()->get('session');
+        if ($this->_getContainer()->has('session')) {
+            $session = $this->_getContainer()->get('session');
         } else {
-            $factory = self::getContainer()->get('session.factory');
+            $factory = $this->_getContainer()->get('session.factory');
             $session = $factory->createSession();
-            self::getContainer()->set('session', $session);
+            $this->_getContainer()->set('session', $session);
         }
 
         $session->set('key1', 'value1');
@@ -107,7 +102,7 @@ class SessionAssertionsTest extends KernelTestCase
     private function getTestUser(): User
     {
         /** @var UserRepository $repository */
-        $repository = self::getContainer()->get(UserRepository::class);
+        $repository = $this->_getContainer()->get(UserRepository::class);
         $user = $repository->getByEmail('john_doe@gmail.com');
         $this->assertNotNull($user);
 

@@ -11,30 +11,22 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand('app:example-command', 'An example command.')]
-class ExampleCommand extends Command
+#[AsCommand('app:test-command', 'A test command.')]
+class TestCommand extends Command
 {
-    private const OPTION_SOMETHING = 'something';
-    private const OPTION_SHORT_SOMETHING = 's';
-
     protected function configure(): void
     {
-        $this->addOption(
-            self::OPTION_SOMETHING,
-            self::OPTION_SHORT_SOMETHING,
-            InputOption::VALUE_NONE,
-            'Give some output'
-        );
+        $this->addOption('opt', 'o', InputOption::VALUE_NONE, 'Option');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
-        if ($input->getOption(self::OPTION_SOMETHING)) {
-            $io->text('Bye world!');
+        if ($input->getOption('opt')) {
+            $io->text('Option selected');
         } else {
-            $io->text('Hello world!');
+            $io->text('No option');
         }
 
         return Command::SUCCESS;
