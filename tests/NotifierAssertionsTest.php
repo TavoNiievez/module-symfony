@@ -37,34 +37,6 @@ class NotifierAssertionsTest extends ManualKernelTestCase
         $this->dontSeeNotificationIsSent();
     }
 
-    public function testQueuedAndSentNotifications(): void
-    {
-        if (Kernel::VERSION_ID < 60200) {
-            $this->expectThrowable(AssertionFailedError::class, function () {
-                $this->assertNotificationCount(1);
-            });
-            return;
-        }
-
-        /** @var NotifierFixture $fixture */
-        $fixture = $this->getService(NotifierFixture::class);
-
-        $sentEvent = $fixture->sendNotification('Welcome notification', 'primary');
-        $queuedEvent = $fixture->sendNotification('Queued notification', 'queued', true);
-
-        $this->assertNotificationCount(1);
-        $this->assertNotificationCount(1, 'primary');
-        $this->assertQueuedNotificationCount(1);
-        $this->assertQueuedNotificationCount(1, 'queued');
-
-        $this->assertNotificationIsNotQueued($sentEvent);
-        $this->assertNotificationIsQueued($queuedEvent);
-
-        $firstEvent = $this->getNotifierEvent();
-        $this->assertInstanceOf(MessageEvent::class, $firstEvent);
-        $this->assertNotificationIsNotQueued($firstEvent);
-    }
-
     public function testNotificationSubjectAndTransportAssertions(): void
     {
         if (Kernel::VERSION_ID < 60200) {
@@ -91,6 +63,34 @@ class NotifierAssertionsTest extends ManualKernelTestCase
         $notifications = $this->grabSentNotifications();
         $this->assertCount(2, $notifications);
         $this->assertSame('chat', $this->getNotifierMessage(0)?->getTransport());
+    }
+
+    public function testQueuedAndSentNotifications(): void
+    {
+        if (Kernel::VERSION_ID < 60200) {
+            $this->expectThrowable(AssertionFailedError::class, function () {
+                $this->assertNotificationCount(1);
+            });
+            return;
+        }
+
+        /** @var NotifierFixture $fixture */
+        $fixture = $this->getService(NotifierFixture::class);
+
+        $sentEvent = $fixture->sendNotification('Welcome notification', 'primary');
+        $queuedEvent = $fixture->sendNotification('Queued notification', 'queued', true);
+
+        $this->assertNotificationCount(1);
+        $this->assertNotificationCount(1, 'primary');
+        $this->assertQueuedNotificationCount(1);
+        $this->assertQueuedNotificationCount(1, 'queued');
+
+        $this->assertNotificationIsNotQueued($sentEvent);
+        $this->assertNotificationIsQueued($queuedEvent);
+
+        $firstEvent = $this->getNotifierEvent();
+        $this->assertInstanceOf(MessageEvent::class, $firstEvent);
+        $this->assertNotificationIsNotQueued($firstEvent);
     }
 
     protected function expectThrowable(string $exception, callable $callback): void

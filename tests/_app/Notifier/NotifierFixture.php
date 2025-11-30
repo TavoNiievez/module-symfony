@@ -10,9 +10,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class NotifierFixture
 {
-    public function __construct(private EventDispatcherInterface $dispatcher)
-    {
-    }
+    public function __construct(private EventDispatcherInterface $dispatcher) {}
 
     public function sendNotification(string $subject, ?string $transport = null, bool $queued = false): MessageEvent
     {

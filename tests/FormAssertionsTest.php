@@ -40,12 +40,6 @@ class FormAssertionsTest extends KernelTestCase
         return self::getContainer();
     }
 
-    public function testFormValues(): void
-    {
-        $this->assertFormValue('#testForm', 'field1', 'value1');
-        $this->assertNoFormValue('#testForm', 'missing_field');
-    }
-
     public function testFormErrorAssertions(): void
     {
         $this->client->request('POST', '/form', [
@@ -61,6 +55,12 @@ class FormAssertionsTest extends KernelTestCase
             'email' => 'valid email address',
             'password' => 'not be blank',
         ]);
+    }
+
+    public function testFormValues(): void
+    {
+        $this->assertFormValue('#testForm', 'field1', 'value1');
+        $this->assertNoFormValue('#testForm', 'missing_field');
     }
 
     public function testFormWithoutErrors(): void

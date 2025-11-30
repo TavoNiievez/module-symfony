@@ -13,8 +13,7 @@ class TestUser implements UserInterface, PasswordAuthenticatedUserInterface
         private string $userIdentifier,
         private string $password,
         private array $roles = []
-    ) {
-    }
+    ) {}
 
     public function getUserIdentifier(): string
     {
@@ -41,7 +40,5 @@ class TestUser implements UserInterface, PasswordAuthenticatedUserInterface
         return null;
     }
 
-    public function eraseCredentials(): void
-    {
-    }
+    public function eraseCredentials(): void {}
 }

@@ -34,6 +34,7 @@ use Tests\_app\Repository\UserRepositoryInterface;
 use Tests\_app\Security\TestUserProvider;
 use Twig\Profiler\Profile;
 use Twig\Extension\ProfilerExtension;
+
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return function (ContainerConfigurator $container): void {
