@@ -5,16 +5,7 @@ declare(strict_types=1);
 namespace Tests\_app;
 
 require_once __DIR__ . '/Security/SecurityBundleSecurityAlias.php';
-require_once __DIR__ . '/Command/TestCommands.php';
-require_once __DIR__ . '/Event/TestEvents.php';
-require_once __DIR__ . '/Listener/TestListeners.php';
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DriverManager;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\ORMSetup;
-use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
@@ -23,14 +14,10 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Tests\_app\Entity\User;
-use Tests\_app\Repository\UserRepository;
 
 class TestKernel extends BaseKernel
 {
     use MicroKernelTrait;
-
-    private static ?EntityManagerInterface $entityManager = null;
 
     public function registerBundles(): iterable
     {
@@ -104,60 +91,5 @@ class TestKernel extends BaseKernel
     {
         // Load routes from config file
         $routes->import(__DIR__ . '/config/routes.php');
-    }
-
-    public static function createEntityManager(): EntityManagerInterface
-    {
-        if (self::$entityManager !== null && self::$entityManager->isOpen()) {
-            return self::$entityManager;
-        }
-
-        if (method_exists(ORMSetup::class, 'createAttributeMetadataConfig')) {
-            $config = ORMSetup::createAttributeMetadataConfig([__DIR__ . '/Entity'], true);
-        } else {
-            $config = ORMSetup::createAttributeMetadataConfiguration([__DIR__ . '/Entity'], true);
-        }
-
-        $proxyDir = sys_get_temp_dir() . '/doctrine-proxies';
-        if (!is_dir($proxyDir)) {
-            mkdir($proxyDir, 0777, true);
-        }
-        $config->setProxyDir($proxyDir);
-        $config->setProxyNamespace('TestsProxies');
-        $config->setAutoGenerateProxyClasses(true);
-
-        $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
-
-        if (method_exists(EntityManager::class, 'create')) {
-            $entityManager = EntityManager::create($connection, $config);
-        } else {
-            $entityManager = new EntityManager($connection, $config);
-        }
-
-        $schemaTool = new SchemaTool($entityManager);
-        $metadata = [$entityManager->getClassMetadata(User::class)];
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
-
-        $user = User::create('john_doe@gmail.com', 'secret', ['ROLE_TEST']);
-        $entityManager->persist($user);
-        $entityManager->flush();
-        $entityManager->clear();
-
-        self::$entityManager = $entityManager;
-
-        return $entityManager;
-    }
-
-    public static function createConnection(): Connection
-    {
-        return self::createEntityManager()->getConnection();
-    }
-
-    public static function createUserRepository(): UserRepository
-    {
-        /** @var UserRepository $repository */
-        $repository = self::createEntityManager()->getRepository(User::class);
-        return $repository;
     }
 }
