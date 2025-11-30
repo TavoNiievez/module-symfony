@@ -101,7 +101,7 @@ trait HttpClientAssertionsTrait
     ): void {
         $matchingRequests = array_filter(
             $this->getHttpClientTraces($httpClientId, __FUNCTION__),
-            fn (array $trace): bool => $this->matchesUrlAndMethod($trace, $unexpectedUrl, $unexpectedMethod)
+            fn(array $trace): bool => $this->matchesUrlAndMethod($trace, $unexpectedUrl, $unexpectedMethod)
         );
 
         $this->assertEmpty(

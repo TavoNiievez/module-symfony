@@ -33,7 +33,7 @@ trait DoctrineAssertionsTrait
         $repository = $em->getRepository($entityClass);
 
         if ($criteria === []) {
-            return (int)$repository->createQueryBuilder('e')
+            return (int) $repository->createQueryBuilder('e')
                 ->select('count(e.id)')
                 ->getQuery()
                 ->getSingleScalarResult();
