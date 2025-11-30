@@ -45,7 +45,7 @@ class ValidatorAssertionsTest extends KernelTestCase
         $this->seeViolatedConstraint($user, 'password', Assert\Length::class);
     }
 
-    public function testSeeViolatedConstraintCount(): void
+    public function testSeeViolatedConstraintsCount(): void
     {
         $user = User::create('invalid_email', 'weak');
 
@@ -58,7 +58,7 @@ class ValidatorAssertionsTest extends KernelTestCase
         $this->seeViolatedConstraintsCount(0, $user, 'email');
     }
 
-    public function testSeeViolatedConstraintMessageContains(): void
+    public function testSeeViolatedConstraintMessage(): void
     {
         $user = User::create('invalid_email', 'weak');
 

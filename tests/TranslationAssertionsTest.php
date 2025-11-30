@@ -11,7 +11,6 @@ class TranslationAssertionsTest extends KernelTestCase
 {
     use TranslationAssertionsTrait;
 
-    protected array $kernelOptions = ['debug' => true];
     protected bool $profilerEnabled = true;
 
     public function testDontSeeFallbackTranslations(): void

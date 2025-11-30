@@ -27,6 +27,11 @@ class DomCrawlerAssertionsTest extends KernelTestCase
         $this->assertCheckboxNotChecked('nonExistentCheckbox', 'This checkbox should not be checked.');
     }
 
+    public function testAssertInputValueNotSame(): void
+    {
+        $this->assertInputValueNotSame('exampleInput', 'Wrong Value', 'The input value should not be "Wrong Value".');
+    }
+
     public function testAssertInputValueSame(): void
     {
         $this->assertInputValueSame('exampleInput', 'Expected Value', 'The input value should be "Expected Value".');
@@ -50,6 +55,16 @@ class DomCrawlerAssertionsTest extends KernelTestCase
     public function testAssertSelectorNotExists(): void
     {
         $this->assertSelectorNotExists('.non-existent-class', 'This selector should not exist.');
+    }
+
+    public function testAssertSelectorTextContains(): void
+    {
+        $this->assertSelectorTextContains('h1', 'Test', 'The <h1> tag should contain "Test".');
+    }
+
+    public function testAssertSelectorTextNotContains(): void
+    {
+        $this->assertSelectorTextNotContains('h1', 'Error', 'The <h1> tag should not contain "Error".');
     }
 
     public function testAssertSelectorTextSame(): void

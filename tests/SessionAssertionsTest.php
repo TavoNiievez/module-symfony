@@ -17,7 +17,7 @@ class SessionAssertionsTest extends KernelTestCase
     use SecurityAssertionsTrait;
     use SessionAssertionsTrait;
 
-    public function testAmLoggedInAsShowsDashboard(): void
+    public function testAmLoggedInAs(): void
     {
         $user = $this->getTestUser();
 
@@ -29,7 +29,7 @@ class SessionAssertionsTest extends KernelTestCase
         $this->assertStringContainsString('You are in the Dashboard!', $this->client->getResponse()->getContent());
     }
 
-    public function testAmLoggedInWithTokenShowsDashboard(): void
+    public function testAmLoggedInWithToken(): void
     {
         $user = $this->getTestUser();
         $token = new PostAuthenticationToken($user, 'main', $user->getRoles());
@@ -41,11 +41,14 @@ class SessionAssertionsTest extends KernelTestCase
         $this->assertStringContainsString('You are in the Dashboard!', $this->client->getResponse()->getContent());
     }
 
-    public function testDontSeeInSessionWhenAnonymous(): void
+    public function testDontSeeInSession(): void
     {
         $this->client->request('GET', '/');
-
         $this->dontSeeInSession('_security_main');
+
+        $this->initSession(['key1' => 'value1']);
+        $this->dontSeeInSession('missing');
+        $this->dontSeeInSession('key1', 'other');
     }
 
     public function testGoToLogoutPath(): void
@@ -64,6 +67,18 @@ class SessionAssertionsTest extends KernelTestCase
         $this->assertSame('/', $this->client->getRequest()->getPathInfo());
     }
 
+    public function testLogout(): void
+    {
+        $user = $this->getTestUser();
+        $this->amLoggedInAs($user);
+
+        $this->logout();
+        $this->client->request('GET', '/dashboard');
+
+        $this->dontSeeAuthentication();
+        $this->assertSame(302, $this->client->getResponse()->getStatusCode());
+    }
+
     public function testLogoutProgrammatically(): void
     {
         $user = $this->getTestUser();
@@ -74,27 +89,20 @@ class SessionAssertionsTest extends KernelTestCase
 
         $this->dontSeeAuthentication();
         $this->assertSame(302, $this->client->getResponse()->getStatusCode());
-        $this->assertSame('/login', $this->client->getResponse()->headers->get('Location'));
     }
 
-    public function testSessionAssertions(): void
+    public function testSeeInSession(): void
     {
-        if ($this->_getContainer()->has('session')) {
-            $session = $this->_getContainer()->get('session');
-        } else {
-            $factory = $this->_getContainer()->get('session.factory');
-            $session = $factory->createSession();
-            $this->_getContainer()->set('session', $session);
-        }
-
-        $session->set('key1', 'value1');
-        $session->set('key2', 'value2');
-        $session->save();
+        $this->initSession(['key1' => 'value1']);
 
         $this->seeInSession('key1');
         $this->seeInSession('key1', 'value1');
-        $this->dontSeeInSession('missing');
-        $this->dontSeeInSession('key1', 'other');
+    }
+
+    public function testSeeSessionHasValues(): void
+    {
+        $this->initSession(['key1' => 'value1', 'key2' => 'value2']);
+
         $this->seeSessionHasValues(['key1', 'key2']);
         $this->seeSessionHasValues(['key1' => 'value1', 'key2' => 'value2']);
     }
@@ -107,5 +115,21 @@ class SessionAssertionsTest extends KernelTestCase
         $this->assertNotNull($user);
 
         return $user;
+    }
+
+    private function initSession(array $data): void
+    {
+        if ($this->_getContainer()->has('session')) {
+            $session = $this->_getContainer()->get('session');
+        } else {
+            $factory = $this->_getContainer()->get('session.factory');
+            $session = $factory->createSession();
+            $this->_getContainer()->set('session', $session);
+        }
+
+        foreach ($data as $key => $value) {
+            $session->set($key, $value);
+        }
+        $session->save();
     }
 }

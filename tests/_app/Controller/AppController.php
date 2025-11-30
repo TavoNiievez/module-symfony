@@ -27,8 +27,6 @@ use Psr\Log\LoggerInterface;
 
 class AppController extends AbstractController
 {
-    // --- Test Actions ---
-
     public function deprecated(LoggerInterface $logger): Response
     {
         trigger_error('Deprecated endpoint', E_USER_DEPRECATED);
@@ -211,8 +209,6 @@ class AppController extends AbstractController
             'message' => 'The request was well-formed but could not be processed.',
         ], Response::HTTP_UNPROCESSABLE_ENTITY);
     }
-
-    // --- Security Actions ---
 
     public function dashboard(TokenStorageInterface $tokenStorage): Response
     {

@@ -21,12 +21,8 @@ class ConsoleAssertionsTest extends KernelTestCase
 
         $output = $this->runSymfonyConsoleCommand('app:test-command', ['-o' => true]);
         $this->assertStringContainsString('Option selected', $output);
-    }
 
-    public function testRunSymfonyConsoleCommandWithQuietOption(): void
-    {
         $output = $this->runSymfonyConsoleCommand('app:test-command', ['-q']);
-
         $this->assertSame('', $output);
     }
 }
