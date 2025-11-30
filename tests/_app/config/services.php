@@ -21,6 +21,7 @@ use Tests\_app\Command\DoctrineFixturesLoadCommand;
 use Tests\_app\Command\ExampleCommand;
 use Tests\_app\Command\HelloCommand;
 use Tests\_app\Controller\AppController;
+use Tests\_app\Doctrine\DoctrineSetup;
 use Tests\_app\Event\SampleEvent;
 use Tests\_app\HttpClient\MockResponseFactory;
 use Tests\_app\Listener\NamedEventListener;
@@ -31,7 +32,6 @@ use Tests\_app\Notifier\NotifierFixture;
 use Tests\_app\Repository\UserRepository;
 use Tests\_app\Repository\UserRepositoryInterface;
 use Tests\_app\Security\TestUserProvider;
-use Tests\_app\TestKernel;
 use Twig\Profiler\Profile;
 use Twig\Extension\ProfilerExtension;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -50,13 +50,13 @@ return function (ContainerConfigurator $container): void {
 
     // Doctrine
     $services->set('doctrine.orm.entity_manager', EntityManagerInterface::class)
-        ->factory([TestKernel::class, 'createEntityManager']);
+        ->factory([DoctrineSetup::class, 'createEntityManager']);
     $services->alias('doctrine.orm.default_entity_manager', 'doctrine.orm.entity_manager')->public();
 
     $services->set('doctrine.dbal.default_connection', Connection::class)
-        ->factory([TestKernel::class, 'createConnection']);
+        ->factory([DoctrineSetup::class, 'createConnection']);
 
-    $services->set(UserRepository::class)->factory([TestKernel::class, 'createUserRepository']);
+    $services->set(UserRepository::class)->factory([DoctrineSetup::class, 'createUserRepository']);
     $services->alias(UserRepositoryInterface::class, UserRepository::class)->public();
 
     // Security
