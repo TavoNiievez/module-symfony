@@ -31,20 +31,4 @@ class LoggerAssertionsTest extends KernelTestCase
         $this->client->request('GET', '/sample');
         $this->dontSeeDeprecations();
     }
-
-    protected function grabCollector(DataCollectorName $name, string $function): DataCollectorInterface
-    {
-        $profile = $this->client->getProfile();
-        if (!$profile) {
-            /** @var Profiler $profiler */
-            $profiler = self::getContainer()->get('profiler');
-            $profile = $profiler->collect($this->client->getRequest(), $this->client->getResponse());
-        }
-
-        if (!$profile) {
-            self::fail('Profiler is disabled or failed to collect data.');
-        }
-
-        return $profile->getCollector($name->value);
-    }
 }

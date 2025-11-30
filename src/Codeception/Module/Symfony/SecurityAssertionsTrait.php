@@ -169,27 +169,9 @@ trait SecurityAssertionsTrait
 
     protected function grabPasswordHasherService(): UserPasswordHasherInterface
     {
-        foreach (['security.password_hasher', 'security.user_password_hasher', UserPasswordHasherInterface::class] as $serviceId) {
-            try {
-                /** @var UserPasswordHasherInterface $hasher */
-                $hasher = $this->getService($serviceId);
-                return $hasher;
-            } catch (ServiceNotFoundException $exception) {
-                // Try next service identifier.
-            }
-        }
-
-        if (method_exists($this, '_getContainer')) { // @phpstan-ignore-line
-            $container = $this->_getContainer();
-            if ($container->has('security.password_hasher_factory')) {
-                /** @var PasswordHasherFactoryInterface $factory */
-                $factory = $container->get('security.password_hasher_factory');
-
-                return new UserPasswordHasher($factory);
-            }
-        }
-
-        Assert::fail('Unable to locate a password hasher service.');
+        /** @var UserPasswordHasherInterface $hasher */
+        $hasher = $this->grabService(UserPasswordHasherInterface::class);
+        return $hasher;
     }
 
     private function isGrantedSafely(string $attribute, bool $failOnException = false): bool

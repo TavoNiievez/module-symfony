@@ -8,9 +8,9 @@ use Codeception\Module\Symfony\MailerAssertionsTrait;
 use Codeception\Module\Symfony\MimeAssertionsTrait;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mailer\EventListener\MessageLoggerListener;
-use Tests\Support\ManualKernelTestCase;
+use Tests\Support\KernelTestCase;
 
-class MimeAssertionsTest extends ManualKernelTestCase
+class MimeAssertionsTest extends KernelTestCase
 {
     use MailerAssertionsTrait;
     use MimeAssertionsTrait;
