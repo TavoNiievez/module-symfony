@@ -6,6 +6,7 @@ namespace Tests;
 
 use Codeception\Lib\Connector\Symfony as SymfonyConnector;
 use PHPUnit\Framework\TestCase;
+
 class BrowserKitConnectorTest extends TestCase
 {
     public function testRequestReturnsSuccessfulResponse(): void

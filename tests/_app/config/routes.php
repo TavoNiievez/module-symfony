@@ -9,26 +9,26 @@ use Tests\_app\Controller\AppController;
 
 return function (RoutingConfigurator $routes): void {
     // AppController routes
-    $routes->add('index', '/')->controller(AppController::class . '::index');
-    $routes->add('sample', '/sample')->controller(AppController::class . '::sample');
-    $routes->add('request_attr', '/request_attr')->controller(AppController::class . '::requestWithAttribute');
-    $routes->add('response_cookie', '/response_cookie')->controller(AppController::class . '::responseWithCookie');
-    $routes->add('response_json', '/response_json')->controller(AppController::class . '::responseJsonFormat');
-    $routes->add('test_page', '/test_page')->controller(AppController::class . '::testPage');
-    $routes->add('unprocessable_entity', '/unprocessable_entity')->controller(AppController::class . '::unprocessableEntity');
-    $routes->add('redirect', '/redirect')->controller(AppController::class . '::redirectToSample');
-    $routes->add('redirect_home', '/redirect_home')->controller(AppController::class . '::redirectToHome');
-    $routes->add('unprocessable', '/unprocessable')->controller(AppController::class . '::unprocessable');
-    $routes->add('session', '/session')->controller(AppController::class . '::session');
     $routes->add('deprecated', '/deprecated')->controller(AppController::class . '::deprecated');
-    $routes->add('send_email', '/send-email')->controller(AppController::class . '::sendEmail');
-    $routes->add('translation', '/translation')->controller(AppController::class . '::translation');
-    $routes->add('twig', '/twig')->controller(AppController::class . '::twig');
     $routes->add('dispatch_event', '/dispatch-event')->controller(AppController::class . '::dispatchEvent');
     $routes->add('dispatch_named_event', '/dispatch-named-event')->controller(AppController::class . '::dispatchNamedEvent');
     $routes->add('dispatch_orphan_event', '/dispatch-orphan-event')->controller(AppController::class . '::dispatchOrphanEvent');
     $routes->add('form_handler', '/form')->controller(AppController::class . '::form');
     $routes->add('http_client', '/http-client')->controller(AppController::class . '::httpClientRequests');
+    $routes->add('index', '/')->controller(AppController::class . '::index');
+    $routes->add('redirect', '/redirect')->controller(AppController::class . '::redirectToSample');
+    $routes->add('redirect_home', '/redirect_home')->controller(AppController::class . '::redirectToHome');
+    $routes->add('request_attr', '/request_attr')->controller(AppController::class . '::requestWithAttribute');
+    $routes->add('response_cookie', '/response_cookie')->controller(AppController::class . '::responseWithCookie');
+    $routes->add('response_json', '/response_json')->controller(AppController::class . '::responseJsonFormat');
+    $routes->add('sample', '/sample')->controller(AppController::class . '::sample');
+    $routes->add('send_email', '/send-email')->controller(AppController::class . '::sendEmail');
+    $routes->add('session', '/session')->controller(AppController::class . '::session');
+    $routes->add('test_page', '/test_page')->controller(AppController::class . '::testPage');
+    $routes->add('translation', '/translation')->controller(AppController::class . '::translation');
+    $routes->add('twig', '/twig')->controller(AppController::class . '::twig');
+    $routes->add('unprocessable', '/unprocessable')->controller(AppController::class . '::unprocessable');
+    $routes->add('unprocessable_entity', '/unprocessable_entity')->controller(AppController::class . '::unprocessableEntity');
 
     // Security Actions
     $routes->add('app_login', '/login')->controller(AppController::class . '::login');

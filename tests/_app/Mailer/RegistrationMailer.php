@@ -10,9 +10,7 @@ use Symfony\Component\Mime\Address;
 
 class RegistrationMailer
 {
-    public function __construct(private MailerInterface $mailer)
-    {
-    }
+    public function __construct(private MailerInterface $mailer) {}
 
     public function sendConfirmationEmail(string $recipient): void
     {

@@ -18,12 +18,6 @@ class LoggerAssertionsTest extends KernelTestCase
 {
     use LoggerAssertionsTrait;
 
-    public function testDontSeeDeprecations(): void
-    {
-        $this->client->request('GET', '/sample');
-        $this->dontSeeDeprecations();
-    }
-
     public function testDeprecationsAreReported(): void
     {
         $this->client->request('GET', '/deprecated');
@@ -33,6 +27,12 @@ class LoggerAssertionsTest extends KernelTestCase
         } catch (AssertionFailedError $error) {
             $this->assertStringContainsString('deprecation', $error->getMessage());
         }
+    }
+
+    public function testDontSeeDeprecations(): void
+    {
+        $this->client->request('GET', '/sample');
+        $this->dontSeeDeprecations();
     }
 
     protected function grabCollector(DataCollectorName $name, string $function): DataCollectorInterface

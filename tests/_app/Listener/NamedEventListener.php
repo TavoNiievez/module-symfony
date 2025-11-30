@@ -8,7 +8,5 @@ use Tests\_app\Event\NamedEvent;
 
 class NamedEventListener
 {
-    public function onNamedEvent(NamedEvent $event): void
-    {
-    }
+    public function onNamedEvent(NamedEvent $event): void {}
 }

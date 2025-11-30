@@ -8,7 +8,5 @@ use Tests\_app\Event\SampleEvent;
 
 class SampleEventListener
 {
-    public function __invoke(SampleEvent $event): void
-    {
-    }
+    public function __invoke(SampleEvent $event): void {}
 }

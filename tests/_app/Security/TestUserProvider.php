@@ -13,9 +13,7 @@ use Tests\_app\Repository\UserRepository;
 
 class TestUserProvider implements UserProviderInterface
 {
-    public function __construct(private UserRepository $repository)
-    {
-    }
+    public function __construct(private UserRepository $repository) {}
 
     public function loadUserByIdentifier(string $identifier): UserInterface
     {

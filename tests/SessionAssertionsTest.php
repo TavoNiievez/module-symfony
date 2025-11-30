@@ -46,28 +46,6 @@ class SessionAssertionsTest extends KernelTestCase
         $this->assertStringContainsString('You are in the Dashboard!', $this->client->getResponse()->getContent());
     }
 
-    public function testSessionAssertions(): void
-    {
-        if (self::getContainer()->has('session')) {
-            $session = self::getContainer()->get('session');
-        } else {
-            $factory = self::getContainer()->get('session.factory');
-            $session = $factory->createSession();
-            self::getContainer()->set('session', $session);
-        }
-
-        $session->set('key1', 'value1');
-        $session->set('key2', 'value2');
-        $session->save();
-
-        $this->seeInSession('key1');
-        $this->seeInSession('key1', 'value1');
-        $this->dontSeeInSession('missing');
-        $this->dontSeeInSession('key1', 'other');
-        $this->seeSessionHasValues(['key1', 'key2']);
-        $this->seeSessionHasValues(['key1' => 'value1', 'key2' => 'value2']);
-    }
-
     public function testDontSeeInSessionWhenAnonymous(): void
     {
         $this->client->request('GET', '/');
@@ -102,6 +80,28 @@ class SessionAssertionsTest extends KernelTestCase
         $this->dontSeeAuthentication();
         $this->assertSame(302, $this->client->getResponse()->getStatusCode());
         $this->assertSame('/login', $this->client->getResponse()->headers->get('Location'));
+    }
+
+    public function testSessionAssertions(): void
+    {
+        if (self::getContainer()->has('session')) {
+            $session = self::getContainer()->get('session');
+        } else {
+            $factory = self::getContainer()->get('session.factory');
+            $session = $factory->createSession();
+            self::getContainer()->set('session', $session);
+        }
+
+        $session->set('key1', 'value1');
+        $session->set('key2', 'value2');
+        $session->save();
+
+        $this->seeInSession('key1');
+        $this->seeInSession('key1', 'value1');
+        $this->dontSeeInSession('missing');
+        $this->dontSeeInSession('key1', 'other');
+        $this->seeSessionHasValues(['key1', 'key2']);
+        $this->seeSessionHasValues(['key1' => 'value1', 'key2' => 'value2']);
     }
 
     private function getTestUser(): User

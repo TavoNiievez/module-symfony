@@ -33,7 +33,7 @@ class DoctrineSetup
 
         $proxyDir = sys_get_temp_dir() . '/doctrine-proxies';
         if (!is_dir($proxyDir)) {
-            mkdir($proxyDir, 0777, true);
+            mkdir($proxyDir, 0o777, true);
         }
         $config->setProxyDir($proxyDir);
         $config->setProxyNamespace('TestsProxies');

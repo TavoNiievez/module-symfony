@@ -29,24 +29,6 @@ class MailerAssertionsTest extends ManualKernelTestCase
         $this->dontSeeEmailIsSent();
     }
 
-    public function testQueuedEmailAssertions(): void
-    {
-        $queuedEmail = (new Email())
-            ->from('queued@example.com')
-            ->to('queued@example.com');
-        $envelope = new Envelope(new Address('queued@example.com'), [new Address('queued@example.com')]);
-        $queuedEvent = new MessageEvent($queuedEmail, $envelope, 'smtp', true);
-
-        /** @var MessageLoggerListener $logger */
-        $logger = $this->getService('mailer.message_logger_listener');
-        $logger->onMessage($queuedEvent);
-
-        $this->assertQueuedEmailCount(1);
-        $this->assertEmailIsQueued($queuedEvent);
-        $this->assertEmailCount(0);
-        $this->assertQueuedEmailCount(1, 'smtp', 'Queued emails can be counted by transport');
-    }
-
     public function testMailerEventAssertionsAgainstSentEmail(): void
     {
         $this->client->request('GET', '/send-email');
@@ -65,6 +47,24 @@ class MailerAssertionsTest extends ManualKernelTestCase
 
         $emails = $this->grabSentEmails();
         $this->assertCount(1, $emails);
+    }
+
+    public function testQueuedEmailAssertions(): void
+    {
+        $queuedEmail = (new Email())
+            ->from('queued@example.com')
+            ->to('queued@example.com');
+        $envelope = new Envelope(new Address('queued@example.com'), [new Address('queued@example.com')]);
+        $queuedEvent = new MessageEvent($queuedEmail, $envelope, 'smtp', true);
+
+        /** @var MessageLoggerListener $logger */
+        $logger = $this->getService('mailer.message_logger_listener');
+        $logger->onMessage($queuedEvent);
+
+        $this->assertQueuedEmailCount(1);
+        $this->assertEmailIsQueued($queuedEvent);
+        $this->assertEmailCount(0);
+        $this->assertQueuedEmailCount(1, 'smtp', 'Queued emails can be counted by transport');
     }
 
     public function testTransportSpecificMailerEvents(): void

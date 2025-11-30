@@ -50,7 +50,7 @@ class SecurityAssertionsTest extends KernelTestCase
     {
         $user = $this->createTestUser(['ROLE_USER']);
         $this->client->loginUser($user);
-        $this->client->getCookieJar()->set(new Cookie('REMEMBERME', 'test-remember')); 
+        $this->client->getCookieJar()->set(new Cookie('REMEMBERME', 'test-remember'));
 
         $this->seeRememberedAuthentication();
     }
