@@ -1,43 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Codeception\Module\Symfony\FormAssertionsTrait;
 use Codeception\Module\Symfony\DataCollectorName;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
+use Tests\Support\KernelTestCase;
 
 class FormAssertionsTest extends KernelTestCase
 {
     use FormAssertionsTrait;
 
-    private KernelBrowser $client;
-
     protected function setUp(): void
     {
-        self::bootKernel(['debug' => true]);
-        $this->client = new KernelBrowser(self::$kernel);
+        static::bootKernel(['debug' => true]);
+        $this->client = new \Symfony\Bundle\FrameworkBundle\KernelBrowser(self::$kernel);
         $this->client->enableProfiler();
         $this->client->request('GET', '/sample');
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        restore_exception_handler();
-    }
-
-    protected function getClient(): KernelBrowser
-    {
-        return $this->client;
-    }
-
-    protected static function getKernelClass(): string
-    {
-        return \Tests\_app\TestKernel::class;
     }
 
     protected function grabCollector(DataCollectorName $name, string $function): DataCollectorInterface
@@ -55,11 +38,6 @@ class FormAssertionsTest extends KernelTestCase
     protected function _getContainer(): ContainerInterface
     {
         return self::getContainer();
-    }
-
-    protected function grabService(string $serviceId): object
-    {
-        return self::getContainer()->get($serviceId);
     }
 
     public function testFormValues(): void

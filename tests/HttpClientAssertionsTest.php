@@ -1,54 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 require_once __DIR__ . '/_app/TestKernel.php';
 
 use Codeception\Module\Symfony\DataCollectorName;
 use Codeception\Module\Symfony\HttpClientAssertionsTrait;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
+use Tests\Support\KernelTestCase;
 
 class HttpClientAssertionsTest extends KernelTestCase
 {
     use HttpClientAssertionsTrait;
 
-    private KernelBrowser $client;
-
     protected function setUp(): void
     {
-        self::bootKernel();
-        $this->client = new KernelBrowser(self::$kernel);
+        parent::setUp();
         $this->client->enableProfiler();
         $this->client->request('GET', '/http-client');
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        restore_exception_handler();
-    }
-
-    protected static function getKernelClass(): string
-    {
-        return \Tests\_app\TestKernel::class;
-    }
-
-    protected function getClient(): KernelBrowser
-    {
-        return $this->client;
-    }
-
-    protected function grabService(string $serviceId): object
-    {
-        return self::getContainer()->get($serviceId);
-    }
-
-    protected function unpersistService(string $serviceName): void
-    {
-        // no-op for tests
     }
 
     public function testHttpClientAssertionsAcrossClients(): void

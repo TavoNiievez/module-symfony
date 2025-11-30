@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\_app\Entity;
 
 use Symfony\Component\Validator\Constraints as Assert;

@@ -1,39 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Codeception\Module\Symfony\SecurityAssertionsTrait;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Bundle\SecurityBundle\Security;
+use Tests\Support\KernelTestCase;
 
 class SecurityAssertionsTest extends KernelTestCase
 {
     use SecurityAssertionsTrait;
-
-    private KernelBrowser $client;
-
-    protected function setUp(): void
-    {
-        self::bootKernel();
-        $this->client = new KernelBrowser(self::$kernel);
-    }
-
-    protected static function getKernelClass(): string
-    {
-        return \Tests\_app\TestKernel::class;
-    }
-
-    protected function getClient(): KernelBrowser
-    {
-        return $this->client;
-    }
-
-    protected function grabService(string $serviceId): object
-    {
-        return self::getContainer()->get($serviceId);
-    }
 
     protected function getService(string $serviceId): object
     {
@@ -107,11 +85,5 @@ class SecurityAssertionsTest extends KernelTestCase
         $hashed = $hasher->hashPassword(new \Tests\_app\Entity\TestUser('tmp', ''), '123456');
 
         return new \Tests\_app\Entity\TestUser('john_doe@gmail.com', $hashed, $roles);
-    }
-
-    protected function tearDown(): void
-    {
-        restore_exception_handler();
-        parent::tearDown();
     }
 }

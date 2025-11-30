@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\_app\Security;
 
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;

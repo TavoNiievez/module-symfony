@@ -1,43 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Codeception\Module\Symfony\SessionAssertionsTrait;
 use Codeception\Module\Symfony\SecurityAssertionsTrait;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;
 use Tests\_app\Entity\User;
 use Tests\_app\Repository\UserRepository;
+use Tests\Support\KernelTestCase;
 
 class SessionAssertionsTest extends KernelTestCase
 {
     use SecurityAssertionsTrait;
     use SessionAssertionsTrait;
-
-    private KernelBrowser $client;
-
-    protected function setUp(): void
-    {
-        self::bootKernel();
-        $this->client = new KernelBrowser(self::$kernel);
-    }
-
-    protected static function getKernelClass(): string
-    {
-        return \Tests\_app\TestKernel::class;
-    }
-
-    protected function getClient(): KernelBrowser
-    {
-        return $this->client;
-    }
-
-    protected function grabService(string $serviceId): object
-    {
-        return self::getContainer()->get($serviceId);
-    }
 
     protected function _getContainer(): ContainerInterface
     {
@@ -134,11 +112,5 @@ class SessionAssertionsTest extends KernelTestCase
         $this->assertNotNull($user);
 
         return $user;
-    }
-
-    protected function tearDown(): void
-    {
-        restore_exception_handler();
-        parent::tearDown();
     }
 }

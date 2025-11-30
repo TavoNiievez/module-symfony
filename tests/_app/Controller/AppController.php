@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\_app\Controller;
 
 use Psr\Log\LoggerInterface;
@@ -14,6 +16,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Validator\Constraints\Email as EmailConstraint;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -24,8 +27,10 @@ use Tests\_app\Event\SampleEvent;
 use Tests\_app\Mailer\RegistrationMailer;
 use Twig\Environment;
 
-class TestController extends AbstractController
+class AppController extends AbstractController
 {
+    // --- Test Actions ---
+
     public function index(): Response
     {
         return new Response('Hello World!');
@@ -220,5 +225,52 @@ HTML;
         $status = $form->isSubmitted() && !$form->isValid() ? 422 : 200;
 
         return new Response($content, $status);
+    }
+
+    // --- Security Actions ---
+
+    public function login(Environment $twig): Response
+    {
+        return new Response($twig->render('security/login.html.twig'));
+    }
+
+    public function register(Request $request, Environment $twig): Response
+    {
+        if ($request->isMethod('POST')) {
+            return new RedirectResponse('/dashboard');
+        }
+
+        return new Response($twig->render('security/register.html.twig'));
+    }
+
+    public function logout(Request $request, TokenStorageInterface $tokenStorage): RedirectResponse
+    {
+        $tokenStorage->setToken(null);
+
+        $sessionName = null;
+        if ($request->hasSession()) {
+            $session = $request->getSession();
+            $sessionName = $session->getName();
+            $session->invalidate();
+        }
+
+        $response = new RedirectResponse('/');
+        if ($sessionName !== null) {
+            $response->headers->clearCookie($sessionName);
+        }
+        $response->headers->clearCookie('MOCKSESSID');
+        $response->headers->clearCookie('REMEMBERME');
+
+        return $response;
+    }
+
+    public function dashboard(TokenStorageInterface $tokenStorage): Response
+    {
+        $token = $tokenStorage->getToken();
+        if ($token === null || !is_object($token->getUser())) {
+            return new RedirectResponse('/login');
+        }
+
+        return new Response('You are in the Dashboard!');
     }
 }

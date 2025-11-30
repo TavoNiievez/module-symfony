@@ -1,29 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Codeception\Module\Symfony\ConsoleAssertionsTrait;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Tests\_app\Command\DoctrineFixturesLoadCommand;
+use Tests\Support\KernelTestCase;
 
 class ConsoleAssertionsTest extends KernelTestCase
 {
     use ConsoleAssertionsTrait;
-
-    protected static function getKernelClass(): string
-    {
-        return \Tests\_app\TestKernel::class;
-    }
-
-    protected function grabService(string $serviceId): object
-    {
-        return self::getContainer()->get($serviceId);
-    }
-
-    protected function unpersistService(string $serviceName): void
-    {
-        // no-op for tests
-    }
 
     public function testRunSymfonyConsoleCommand(): void
     {
@@ -45,11 +32,5 @@ class ConsoleAssertionsTest extends KernelTestCase
 
         $this->assertSame('', $output);
         $this->assertSame(1, DoctrineFixturesLoadCommand::runs());
-    }
-
-    protected function tearDown(): void
-    {
-        restore_exception_handler();
-        parent::tearDown();
     }
 }

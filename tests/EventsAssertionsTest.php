@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Codeception\Module\Symfony\EventsAssertionsTrait;
 use Codeception\Module\Symfony\DataCollectorName;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
@@ -14,29 +14,24 @@ use Tests\_app\Event\OrphanEvent;
 use Tests\_app\Event\SampleEvent;
 use Tests\_app\Listener\NamedEventListener;
 use Tests\_app\Listener\SampleEventListener;
+use Tests\Support\KernelTestCase;
 
 class EventsAssertionsTest extends KernelTestCase
 {
     use EventsAssertionsTrait;
 
-    private KernelBrowser $client;
-
     protected function setUp(): void
     {
-        parent::setUp();
-        self::bootKernel(['debug' => true]);
-        $this->client = new KernelBrowser(self::$kernel);
+        // Must explicitly pass options to bootKernel, which KernelTestCase::setUp does not support directly if we want to change them.
+        // But the base class uses self::bootKernel(). We can set options before calling parent::setUp or just override.
+        // Actually, BaseKernelTestCase::bootKernel($options) works.
+        // Our Support\KernelTestCase::setUp() calls self::bootKernel().
+        // If we want debug=true, we might need to override setUp completely here or modify Support\KernelTestCase to accept options.
+        // For simplicity, I'll override setUp here.
+
+        static::bootKernel(['debug' => true]);
+        $this->client = new \Symfony\Bundle\FrameworkBundle\KernelBrowser(self::$kernel);
         $this->client->enableProfiler();
-    }
-
-    protected static function getKernelClass(): string
-    {
-        return \Tests\_app\TestKernel::class;
-    }
-
-    protected function getClient(): KernelBrowser
-    {
-        return $this->client;
     }
 
     protected function grabCollector(DataCollectorName $name, string $function): DataCollectorInterface
@@ -49,11 +44,6 @@ class EventsAssertionsTest extends KernelTestCase
         return self::getContainer();
     }
 
-    protected function grabService(string $serviceId): object
-    {
-        return self::getContainer()->get($serviceId);
-    }
-
     private function getProfile(): \Symfony\Component\HttpKernel\Profiler\Profile
     {
         if ($this->client->getProfile() !== null) {
@@ -64,12 +54,6 @@ class EventsAssertionsTest extends KernelTestCase
         $profiler = self::getContainer()->get('profiler');
 
         return $profiler->collect($this->client->getRequest(), $this->client->getResponse());
-    }
-
-    protected function tearDown(): void
-    {
-        restore_exception_handler();
-        parent::tearDown();
     }
 
     public function testEventDispatchingAndListeners(): void

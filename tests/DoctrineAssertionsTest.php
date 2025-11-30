@@ -1,28 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Codeception\Module\Symfony\DoctrineAssertionsTrait;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Tests\_app\Entity\User;
 use Tests\_app\Repository\UserRepositoryInterface;
 use Tests\_app\Repository\UserRepository;
+use Tests\Support\KernelTestCase;
 
 class DoctrineAssertionsTest extends KernelTestCase
 {
     use DoctrineAssertionsTrait;
-
-    protected static function getKernelClass(): string
-    {
-        return \Tests\_app\TestKernel::class;
-    }
-
-    protected function grabService(string $serviceId): object
-    {
-        return self::getContainer()->get($serviceId);
-    }
 
     protected function _getContainer(): ContainerInterface
     {
@@ -32,11 +24,6 @@ class DoctrineAssertionsTest extends KernelTestCase
     protected function _getEntityManager(): EntityManagerInterface
     {
         return self::getContainer()->get('doctrine.orm.entity_manager');
-    }
-
-    protected function unpersistService(string $serviceName): void
-    {
-        // no-op for tests
     }
 
     public function testGrabNumRecords(): void
@@ -65,11 +52,5 @@ class DoctrineAssertionsTest extends KernelTestCase
     public function testSeeNumRecords(): void
     {
         $this->seeNumRecords(1, User::class);
-    }
-
-    protected function tearDown(): void
-    {
-        restore_exception_handler();
-        parent::tearDown();
     }
 }
