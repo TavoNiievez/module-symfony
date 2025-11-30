@@ -39,7 +39,6 @@ abstract class KernelTestCase extends BaseKernelTestCase
 
     protected function tearDown(): void
     {
-        restore_exception_handler();
         parent::tearDown();
     }
 }

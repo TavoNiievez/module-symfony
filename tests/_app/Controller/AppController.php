@@ -179,16 +179,6 @@ class AppController extends AbstractController
         return new Response('Email sent');
     }
 
-    public function session(Request $request): Response
-    {
-        $session = $request->getSession();
-        $session->set('key1', 'value1');
-        $session->set('key2', 'value2');
-        $session->save();
-
-        return new Response('Session');
-    }
-
     public function testPage(): Response
     {
         $html = <<<HTML
@@ -214,11 +204,6 @@ class AppController extends AbstractController
     public function twig(Environment $twig): Response
     {
         return new Response($twig->render('home.html.twig'));
-    }
-
-    public function unprocessable(): Response
-    {
-        return new Response('Unprocessable', 422);
     }
 
     public function unprocessableEntity(): JsonResponse
