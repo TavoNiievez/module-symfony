@@ -56,7 +56,7 @@ class AppController extends AbstractController
         return new Response('Orphan event dispatched');
     }
 
-    public function form(Request $request, FormFactoryInterface $formFactory): Response
+    public function form(Request $request, FormFactoryInterface $formFactory, Environment $twig): Response
     {
         $builder = $formFactory->createNamedBuilder('registration_form', options: ['csrf_protection' => false]);
         $builder->add('email', EmailType::class, [
@@ -69,21 +69,9 @@ class AppController extends AbstractController
 
         $form->handleRequest($request);
 
-        $content = <<<HTML
-            <html>
-              <body>
-                <form name="{$form->getName()}" method="post">
-                  <input type="email" name="registration_form[email]" />
-                  <input type="password" name="registration_form[password]" />
-                  <button type="submit">Submit</button>
-                </form>
-              </body>
-            </html>
-            HTML;
-
         $status = $form->isSubmitted() && !$form->isValid() ? 422 : 200;
 
-        return new Response($content, $status);
+        return new Response($twig->render('security/register.html.twig', ['action' => '']), $status);
     }
 
     public function httpClientRequests(
@@ -145,25 +133,10 @@ class AppController extends AbstractController
         return $response;
     }
 
-    public function sample(Request $request): Response
+    public function sample(Request $request, Environment $twig): Response
     {
         $request->attributes->set('foo', 'bar');
-        $html = <<<HTML
-            <html>
-              <head><title>Test Page</title></head>
-              <body>
-                <input type="checkbox" name="agree" checked="checked">
-                <input type="checkbox" name="subscribe">
-                <input type="text" name="username" value="john">
-                <input type="text" name="empty">
-                <form id="testForm" name="testForm" method="post">
-                  <input type="text" name="field1" value="value1">
-                </form>
-                <div id="greeting">Hello World</div>
-              </body>
-            </html>
-            HTML;
-        $response = new Response($html, 200, ['X-Test' => '1']);
+        $response = new Response($twig->render('sample.html.twig'), 200, ['X-Test' => '1']);
         $response->headers->setCookie(new Cookie('response_cookie', 'yum'));
         return $response;
     }
@@ -175,20 +148,9 @@ class AppController extends AbstractController
         return new Response('Email sent');
     }
 
-    public function testPage(): Response
+    public function testPage(Environment $twig): Response
     {
-        $html = <<<HTML
-            <html>
-              <head><title>Test Page</title></head>
-              <body>
-                <h1>Test Page</h1>
-                <input type="checkbox" name="exampleCheckbox" checked="checked" />
-                <input type="text" name="exampleInput" value="Expected Value" />
-              </body>
-            </html>
-            HTML;
-
-        return new Response($html);
+        return new Response($twig->render('test_page.html.twig'));
     }
 
     public function translation(TranslatorInterface $translator): Response

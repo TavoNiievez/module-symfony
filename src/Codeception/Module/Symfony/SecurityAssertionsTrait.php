@@ -176,14 +176,14 @@ trait SecurityAssertionsTrait
 
     private function isGrantedSafely(string $attribute, bool $failOnException = false): bool
     {
-        try {
-            return $this->grabSecurityService()->isGranted($attribute);
-        } catch (AuthenticationCredentialsNotFoundException $exception) {
+        if ($this->grabSecurityService()->getUser() === null) {
             if ($failOnException) {
-                Assert::fail($exception->getMessage());
+                Assert::fail('The token storage contains no authentication token. One will be created once you log in.');
             }
 
             return false;
         }
+
+        return $this->grabSecurityService()->isGranted($attribute);
     }
 }

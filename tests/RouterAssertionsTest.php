@@ -12,10 +12,6 @@ use Tests\Support\KernelTestCase;
 class RouterAssertionsTest extends KernelTestCase
 {
     use RouterAssertionsTrait;
-    use ServicesAssertionsTrait;
-
-    protected array $persistentServices = [];
-    protected array $permanentServices = [];
 
     public function testAmOnAction(): void
     {

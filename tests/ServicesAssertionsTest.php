@@ -11,11 +11,6 @@ use Tests\Support\KernelTestCase;
 
 class ServicesAssertionsTest extends KernelTestCase
 {
-    use ServicesAssertionsTrait;
-
-    protected array $persistentServices = [];
-    protected array $permanentServices = [];
-
     public function testGrabService(): void
     {
         $securityHelper = $this->grabService('security.helper');

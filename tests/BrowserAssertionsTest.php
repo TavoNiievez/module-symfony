@@ -170,4 +170,5 @@ class BrowserAssertionsTest extends KernelTestCase
 
         $this->assertResponseRedirects('/dashboard');
     }
+
 }

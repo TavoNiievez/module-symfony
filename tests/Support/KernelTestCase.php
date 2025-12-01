@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use Codeception\Module\Symfony\DataCollectorName;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -15,9 +16,17 @@ use Tests\_app\TestKernel;
 
 abstract class KernelTestCase extends TestCase
 {
+    use ServicesAssertionsTrait;
+
     protected KernelBrowser $client;
     protected TestKernel $kernel;
     protected bool $profilerEnabled = false;
+
+    /** @var array<string, object> */
+    protected array $persistentServices = [];
+
+    /** @var array<string, object> */
+    protected array $permanentServices = [];
 
     protected function setUp(): void
     {
@@ -44,24 +53,6 @@ abstract class KernelTestCase extends TestCase
     protected function getClient(): KernelBrowser
     {
         return $this->client;
-    }
-
-    protected function getService(string $serviceId): ?object
-    {
-        $container = $this->_getContainer();
-        if ($container->has($serviceId)) {
-            return $container->get($serviceId);
-        }
-        return null;
-    }
-
-    protected function grabService(string $serviceId): object
-    {
-        $service = $this->getService($serviceId);
-        if ($service === null) {
-            throw new \RuntimeException("Service '$serviceId' not found.");
-        }
-        return $service;
     }
 
     protected function _getContainer(): ContainerInterface
