@@ -170,4 +170,12 @@ class BrowserAssertionsTest extends KernelTestCase
 
         $this->assertResponseRedirects('/dashboard');
     }
+
+    public function submitForm($selector, array $params, $button = null): void
+    {
+        $node = $this->getClient()->getCrawler()->filter($selector);
+        $this->assertNotEmpty($node, sprintf('Form "%s" not found.', $selector));
+        $form = $node->form();
+        $this->getClient()->submit($form, $params);
+    }
 }

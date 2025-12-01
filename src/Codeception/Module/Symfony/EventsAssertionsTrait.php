@@ -6,6 +6,7 @@ namespace Codeception\Module\Symfony;
 
 use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpKernel\DataCollector\EventDataCollector;
+use Symfony\Component\VarDumper\Cloner\Data;
 
 use function array_column;
 use function array_merge;
@@ -196,13 +197,15 @@ trait EventsAssertionsTrait
         $eventCollector = $this->grabEventCollector(__FUNCTION__);
         $orphanedEvents = $eventCollector->getOrphanedEvents($this->getDefaultDispatcher());
 
-        $orphanedEvents = is_array($orphanedEvents)
-            ? array_values($orphanedEvents)
-            : $orphanedEvents->getValue(true);
+        if ($orphanedEvents instanceof Data) {
+            $orphanedEvents = $orphanedEvents->getValue(true);
+        }
 
         if (!is_array($orphanedEvents)) {
             return [];
         }
+
+        $orphanedEvents = array_values($orphanedEvents);
 
         if ($orphanedEvents !== [] && isset($orphanedEvents[0]) && is_array($orphanedEvents[0])) {
             /** @var list<string> */

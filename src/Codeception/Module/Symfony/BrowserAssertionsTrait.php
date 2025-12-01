@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Codeception\Module\Symfony;
 
 use PHPUnit\Framework\Constraint\Constraint;
+use PHPUnit\Framework\Constraint\LogicalAnd;
 use PHPUnit\Framework\Constraint\LogicalNot;
 use Symfony\Component\BrowserKit\Test\Constraint\BrowserCookieValueSame;
 use Symfony\Component\BrowserKit\Test\Constraint\BrowserHasCookie;
@@ -34,7 +35,10 @@ trait BrowserAssertionsTrait
      */
     public function assertBrowserCookieValueSame(string $name, string $expectedValue, bool $raw = false, string $path = '/', ?string $domain = null, string $message = ''): void
     {
-        $this->assertThatForClient(new BrowserCookieValueSame($name, $expectedValue, $raw, $path, $domain), $message);
+        $this->assertThatForClient(LogicalAnd::fromConstraints(
+            new BrowserHasCookie($name, $path, $domain),
+            new BrowserCookieValueSame($name, $expectedValue, $raw, $path, $domain)
+        ), $message);
     }
 
     /**
@@ -88,7 +92,10 @@ trait BrowserAssertionsTrait
      */
     public function assertResponseCookieValueSame(string $name, string $expectedValue, string $path = '/', ?string $domain = null, string $message = ''): void
     {
-        $this->assertThatForResponse(new ResponseCookieValueSame($name, $expectedValue, $path, $domain), $message);
+        $this->assertThatForResponse(LogicalAnd::fromConstraints(
+            new ResponseHasCookie($name, $path, $domain),
+            new ResponseCookieValueSame($name, $expectedValue, $path, $domain)
+        ), $message);
     }
 
     /**
@@ -360,16 +367,8 @@ trait BrowserAssertionsTrait
             $params[$name . $key] = $value;
         }
 
-        if (method_exists($this, 'submitForm')) { // @phpstan-ignore-line
-            $button = sprintf('%s_submit', $name);
-            $this->submitForm($selector, $params, $button);
-            return;
-        }
-
-        $node = $this->getClient()->getCrawler()->filter($selector);
-        $this->assertNotEmpty($node, sprintf('Form "%s" not found.', $selector));
-        $form = $node->form();
-        $this->getClient()->submit($form, $params);
+        $button = sprintf('%s_submit', $name);
+        $this->submitForm($selector, $params, $button);
     }
 
     protected function assertThatForClient(Constraint $constraint, string $message = ''): void
