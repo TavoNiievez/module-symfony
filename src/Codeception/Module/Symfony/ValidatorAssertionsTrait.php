@@ -71,7 +71,7 @@ trait ValidatorAssertionsTrait
         $violations = $this->getViolationsForSubject($subject, $propertyPath);
         $containsExpected = false;
         foreach ($violations as $violation) {
-            if ($violation->getPropertyPath() === $propertyPath && str_contains((string)$violation->getMessage(), $expected)) {
+            if ($violation->getPropertyPath() === $propertyPath && str_contains((string) $violation->getMessage(), $expected)) {
                 $containsExpected = true;
                 break;
             }
@@ -89,10 +89,10 @@ trait ValidatorAssertionsTrait
         $violations = iterator_to_array($violations);
 
         if ($constraint !== null) {
-            return (array)array_filter(
+            return (array) array_filter(
                 $violations,
-                static fn (ConstraintViolationInterface $violation): bool => get_class((object)$violation->getConstraint()) === $constraint &&
-                    ($propertyPath === null || $violation->getPropertyPath() === $propertyPath)
+                static fn(ConstraintViolationInterface $violation): bool => get_class((object) $violation->getConstraint()) === $constraint
+                    && ($propertyPath === null || $violation->getPropertyPath() === $propertyPath)
             );
         }
 

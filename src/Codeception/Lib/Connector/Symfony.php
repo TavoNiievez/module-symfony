@@ -16,8 +16,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
-
-use function codecept_debug;
+use function function_exists;
 
 /**
  * @property KernelInterface $kernel
@@ -73,7 +72,9 @@ class Symfony extends HttpKernelBrowser
             try {
                 $this->container->set($name, $service);
             } catch (InvalidArgumentException $e) {
-                codecept_debug("[Symfony] Can't set persistent service {$name}: {$e->getMessage()}");
+                if (function_exists('codecept_debug')) {
+                    codecept_debug("[Symfony] Can't set persistent service {$name}: {$e->getMessage()}");
+                }
             }
         }
 
