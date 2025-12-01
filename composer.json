@@ -73,6 +73,12 @@
             "Codeception\\": "src/Codeception/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests",
+            "Tests\\_app\\": "tests/_app"
+        }
+    },
     "config": {
         "sort-packages": true
     },

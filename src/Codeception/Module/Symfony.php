@@ -35,7 +35,6 @@ use Codeception\TestInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\AssertionFailedError;
-use ReflectionClass;
 use ReflectionException;
 use Symfony\Bridge\Twig\DataCollector\TwigDataCollector;
 use Symfony\Bundle\SecurityBundle\DataCollector\SecurityDataCollector;
@@ -56,7 +55,6 @@ use Symfony\Component\Mailer\DataCollector\MessageDataCollector;
 use Symfony\Component\Notifier\DataCollector\NotificationDataCollector;
 use Symfony\Component\Translation\DataCollector\TranslationDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
-
 use function array_keys;
 use function array_map;
 use function array_unique;
@@ -64,14 +62,12 @@ use function array_values;
 use function class_exists;
 use function codecept_root_dir;
 use function count;
+use function extension_loaded;
 use function file_exists;
 use function implode;
-use function in_array;
-use function extension_loaded;
 use function ini_get;
 use function ini_set;
 use function is_object;
-use function iterator_to_array;
 use function sprintf;
 
 /**
@@ -349,8 +345,8 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         if (!file_exists($path)) {
             throw new ModuleRequireException(
                 self::class,
-                "Can't load Kernel from {$path}.\n" .
-                'Directory does not exist. Set `app_path` in your suite configuration to a valid application path.'
+                "Can't load Kernel from {$path}.\n"
+                . 'Directory does not exist. Set `app_path` in your suite configuration to a valid application path.'
             );
         }
 
@@ -367,8 +363,8 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
 
         throw new ModuleRequireException(
             self::class,
-            "Kernel class was not found at {$path}.\n" .
-            'Specify directory where file with Kernel class for your application is located with `app_path` parameter.'
+            "Kernel class was not found at {$path}.\n"
+            . 'Specify directory where file with Kernel class for your application is located with `app_path` parameter.'
         );
     }
 

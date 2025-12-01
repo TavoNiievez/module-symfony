@@ -6,7 +6,6 @@ namespace Codeception\Module\Symfony;
 
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\Assert;
-
 use function interface_exists;
 use function is_object;
 use function is_subclass_of;
@@ -33,7 +32,7 @@ trait DoctrineAssertionsTrait
         $repository = $em->getRepository($entityClass);
 
         if ($criteria === []) {
-            return (int)$repository->createQueryBuilder('e')
+            return (int) $repository->createQueryBuilder('e')
                 ->select('count(e.id)')
                 ->getQuery()
                 ->getSingleScalarResult();

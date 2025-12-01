@@ -68,14 +68,20 @@ jobs:
         env:
           MATRIX_SYMFONY: ${{ matrix.symfony }}
         run: |
-          composer require --no-update \
+          sed -i 's/\^5.4 | \^6.4 | \^7.3/${{ env.COMP_SYMFONY }}/g' composer.json
+
+          if [[ "${{ env.COMP_SYMFONY }}" == "5.4.*" ]]; then
+            sed -i 's/"doctrine\/orm": "\^3.5"/"doctrine\/orm": "^2.14"/g' composer.json
+          fi
+
+          composer require --dev --no-update \
             symfony/{finder,yaml,console,event-dispatcher,css-selector,dom-crawler,browser-kit}:${{ env.COMP_SYMFONY }} \
             vlucas/phpdotenv \
             codeception/module-asserts:"3.*" \
             codeception/module-doctrine:"3.*"
 
           if [[ "$MATRIX_SYMFONY" == "6.4wApi" ]]; then
-            composer require codeception/module-rest="3.*" --no-update
+            composer require codeception/module-rest="3.*" --no-update --dev
           fi
 
           composer update --prefer-dist --no-progress
@@ -87,6 +93,9 @@ jobs:
       - name: Run PHP-CS-Fixer
         if: *only_sf_latest
         run: composer cs-check
+
+      - name: Run module tests
+        run: vendor/bin/phpunit tests
 
       - name: Run Composer Audit
         if: *only_sf_latest
