@@ -293,7 +293,9 @@ trait BrowserAssertionsTrait
      */
     public function rebootClientKernel(): void
     {
-        $this->getClient()->rebootKernel();
+        if (method_exists($this->getClient(), 'rebootKernel')) { // @phpstan-ignore function.alreadyNarrowedType
+            $this->getClient()->rebootKernel();
+        }
     }
 
     /**
@@ -367,7 +369,7 @@ trait BrowserAssertionsTrait
         }
 
         $node = $this->getClient()->getCrawler()->filter($selector);
-        $this->assertNotEmpty($node, sprintf('Form "%s" not found.', $selector));
+        $this->assertGreaterThan(0, count($node), sprintf('Form "%s" not found.', $selector));
         $form = $node->form();
         $this->getClient()->submit($form, $params);
     }

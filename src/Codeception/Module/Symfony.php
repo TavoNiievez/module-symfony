@@ -18,6 +18,7 @@ use Codeception\Module\Symfony\DomCrawlerAssertionsTrait;
 use Codeception\Module\Symfony\EventsAssertionsTrait;
 use Codeception\Module\Symfony\FormAssertionsTrait;
 use Codeception\Module\Symfony\HttpClientAssertionsTrait;
+use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
 use Codeception\Module\Symfony\LoggerAssertionsTrait;
 use Codeception\Module\Symfony\MailerAssertionsTrait;
 use Codeception\Module\Symfony\MimeAssertionsTrait;
@@ -151,6 +152,7 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
     use EventsAssertionsTrait;
     use FormAssertionsTrait;
     use HttpClientAssertionsTrait;
+    use HttpKernelAssertionsTrait;
     use LoggerAssertionsTrait;
     use MailerAssertionsTrait;
     use MimeAssertionsTrait;
@@ -160,8 +162,8 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
     use SecurityAssertionsTrait;
     use ServicesAssertionsTrait;
     use SessionAssertionsTrait;
-    use TranslationAssertionsTrait;
     use TimeAssertionsTrait;
+    use TranslationAssertionsTrait;
     use TwigAssertionsTrait;
     use ValidatorAssertionsTrait;
 
@@ -385,47 +387,6 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         } catch (BadMethodCallException) {
             Assert::fail('You must perform a request before using this method.');
         }
-    }
-
-    /**
-     * Grab a Symfony Data Collector from the current profile.
-     *
-     * @phpstan-return (
-     *     $collector is DataCollectorName::EVENTS ? EventDataCollector :
-     *     ($collector is DataCollectorName::FORM ? FormDataCollector :
-     *     ($collector is DataCollectorName::HTTP_CLIENT ? HttpClientDataCollector :
-     *     ($collector is DataCollectorName::LOGGER ? LoggerDataCollector :
-     *     ($collector is DataCollectorName::TIME ? TimeDataCollector :
-     *     ($collector is DataCollectorName::TRANSLATION ? TranslationDataCollector :
-     *     ($collector is DataCollectorName::TWIG ? TwigDataCollector :
-     *     ($collector is DataCollectorName::SECURITY ? SecurityDataCollector :
-     *     ($collector is DataCollectorName::MAILER ? MessageDataCollector :
-     *     ($collector is DataCollectorName::NOTIFIER ? NotificationDataCollector :
-     *      DataCollectorInterface
-     *     )))))))))
-     * )
-     *
-     * @throws AssertionFailedError
-     */
-    protected function grabCollector(DataCollectorName $collector, string $function, ?string $message = null): DataCollectorInterface
-    {
-        $profile = $this->getProfile();
-
-        if ($profile === null) {
-            Assert::fail(sprintf("The Profile is needed to use the '%s' function.", $function));
-        }
-
-        if (!$profile->hasCollector($collector->value)) {
-            Assert::fail(
-                $message ?: sprintf(
-                    "The '%s' collector is needed to use the '%s' function.",
-                    $collector->value,
-                    $function
-                )
-            );
-        }
-
-        return $profile->getCollector($collector->value);
     }
 
     /**
