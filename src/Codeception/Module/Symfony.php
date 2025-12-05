@@ -513,4 +513,16 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             include_once $autoload;
         }
     }
+
+    /** @param non-empty-string $name */
+    protected function updateClientPersistentService(string $name, ?object $service): void
+    {
+        if ($this->client instanceof SymfonyConnector) {
+            if ($service === null) {
+                unset($this->client->persistentServices[$name]);
+            } else {
+                $this->client->persistentServices[$name] = $service;
+            }
+        }
+    }
 }

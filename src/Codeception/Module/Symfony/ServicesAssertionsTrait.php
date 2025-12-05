@@ -49,10 +49,7 @@ trait ServicesAssertionsTrait
     {
         $service = $this->grabService($serviceName);
         $this->persistentServices[$serviceName] = $service;
-        if ($this->client instanceof SymfonyConnector) { // @phpstan-ignore instanceof.alwaysFalse
-            /** @phpstan-ignore property.notFound, offsetAccess.nonOffsetAccessible */
-            $this->client->persistentServices[$serviceName] = $service;
-        }
+        $this->updateClientPersistentService($serviceName, $service);
     }
 
     /**
@@ -67,10 +64,7 @@ trait ServicesAssertionsTrait
         $service = $this->grabService($serviceName);
         $this->persistentServices[$serviceName] = $service;
         $this->permanentServices[$serviceName] = $service;
-        if ($this->client instanceof SymfonyConnector) { // @phpstan-ignore instanceof.alwaysFalse
-            /** @phpstan-ignore property.notFound, offsetAccess.nonOffsetAccessible */
-            $this->client->persistentServices[$serviceName] = $service;
-        }
+        $this->updateClientPersistentService($serviceName, $service);
     }
 
     /**
@@ -84,18 +78,14 @@ trait ServicesAssertionsTrait
         unset($this->persistentServices[$serviceName]);
         unset($this->permanentServices[$serviceName]);
 
-        if ($this->client instanceof SymfonyConnector) { // @phpstan-ignore instanceof.alwaysFalse
-            /** @phpstan-ignore property.notFound, offsetAccess.nonOffsetAccessible */
-            unset($this->client->persistentServices[$serviceName]);
-        }
+        $this->updateClientPersistentService($serviceName, null);
     }
 
-    /**
-     * @template T of object
-     * @param string|class-string<T> $serviceId
-     * @return ($serviceId is class-string<T> ? T : object)|null
-     * @phpstan-ignore method.templateTypeNotInParameter
-     */
+    /** @param non-empty-string $name */
+    protected function updateClientPersistentService(string $name, ?object $service): void
+    {
+    }
+
     protected function getService(string $serviceId): ?object
     {
         $container = $this->_getContainer();
