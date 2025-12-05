@@ -21,7 +21,9 @@ trait ServicesAssertionsTrait
      * ```
      *
      * @part services
-     * @param non-empty-string $serviceId
+     * @template T of object
+     * @param string|class-string<T> $serviceId
+     * @return ($serviceId is class-string<T> ? T : object)
      */
     public function grabService(string $serviceId): object
     {
@@ -47,7 +49,8 @@ trait ServicesAssertionsTrait
     {
         $service = $this->grabService($serviceName);
         $this->persistentServices[$serviceName] = $service;
-        if ($this->client instanceof SymfonyConnector) {
+        if ($this->client instanceof SymfonyConnector) { // @phpstan-ignore instanceof.alwaysFalse
+            /** @phpstan-ignore property.notFound, offsetAccess.nonOffsetAccessible */
             $this->client->persistentServices[$serviceName] = $service;
         }
     }
@@ -64,7 +67,8 @@ trait ServicesAssertionsTrait
         $service = $this->grabService($serviceName);
         $this->persistentServices[$serviceName] = $service;
         $this->permanentServices[$serviceName] = $service;
-        if ($this->client instanceof SymfonyConnector) {
+        if ($this->client instanceof SymfonyConnector) { // @phpstan-ignore instanceof.alwaysFalse
+            /** @phpstan-ignore property.notFound, offsetAccess.nonOffsetAccessible */
             $this->client->persistentServices[$serviceName] = $service;
         }
     }
@@ -73,18 +77,25 @@ trait ServicesAssertionsTrait
      * Remove service $serviceName from the lists of persistent services.
      *
      * @part services
+     * @param non-empty-string $serviceName
      */
     public function unpersistService(string $serviceName): void
     {
         unset($this->persistentServices[$serviceName]);
         unset($this->permanentServices[$serviceName]);
 
-        if ($this->client instanceof SymfonyConnector) {
+        if ($this->client instanceof SymfonyConnector) { // @phpstan-ignore instanceof.alwaysFalse
+            /** @phpstan-ignore property.notFound, offsetAccess.nonOffsetAccessible */
             unset($this->client->persistentServices[$serviceName]);
         }
     }
 
-    /** @param non-empty-string $serviceId */
+    /**
+     * @template T of object
+     * @param string|class-string<T> $serviceId
+     * @return ($serviceId is class-string<T> ? T : object)|null
+     * @phpstan-ignore method.templateTypeNotInParameter
+     */
     protected function getService(string $serviceId): ?object
     {
         $container = $this->_getContainer();
