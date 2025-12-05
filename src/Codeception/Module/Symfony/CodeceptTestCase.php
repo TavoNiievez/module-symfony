@@ -39,8 +39,7 @@ abstract class CodeceptTestCase extends TestCase
     use TwigAssertionsTrait;
     use ValidatorAssertionsTrait;
 
-    /** @var AbstractBrowser<Request, Response> */
-    protected AbstractBrowser $client;
+    protected KernelBrowser $client;
     protected TestKernel $kernel;
     protected bool $profilerEnabled = true;
 
@@ -65,9 +64,7 @@ abstract class CodeceptTestCase extends TestCase
         $this->client = new KernelBrowser($this->kernel);
 
         if ($this->profilerEnabled) {
-            /** @var KernelBrowser $client */
-            $client = $this->client;
-            $client->enableProfiler();
+            $this->client->enableProfiler();
         }
     }
 
@@ -79,7 +76,6 @@ abstract class CodeceptTestCase extends TestCase
 
     protected function getClient(): KernelBrowser
     {
-        /** @var KernelBrowser */
         return $this->client;
     }
 
@@ -102,17 +98,15 @@ abstract class CodeceptTestCase extends TestCase
 
     protected function getProfile(): ?Profile
     {
-        /** @var KernelBrowser $client */
-        $client = $this->client;
-        $profile = $client->getProfile();
+        $profile = $this->client->getProfile();
 
         if (!$profile) {
             /** @var Profiler $profiler */
             $profiler = $this->_getContainer()->get('profiler');
             /** @var Request $request */
-            $request = $client->getRequest();
+            $request = $this->client->getRequest();
             /** @var Response $response */
-            $response = $client->getResponse();
+            $response = $this->client->getResponse();
             $profile = $profiler->collect($request, $response);
         }
 
