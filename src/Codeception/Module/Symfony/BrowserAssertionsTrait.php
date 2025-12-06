@@ -293,7 +293,13 @@ trait BrowserAssertionsTrait
      */
     public function rebootClientKernel(): void
     {
-        $this->invokeRebootKernel($this->getClient());
+        try {
+            $client = $this->getClient();
+            $reflection = new \ReflectionMethod($client, 'rebootKernel');
+            $reflection->invoke($client);
+        } catch (\ReflectionException) {
+            // Method does not exist
+        }
     }
 
     /**
@@ -380,12 +386,5 @@ trait BrowserAssertionsTrait
     protected function assertThatForResponse(Constraint $constraint, string $message = ''): void
     {
         $this->assertThat($this->getClient()->getResponse(), $constraint, $message);
-    }
-
-    private function invokeRebootKernel(object $client): void
-    {
-        if (method_exists($client, 'rebootKernel')) {
-            $client->rebootKernel();
-        }
     }
 }
