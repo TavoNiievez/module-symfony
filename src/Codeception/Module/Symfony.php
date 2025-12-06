@@ -18,6 +18,7 @@ use Codeception\Module\Symfony\DomCrawlerAssertionsTrait;
 use Codeception\Module\Symfony\EventsAssertionsTrait;
 use Codeception\Module\Symfony\FormAssertionsTrait;
 use Codeception\Module\Symfony\HttpClientAssertionsTrait;
+use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
 use Codeception\Module\Symfony\LoggerAssertionsTrait;
 use Codeception\Module\Symfony\MailerAssertionsTrait;
 use Codeception\Module\Symfony\MimeAssertionsTrait;
@@ -151,6 +152,7 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
     use EventsAssertionsTrait;
     use FormAssertionsTrait;
     use HttpClientAssertionsTrait;
+    use HttpKernelAssertionsTrait;
     use LoggerAssertionsTrait;
     use MailerAssertionsTrait;
     use MimeAssertionsTrait;
@@ -160,8 +162,8 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
     use SecurityAssertionsTrait;
     use ServicesAssertionsTrait;
     use SessionAssertionsTrait;
-    use TranslationAssertionsTrait;
     use TimeAssertionsTrait;
+    use TranslationAssertionsTrait;
     use TwigAssertionsTrait;
     use ValidatorAssertionsTrait;
 
@@ -197,7 +199,6 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         'guard'             => false,
     ];
 
-    /** @var class-string<Kernel>|null */
     protected ?string $kernelClass = null;
 
     /**
@@ -225,12 +226,17 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         $this->kernelClass = $this->getKernelClass();
         $this->setXdebugMaxNestingLevel(200);
 
-        /** @var class-string<Kernel> $kernelClass */
         $kernelClass = $this->kernelClass;
-        $this->kernel = new $kernelClass(
+        $kernel = new $kernelClass(
             $this->config['environment'],
             $this->config['debug']
         );
+
+        if (!$kernel instanceof Kernel) {
+            throw new \LogicException(sprintf('Kernel class "%s" must extend %s.', $kernelClass, Kernel::class));
+        }
+
+        $this->kernel = $kernel;
 
         if ($this->config['bootstrap']) {
             $this->bootstrapEnvironment();
@@ -286,8 +292,10 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     public function _getEntityManager(): EntityManagerInterface
     {
-        /** @var non-empty-string $emService */
         $emService = $this->config['em_service'];
+        if ($emService === '') {
+            throw new \LogicException('The "em_service" config option must be a non-empty string.');
+        }
 
         if (!isset($this->permanentServices[$emService])) {
             $this->persistPermanentService($emService);
@@ -330,17 +338,21 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     protected function getKernelClass(): string
     {
-        /** @var class-string<Kernel> $kernelClass */
         $kernelClass = $this->config['kernel_class'];
         $this->requireAdditionalAutoloader();
 
         if (class_exists($kernelClass)) {
+            if (!is_subclass_of($kernelClass, Kernel::class)) {
+                throw new \LogicException(sprintf('The "kernel_class" config option must be a valid class string extending Symfony\Component\HttpKernel\Kernel. "%s" given.', $kernelClass));
+            }
             return $kernelClass;
         }
 
-        /** @var string $rootDir */
         $rootDir = codecept_root_dir();
-        $path    = $rootDir . $this->config['app_path'];
+        if (!is_string($rootDir)) {
+            throw new \UnexpectedValueException('Root directory must be a string.');
+        }
+        $path = $rootDir . $this->config['app_path'];
 
         if (!file_exists($path)) {
             throw new ModuleRequireException(
@@ -358,6 +370,9 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         }
 
         if (class_exists($kernelClass, false)) {
+            if (!is_subclass_of($kernelClass, Kernel::class)) {
+                throw new \LogicException(sprintf('The "kernel_class" config option must be a valid class string extending Symfony\Component\HttpKernel\Kernel. "%s" given.', $kernelClass));
+            }
             return $kernelClass;
         }
 
@@ -385,47 +400,6 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         } catch (BadMethodCallException) {
             Assert::fail('You must perform a request before using this method.');
         }
-    }
-
-    /**
-     * Grab a Symfony Data Collector from the current profile.
-     *
-     * @phpstan-return (
-     *     $collector is DataCollectorName::EVENTS ? EventDataCollector :
-     *     ($collector is DataCollectorName::FORM ? FormDataCollector :
-     *     ($collector is DataCollectorName::HTTP_CLIENT ? HttpClientDataCollector :
-     *     ($collector is DataCollectorName::LOGGER ? LoggerDataCollector :
-     *     ($collector is DataCollectorName::TIME ? TimeDataCollector :
-     *     ($collector is DataCollectorName::TRANSLATION ? TranslationDataCollector :
-     *     ($collector is DataCollectorName::TWIG ? TwigDataCollector :
-     *     ($collector is DataCollectorName::SECURITY ? SecurityDataCollector :
-     *     ($collector is DataCollectorName::MAILER ? MessageDataCollector :
-     *     ($collector is DataCollectorName::NOTIFIER ? NotificationDataCollector :
-     *      DataCollectorInterface
-     *     )))))))))
-     * )
-     *
-     * @throws AssertionFailedError
-     */
-    protected function grabCollector(DataCollectorName $collector, string $function, ?string $message = null): DataCollectorInterface
-    {
-        $profile = $this->getProfile();
-
-        if ($profile === null) {
-            Assert::fail(sprintf("The Profile is needed to use the '%s' function.", $function));
-        }
-
-        if (!$profile->hasCollector($collector->value)) {
-            Assert::fail(
-                $message ?: sprintf(
-                    "The '%s' collector is needed to use the '%s' function.",
-                    $collector->value,
-                    $function
-                )
-            );
-        }
-
-        return $profile->getCollector($collector->value);
     }
 
     /**
@@ -544,12 +518,26 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     private function requireAdditionalAutoloader(): void
     {
-        /** @var string $rootDir */
-        $rootDir  = codecept_root_dir();
+        $rootDir = codecept_root_dir();
+        if (!is_string($rootDir)) {
+            throw new \UnexpectedValueException('Root directory must be a string.');
+        }
         $autoload = $rootDir . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
         if (file_exists($autoload)) {
             include_once $autoload;
+        }
+    }
+
+    /** @param non-empty-string $name */
+    protected function updateClientPersistentService(string $name, ?object $service): void
+    {
+        if ($this->client instanceof SymfonyConnector) {
+            if ($service === null) {
+                unset($this->client->persistentServices[$name]);
+            } else {
+                $this->client->persistentServices[$name] = $service;
+            }
         }
     }
 }

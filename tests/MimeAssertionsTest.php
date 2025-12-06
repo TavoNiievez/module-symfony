@@ -13,8 +13,8 @@ final class MimeAssertionsTest extends CodeceptTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        /** @var MessageLoggerListener $logger */
         $logger = $this->getService('mailer.message_logger_listener');
+        $this->assertInstanceOf(MessageLoggerListener::class, $logger);
         $logger->reset();
 
         $this->client->request('GET', '/send-email');

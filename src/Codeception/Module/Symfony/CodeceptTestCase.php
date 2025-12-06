@@ -7,8 +7,11 @@ namespace Codeception\Module\Symfony;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\BrowserKit\AbstractBrowser;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Profiler\Profile;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Tests\App\Doctrine\TestDatabaseSetup;
 use Tests\App\TestKernel;
@@ -21,6 +24,7 @@ abstract class CodeceptTestCase extends TestCase
     use DomCrawlerAssertionsTrait;
     use EventsAssertionsTrait;
     use FormAssertionsTrait;
+    use HttpKernelAssertionsTrait;
     use LoggerAssertionsTrait;
     use MailerAssertionsTrait;
     use MimeAssertionsTrait;
@@ -38,6 +42,9 @@ abstract class CodeceptTestCase extends TestCase
     protected KernelBrowser $client;
     protected TestKernel $kernel;
     protected bool $profilerEnabled = true;
+
+    /** @var array<string, bool> */
+    protected array $config = ['guard' => false, 'authenticator' => false];
 
     /** @var array<string, object> */
     protected array $persistentServices = [];
@@ -78,18 +85,31 @@ abstract class CodeceptTestCase extends TestCase
         if ($container->has('test.service_container')) {
             $container = $container->get('test.service_container');
         }
+        /** @var ContainerInterface */
         return $container;
     }
 
-    protected function grabCollector(DataCollectorName $name): DataCollectorInterface
+    protected function _getEntityManager(): EntityManagerInterface
+    {
+        /** @var EntityManagerInterface $em */
+        $em = $this->_getContainer()->get('doctrine.orm.entity_manager');
+        return $em;
+    }
+
+    protected function getProfile(): ?Profile
     {
         $profile = $this->client->getProfile();
+
         if (!$profile) {
             /** @var Profiler $profiler */
             $profiler = $this->_getContainer()->get('profiler');
-            $profile = $profiler->collect($this->client->getRequest(), $this->client->getResponse());
+            /** @var Request $request */
+            $request = $this->client->getRequest();
+            /** @var Response $response */
+            $response = $this->client->getResponse();
+            $profile = $profiler->collect($request, $response);
         }
 
-        return $profile->getCollector($name->value);
+        return $profile instanceof Profile ? $profile : null;
     }
 }

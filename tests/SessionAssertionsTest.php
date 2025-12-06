@@ -103,8 +103,7 @@ final class SessionAssertionsTest extends CodeceptTestCase
 
     private function getTestUser(): User
     {
-        /** @var UserRepository $repository */
-        $repository = $this->_getContainer()->get(UserRepository::class);
+        $repository = $this->grabService(UserRepository::class);
         $user = $repository->getByEmail('john_doe@gmail.com');
         $this->assertNotNull($user);
 

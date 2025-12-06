@@ -21,7 +21,9 @@ trait ServicesAssertionsTrait
      * ```
      *
      * @part services
-     * @param non-empty-string $serviceId
+     * @template T of object
+     * @param string|class-string<T> $serviceId
+     * @return ($serviceId is class-string<T> ? T : object)
      */
     public function grabService(string $serviceId): object
     {
@@ -47,9 +49,7 @@ trait ServicesAssertionsTrait
     {
         $service = $this->grabService($serviceName);
         $this->persistentServices[$serviceName] = $service;
-        if ($this->client instanceof SymfonyConnector) {
-            $this->client->persistentServices[$serviceName] = $service;
-        }
+        $this->updateClientPersistentService($serviceName, $service);
     }
 
     /**
@@ -64,27 +64,28 @@ trait ServicesAssertionsTrait
         $service = $this->grabService($serviceName);
         $this->persistentServices[$serviceName] = $service;
         $this->permanentServices[$serviceName] = $service;
-        if ($this->client instanceof SymfonyConnector) {
-            $this->client->persistentServices[$serviceName] = $service;
-        }
+        $this->updateClientPersistentService($serviceName, $service);
     }
 
     /**
      * Remove service $serviceName from the lists of persistent services.
      *
      * @part services
+     * @param non-empty-string $serviceName
      */
     public function unpersistService(string $serviceName): void
     {
         unset($this->persistentServices[$serviceName]);
         unset($this->permanentServices[$serviceName]);
 
-        if ($this->client instanceof SymfonyConnector) {
-            unset($this->client->persistentServices[$serviceName]);
-        }
+        $this->updateClientPersistentService($serviceName, null);
     }
 
-    /** @param non-empty-string $serviceId */
+    /** @param non-empty-string $name */
+    protected function updateClientPersistentService(string $name, ?object $service): void
+    {
+    }
+
     protected function getService(string $serviceId): ?object
     {
         $container = $this->_getContainer();

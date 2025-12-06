@@ -67,10 +67,17 @@ trait RouterAssertionsTrait
      */
     public function seeCurrentActionIs(string $action): void
     {
+        if ($action === '') {
+            Assert::fail('Action cannot be empty');
+        }
+
         $this->findRouteByActionOrFail($action);
 
-        /** @var string $current */
         $current = $this->getClient()->getRequest()->attributes->get('_controller');
+        if (!is_string($current)) {
+            Assert::fail('Current action (controller) is not a string.');
+        }
+
         $this->assertStringEndsWith($action, $current, "Current action is '{$current}'.");
     }
 
