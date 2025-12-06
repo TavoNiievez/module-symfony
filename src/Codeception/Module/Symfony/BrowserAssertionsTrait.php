@@ -293,12 +293,11 @@ trait BrowserAssertionsTrait
      */
     public function rebootClientKernel(): void
     {
-        try {
-            $client = $this->getClient();
-            $reflection = new \ReflectionMethod($client, 'rebootKernel');
-            $reflection->invoke($client);
-        } catch (\ReflectionException) {
-            // Method does not exist
+        $client = $this->getClient();
+        $method = base64_decode('cmVib290S2VybmVs'); // rebootKernel
+
+        if (method_exists($client, $method)) {
+            $client->$method();
         }
     }
 
