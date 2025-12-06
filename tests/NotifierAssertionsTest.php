@@ -16,8 +16,8 @@ final class NotifierAssertionsTest extends CodeceptTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        /** @var NotificationLoggerListener $logger */
         $logger = $this->grabService('notifier.notification_logger_listener');
+        $this->assertInstanceOf(NotificationLoggerListener::class, $logger);
         $logger->reset();
     }
 

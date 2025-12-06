@@ -187,9 +187,7 @@ trait SessionAssertionsTrait
 
     protected function getAuthenticator(): AuthenticatorInterface
     {
-        /** @var AuthenticatorInterface $authenticator */
-        $authenticator = $this->grabService(AuthenticatorInterface::class);
-        return $authenticator;
+        return $this->grabService(AuthenticatorInterface::class);
     }
 
     protected function getCurrentSession(): SessionInterface
