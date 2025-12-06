@@ -339,13 +339,12 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
     protected function getKernelClass(): string
     {
         $kernelClass = $this->config['kernel_class'];
-        if (!is_subclass_of($kernelClass, Kernel::class)) {
-            throw new \LogicException('The "kernel_class" config option must be a valid class string extending Symfony\Component\HttpKernel\Kernel.');
-        }
-
         $this->requireAdditionalAutoloader();
 
         if (class_exists($kernelClass)) {
+            if (!is_subclass_of($kernelClass, Kernel::class)) {
+                throw new \LogicException(sprintf('The "kernel_class" config option must be a valid class string extending Symfony\Component\HttpKernel\Kernel. "%s" given.', $kernelClass));
+            }
             return $kernelClass;
         }
 
@@ -371,6 +370,9 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         }
 
         if (class_exists($kernelClass, false)) {
+            if (!is_subclass_of($kernelClass, Kernel::class)) {
+                throw new \LogicException(sprintf('The "kernel_class" config option must be a valid class string extending Symfony\Component\HttpKernel\Kernel. "%s" given.', $kernelClass));
+            }
             return $kernelClass;
         }
 
