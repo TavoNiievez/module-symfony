@@ -16,8 +16,8 @@ final class MailerAssertionsTest extends CodeceptTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        /** @var MessageLoggerListener $logger */
         $logger = $this->getService('mailer.message_logger_listener');
+        $this->assertInstanceOf(MessageLoggerListener::class, $logger);
         $logger->reset();
     }
 

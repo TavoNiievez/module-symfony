@@ -199,7 +199,6 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         'guard'             => false,
     ];
 
-    /** @var class-string<Kernel>|null */
     protected ?string $kernelClass = null;
 
     /**
@@ -227,12 +226,17 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         $this->kernelClass = $this->getKernelClass();
         $this->setXdebugMaxNestingLevel(200);
 
-        /** @var class-string<Kernel> $kernelClass */
         $kernelClass = $this->kernelClass;
-        $this->kernel = new $kernelClass(
+        $kernel = new $kernelClass(
             $this->config['environment'],
             $this->config['debug']
         );
+
+        if (!$kernel instanceof Kernel) {
+            throw new \LogicException(sprintf('Kernel class "%s" must extend %s.', $kernelClass, Kernel::class));
+        }
+
+        $this->kernel = $kernel;
 
         if ($this->config['bootstrap']) {
             $this->bootstrapEnvironment();
@@ -288,8 +292,10 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     public function _getEntityManager(): EntityManagerInterface
     {
-        /** @var non-empty-string $emService */
         $emService = $this->config['em_service'];
+        if ($emService === '') {
+            throw new \LogicException('The "em_service" config option must be a non-empty string.');
+        }
 
         if (!isset($this->permanentServices[$emService])) {
             $this->persistPermanentService($emService);
@@ -332,17 +338,22 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     protected function getKernelClass(): string
     {
-        /** @var class-string<Kernel> $kernelClass */
         $kernelClass = $this->config['kernel_class'];
+        if (!is_subclass_of($kernelClass, Kernel::class)) {
+            throw new \LogicException('The "kernel_class" config option must be a valid class string extending Symfony\Component\HttpKernel\Kernel.');
+        }
+
         $this->requireAdditionalAutoloader();
 
         if (class_exists($kernelClass)) {
             return $kernelClass;
         }
 
-        /** @var string $rootDir */
         $rootDir = codecept_root_dir();
-        $path    = $rootDir . $this->config['app_path'];
+        if (!is_string($rootDir)) {
+            throw new \UnexpectedValueException('Root directory must be a string.');
+        }
+        $path = $rootDir . $this->config['app_path'];
 
         if (!file_exists($path)) {
             throw new ModuleRequireException(
@@ -505,8 +516,10 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     private function requireAdditionalAutoloader(): void
     {
-        /** @var string $rootDir */
-        $rootDir  = codecept_root_dir();
+        $rootDir = codecept_root_dir();
+        if (!is_string($rootDir)) {
+            throw new \UnexpectedValueException('Root directory must be a string.');
+        }
         $autoload = $rootDir . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
         if (file_exists($autoload)) {
