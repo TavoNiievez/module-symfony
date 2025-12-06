@@ -293,9 +293,7 @@ trait BrowserAssertionsTrait
      */
     public function rebootClientKernel(): void
     {
-        if (method_exists($this->getClient(), 'rebootKernel')) { // @phpstan-ignore function.alreadyNarrowedType
-            $this->getClient()->rebootKernel();
-        }
+        $this->invokeRebootKernel($this->getClient());
     }
 
     /**
@@ -382,5 +380,12 @@ trait BrowserAssertionsTrait
     protected function assertThatForResponse(Constraint $constraint, string $message = ''): void
     {
         $this->assertThat($this->getClient()->getResponse(), $constraint, $message);
+    }
+
+    private function invokeRebootKernel(object $client): void
+    {
+        if (method_exists($client, 'rebootKernel')) {
+            $client->rebootKernel();
+        }
     }
 }
