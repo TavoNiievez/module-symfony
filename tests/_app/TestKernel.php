@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\App;
 
-require_once __DIR__ . '/Security/SecurityBundleSecurityAlias.php';
-
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;

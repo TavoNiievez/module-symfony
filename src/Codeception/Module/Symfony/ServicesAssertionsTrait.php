@@ -27,7 +27,9 @@ trait ServicesAssertionsTrait
      */
     public function grabService(string $serviceId): object
     {
-        if (!$service = $this->getService($serviceId)) {
+        $service = $this->getService($serviceId);
+
+        if ($service === null) {
             Assert::fail(
                 "Service `{$serviceId}` is required by Codeception, but not loaded by Symfony. Possible solutions:\n
             In your `config/packages/framework.php`/`.yaml`, set `test` to `true` (when in test environment), see https://symfony.com/doc/current/reference/configuration/framework.html#test\n
@@ -82,9 +84,7 @@ trait ServicesAssertionsTrait
     }
 
     /** @param non-empty-string $name */
-    protected function updateClientPersistentService(string $name, ?object $service): void
-    {
-    }
+    protected function updateClientPersistentService(string $name, ?object $service): void {}
 
     protected function getService(string $serviceId): ?object
     {
