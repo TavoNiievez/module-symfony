@@ -20,6 +20,7 @@ use Symfony\Component\HttpKernel\Profiler\Profiler;
 abstract class CodeceptTestCase extends TestCase
 {
     use BrowserAssertionsTrait;
+    use CacheTrait;
     use ConsoleAssertionsTrait;
     use DoctrineAssertionsTrait;
     use DomCrawlerAssertionsTrait;
@@ -44,20 +45,8 @@ abstract class CodeceptTestCase extends TestCase
     protected KernelInterface $kernel;
     protected bool $profilerEnabled = true;
 
-    /** @var ContainerInterface|null */
-    private ?ContainerInterface $cachedContainer = null;
-
-    /** @var ContainerInterface|null */
-    private ?ContainerInterface $cachedTestContainer = null;
-
     /** @var array<string, bool> */
     protected array $config = ['guard' => false, 'authenticator' => false];
-
-    /** @var array<string, object> */
-    protected array $persistentServices = [];
-
-    /** @var array<string, object> */
-    protected array $permanentServices = [];
 
     protected function setUp(): void
     {
@@ -124,23 +113,6 @@ abstract class CodeceptTestCase extends TestCase
         return $this->client;
     }
 
-    protected function _getContainer(): ContainerInterface
-    {
-        $currentContainer = $this->kernel->getContainer();
-
-        if ($this->cachedContainer === $currentContainer && $this->cachedTestContainer !== null) {
-            return $this->cachedTestContainer;
-        }
-
-        $this->cachedContainer = $currentContainer;
-
-        /** @var ContainerInterface $testContainer */
-        $testContainer = $currentContainer->has('test.service_container') ? $currentContainer->get('test.service_container') : $currentContainer;
-        $this->cachedTestContainer = $testContainer;
-
-        return $testContainer;
-    }
-
     protected function _getEntityManager(): EntityManagerInterface
     {
         /** @var EntityManagerInterface $em */
@@ -152,16 +124,29 @@ abstract class CodeceptTestCase extends TestCase
     {
         $profile = $this->client->getProfile();
 
-        if (!$profile) {
-            /** @var Profiler $profiler */
-            $profiler = $this->_getContainer()->get('profiler');
-            /** @var Request $request */
-            $request = $this->client->getRequest();
-            /** @var Response $response */
-            $response = $this->client->getResponse();
-            $profile = $profiler->collect($request, $response);
+        if ($profile instanceof Profile) {
+            return $profile;
         }
 
-        return $profile instanceof Profile ? $profile : null;
+        /** @var Response $response */
+        $response = $this->client->getResponse();
+
+        if ($profile = $this->getProfileFromCache($response)) {
+            return $profile;
+        }
+
+        /** @var Profiler $profiler */
+        $profiler = $this->_getContainer()->get('profiler');
+        /** @var Request $request */
+        $request = $this->client->getRequest();
+
+        $profile = $profiler->collect($request, $response);
+
+        if ($profile instanceof Profile) {
+            $this->cacheProfile($response, $profile);
+            return $profile;
+        }
+
+        return null;
     }
 }

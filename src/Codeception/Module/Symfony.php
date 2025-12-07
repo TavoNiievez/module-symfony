@@ -11,6 +11,7 @@ use Codeception\Lib\Framework;
 use Codeception\Lib\Interfaces\DoctrineProvider;
 use Codeception\Lib\Interfaces\PartedModule;
 use Codeception\Module\Symfony\BrowserAssertionsTrait;
+use Codeception\Module\Symfony\CacheTrait;
 use Codeception\Module\Symfony\ConsoleAssertionsTrait;
 use Codeception\Module\Symfony\DataCollectorName;
 use Codeception\Module\Symfony\DoctrineAssertionsTrait;
@@ -147,6 +148,7 @@ use function sprintf;
 class Symfony extends Framework implements DoctrineProvider, PartedModule
 {
     use BrowserAssertionsTrait;
+    use CacheTrait;
     use ConsoleAssertionsTrait;
     use DoctrineAssertionsTrait;
     use DomCrawlerAssertionsTrait;
@@ -201,35 +203,6 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
     ];
 
     protected ?string $kernelClass = null;
-
-    /** @var ContainerInterface|null */
-    private ?ContainerInterface $cachedContainer = null;
-
-    /** @var ContainerInterface|null */
-    private ?ContainerInterface $cachedTestContainer = null;
-
-    /** @var Profile|null */
-    private ?Profile $cachedProfile = null;
-
-    /** @var object|null */
-    private ?object $cachedProfileResponse = null;
-
-    /**
-     * Services that should be persistent permanently for all tests
-     *
-     * @var array<non-empty-string, object>
-     */
-    protected array $permanentServices = [];
-
-    /**
-     * Services that should be persistent during test execution between kernel reboots
-     *
-     * @var array<non-empty-string, object>
-     */
-    protected array $persistentServices = [];
-
-    /** @var list<non-empty-string> */
-    private array $internalDomainsCache = [];
 
     /** @return list<string> */
     public function _parts(): array
@@ -334,23 +307,6 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         return $this->permanentServices[$emService];
     }
 
-    public function _getContainer(): ContainerInterface
-    {
-        $currentContainer = $this->kernel->getContainer();
-
-        if ($this->cachedContainer === $currentContainer && $this->cachedTestContainer !== null) {
-            return $this->cachedTestContainer;
-        }
-
-        $this->cachedContainer = $currentContainer;
-
-        /** @var ContainerInterface $testContainer */
-        $testContainer = $currentContainer->has('test.service_container') ? $currentContainer->get('test.service_container') : $currentContainer;
-        $this->cachedTestContainer = $testContainer;
-
-        return $testContainer;
-    }
-
     protected function getClient(): SymfonyConnector
     {
         if ($this->client === null) {
@@ -427,13 +383,14 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
 
         try {
             $response = $this->getClient()->getResponse();
-            if ($this->cachedProfileResponse === $response && $this->cachedProfile !== null) {
-                return $this->cachedProfile;
+            if ($profile = $this->getProfileFromCache($response)) {
+                return $profile;
             }
 
             $profile = $profiler->loadProfileFromResponse($response);
-            $this->cachedProfile = $profile;
-            $this->cachedProfileResponse = $response;
+            if ($profile !== null) {
+                $this->cacheProfile($response, $profile);
+            }
 
             return $profile;
         } catch (BadMethodCallException) {
@@ -482,28 +439,6 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         }
     }
 
-    /** @return list<non-empty-string> */
-    protected function getInternalDomains(): array
-    {
-        if ($this->internalDomainsCache !== []) {
-            return $this->internalDomainsCache;
-        }
-
-        $domains = [];
-
-        foreach ($this->grabRouterService()->getRouteCollection() as $route) {
-            if ($route->getHost() !== '') {
-                $regex = $route->compile()->getHostRegex();
-                if ($regex !== null && $regex !== '') {
-                    $domains[] = $regex;
-                }
-            }
-        }
-
-        $this->internalDomainsCache = array_values(array_unique($domains));
-
-        return $this->internalDomainsCache;
-    }
 
     /**
      * Ensure Xdebug allows deep nesting.
