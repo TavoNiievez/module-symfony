@@ -202,6 +202,18 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
 
     protected ?string $kernelClass = null;
 
+    /** @var ContainerInterface|null */
+    private ?ContainerInterface $cachedContainer = null;
+
+    /** @var ContainerInterface|null */
+    private ?ContainerInterface $cachedTestContainer = null;
+
+    /** @var Profile|null */
+    private ?Profile $cachedProfile = null;
+
+    /** @var object|null */
+    private ?object $cachedProfileResponse = null;
+
     /**
      * Services that should be persistent permanently for all tests
      *
@@ -258,7 +270,11 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     public function _before(TestInterface $test): void
     {
-        $this->persistentServices = array_merge($this->persistentServices, $this->permanentServices);
+        if ($this->persistentServices === []) {
+            $this->persistentServices = $this->permanentServices;
+        } else {
+            $this->persistentServices = array_merge($this->persistentServices, $this->permanentServices);
+        }
 
         $this->client = new SymfonyConnector(
             $this->kernel,
@@ -320,9 +336,18 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
 
     public function _getContainer(): ContainerInterface
     {
-        $container = $this->kernel->getContainer();
+        $currentContainer = $this->kernel->getContainer();
+
+        if ($this->cachedContainer === $currentContainer && $this->cachedTestContainer !== null) {
+            return $this->cachedTestContainer;
+        }
+
+        $this->cachedContainer = $currentContainer;
+
         /** @var ContainerInterface $testContainer */
-        $testContainer = $container->has('test.service_container') ? $container->get('test.service_container') : $container;
+        $testContainer = $currentContainer->has('test.service_container') ? $currentContainer->get('test.service_container') : $currentContainer;
+        $this->cachedTestContainer = $testContainer;
+
         return $testContainer;
     }
 
@@ -401,7 +426,16 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         }
 
         try {
-            return $profiler->loadProfileFromResponse($this->getClient()->getResponse());
+            $response = $this->getClient()->getResponse();
+            if ($this->cachedProfileResponse === $response && $this->cachedProfile !== null) {
+                return $this->cachedProfile;
+            }
+
+            $profile = $profiler->loadProfileFromResponse($response);
+            $this->cachedProfile = $profile;
+            $this->cachedProfileResponse = $response;
+
+            return $profile;
         } catch (BadMethodCallException) {
             Assert::fail('You must perform a request before using this method.');
         }

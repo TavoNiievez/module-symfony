@@ -44,6 +44,12 @@ abstract class CodeceptTestCase extends TestCase
     protected KernelInterface $kernel;
     protected bool $profilerEnabled = true;
 
+    /** @var ContainerInterface|null */
+    private ?ContainerInterface $cachedContainer = null;
+
+    /** @var ContainerInterface|null */
+    private ?ContainerInterface $cachedTestContainer = null;
+
     /** @var array<string, bool> */
     protected array $config = ['guard' => false, 'authenticator' => false];
 
@@ -120,12 +126,19 @@ abstract class CodeceptTestCase extends TestCase
 
     protected function _getContainer(): ContainerInterface
     {
-        $container = $this->kernel->getContainer();
-        if ($container->has('test.service_container')) {
-            $container = $container->get('test.service_container');
+        $currentContainer = $this->kernel->getContainer();
+
+        if ($this->cachedContainer === $currentContainer && $this->cachedTestContainer !== null) {
+            return $this->cachedTestContainer;
         }
-        /** @var ContainerInterface */
-        return $container;
+
+        $this->cachedContainer = $currentContainer;
+
+        /** @var ContainerInterface $testContainer */
+        $testContainer = $currentContainer->has('test.service_container') ? $currentContainer->get('test.service_container') : $currentContainer;
+        $this->cachedTestContainer = $testContainer;
+
+        return $testContainer;
     }
 
     protected function _getEntityManager(): EntityManagerInterface
