@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 use Tests\App\Controller\AppController;
 
-final class RouterAssertionsTest extends CodeceptTestCase
+final class RouterAssertionsTest extends \Tests\Support\KernelTestCase
 {
     public function testAmOnAction(): void
     {

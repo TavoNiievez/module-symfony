@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 
-final class TimeAssertionsTest extends CodeceptTestCase
+final class TimeAssertionsTest extends \Tests\Support\KernelTestCase
 {
     public function testSeeRequestTimeIsLessThan(): void
     {

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 
-final class ConsoleAssertionsTest extends CodeceptTestCase
+final class ConsoleAssertionsTest extends \Tests\Support\KernelTestCase
 {
     public function testRunSymfonyConsoleCommand(): void
     {

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 use Symfony\Component\Validator\Constraints as Assert;
 use Tests\App\Entity\User;
 
-final class ValidatorAssertionsTest extends CodeceptTestCase
+final class ValidatorAssertionsTest extends \Tests\Support\KernelTestCase
 {
     public function testDontSeeViolatedConstraint(): void
     {

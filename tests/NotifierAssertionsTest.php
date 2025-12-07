@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Notifier\Event\MessageEvent;
 use Symfony\Component\Notifier\EventListener\NotificationLoggerListener;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Tests\App\Notifier\NotifierFixture;
 
-final class NotifierAssertionsTest extends CodeceptTestCase
+final class NotifierAssertionsTest extends \Tests\Support\KernelTestCase
 {
     protected function setUp(): void
     {

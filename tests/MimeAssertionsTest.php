@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 use Symfony\Component\Mailer\EventListener\MessageLoggerListener;
 use Symfony\Component\Mime\Email;
 
-final class MimeAssertionsTest extends CodeceptTestCase
+final class MimeAssertionsTest extends \Tests\Support\KernelTestCase
 {
     protected function setUp(): void
     {

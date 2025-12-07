@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 
-final class ParameterAssertionsTest extends CodeceptTestCase
+final class ParameterAssertionsTest extends \Tests\Support\KernelTestCase
 {
     public function testGrabParameter(): void
     {

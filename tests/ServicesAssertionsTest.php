@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 use Symfony\Bundle\SecurityBundle\Security;
 
-final class ServicesAssertionsTest extends CodeceptTestCase
+final class ServicesAssertionsTest extends \Tests\Support\KernelTestCase
 {
     public function testGrabService(): void
     {

@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace Codeception\Module\Symfony;
 
 use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Component\BrowserKit\AbstractBrowser;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpKernel\Profiler\Profile;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
-use Tests\App\Doctrine\TestDatabaseSetup;
-use Tests\App\TestKernel;
 
 abstract class CodeceptTestCase extends TestCase
 {
@@ -40,7 +41,7 @@ abstract class CodeceptTestCase extends TestCase
     use ValidatorAssertionsTrait;
 
     protected KernelBrowser $client;
-    protected TestKernel $kernel;
+    protected KernelInterface $kernel;
     protected bool $profilerEnabled = true;
 
     /** @var array<string, bool> */
@@ -54,12 +55,14 @@ abstract class CodeceptTestCase extends TestCase
 
     protected function setUp(): void
     {
-        $this->kernel = new TestKernel('test', true);
+        $this->kernel = $this->createKernel();
         $this->kernel->boot();
 
-        /** @var EntityManagerInterface $em */
-        $em = $this->_getContainer()->get('doctrine.orm.entity_manager');
-        TestDatabaseSetup::init($em);
+        if ($this->_getContainer()->has('doctrine.orm.entity_manager')) {
+            /** @var EntityManagerInterface $em */
+            $em = $this->_getContainer()->get('doctrine.orm.entity_manager');
+            $this->setUpDatabase($em);
+        }
 
         $this->client = new KernelBrowser($this->kernel);
 
@@ -72,6 +75,42 @@ abstract class CodeceptTestCase extends TestCase
     {
         $this->kernel->shutdown();
         parent::tearDown();
+    }
+
+    protected function createKernel(): KernelInterface
+    {
+        $kernelClass = $this->getKernelClass();
+
+        if (!class_exists($kernelClass)) {
+            throw new RuntimeException(sprintf('Kernel class "%s" not found.', $kernelClass));
+        }
+
+        /** @var KernelInterface $kernel */
+        $kernel = new $kernelClass('test', true);
+
+        return $kernel;
+    }
+
+    protected function getKernelClass(): string
+    {
+        if (isset($_SERVER['KERNEL_CLASS'])) {
+            return $_SERVER['KERNEL_CLASS'];
+        }
+
+        if (isset($_ENV['KERNEL_CLASS'])) {
+            return $_ENV['KERNEL_CLASS'];
+        }
+
+        if (class_exists('App\Kernel')) {
+            return 'App\Kernel';
+        }
+
+        throw new LogicException('Kernel class not found. Please define KERNEL_CLASS in your phpunit.xml or .env file.');
+    }
+
+    protected function setUpDatabase(EntityManagerInterface $em): void
+    {
+        // Override this method to perform database setup
     }
 
     protected function getClient(): KernelBrowser
