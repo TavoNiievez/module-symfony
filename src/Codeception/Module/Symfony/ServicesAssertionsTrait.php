@@ -27,9 +27,15 @@ trait ServicesAssertionsTrait
      */
     public function grabService(string $serviceId): object
     {
-        $service = $this->getService($serviceId);
+        $container = $this->_getContainer();
 
-        if ($service === null) {
+        try {
+            return $container->get($serviceId);
+        } catch (\Exception $e) {
+            if ($container->has($serviceId)) {
+                throw $e;
+            }
+
             Assert::fail(
                 "Service `{$serviceId}` is required by Codeception, but not loaded by Symfony. Possible solutions:\n
             In your `config/packages/framework.php`/`.yaml`, set `test` to `true` (when in test environment), see https://symfony.com/doc/current/reference/configuration/framework.html#test\n
@@ -37,8 +43,6 @@ trait ServicesAssertionsTrait
             Solution: Set it to `public` in your `config/services.php`/`.yaml`, see https://symfony.com/doc/current/service_container/alias_private.html#marking-services-as-public-private\n"
             );
         }
-
-        return $service;
     }
 
     /**
