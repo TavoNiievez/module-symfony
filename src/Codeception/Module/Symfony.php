@@ -388,7 +388,9 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             }
 
             $profile = $profiler->loadProfileFromResponse($response);
-            $this->cacheProfile($response, $profile);
+            if ($profile !== null) {
+                $this->cacheProfile($response, $profile);
+            }
 
             return $profile;
         } catch (BadMethodCallException) {
