@@ -216,6 +216,9 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     protected array $persistentServices = [];
 
+    /** @var list<non-empty-string> */
+    private array $internalDomainsCache = [];
+
     /** @return list<string> */
     public function _parts(): array
     {
@@ -277,6 +280,7 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
                 unset($this->permanentServices[$serviceName]);
             }
         }
+        $this->persistentServices = [];
         parent::_after($test);
     }
 
@@ -415,19 +419,31 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             return;
         }
 
-        $collectors = [
-            DataCollectorName::SECURITY->value => [$this->debugSecurityData(...), SecurityDataCollector::class],
-            DataCollectorName::MAILER->value   => [$this->debugMailerData(...), MessageDataCollector::class],
-            DataCollectorName::NOTIFIER->value => [$this->debugNotifierData(...), NotificationDataCollector::class],
-            DataCollectorName::TIME->value     => [$this->debugTimeData(...), TimeDataCollector::class],
-        ];
+        if ($profile->hasCollector(DataCollectorName::SECURITY->value)) {
+            $collector = $profile->getCollector(DataCollectorName::SECURITY->value);
+            if ($collector instanceof SecurityDataCollector) {
+                $this->debugSecurityData($collector);
+            }
+        }
 
-        foreach ($collectors as $name => [$callback, $expectedClass]) {
-            if ($profile->hasCollector($name)) {
-                $collector = $profile->getCollector($name);
-                if ($collector instanceof $expectedClass) {
-                    $callback($collector);
-                }
+        if ($profile->hasCollector(DataCollectorName::MAILER->value)) {
+            $collector = $profile->getCollector(DataCollectorName::MAILER->value);
+            if ($collector instanceof MessageDataCollector) {
+                $this->debugMailerData($collector);
+            }
+        }
+
+        if ($profile->hasCollector(DataCollectorName::NOTIFIER->value)) {
+            $collector = $profile->getCollector(DataCollectorName::NOTIFIER->value);
+            if ($collector instanceof NotificationDataCollector) {
+                $this->debugNotifierData($collector);
+            }
+        }
+
+        if ($profile->hasCollector(DataCollectorName::TIME->value)) {
+            $collector = $profile->getCollector(DataCollectorName::TIME->value);
+            if ($collector instanceof TimeDataCollector) {
+                $this->debugTimeData($collector);
             }
         }
     }
@@ -435,6 +451,10 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
     /** @return list<non-empty-string> */
     protected function getInternalDomains(): array
     {
+        if ($this->internalDomainsCache !== []) {
+            return $this->internalDomainsCache;
+        }
+
         $domains = [];
 
         foreach ($this->grabRouterService()->getRouteCollection() as $route) {
@@ -447,7 +467,9 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         }
 
         /** @var list<non-empty-string> */
-        return array_values(array_unique($domains));
+        $this->internalDomainsCache = array_values(array_unique($domains));
+
+        return $this->internalDomainsCache;
     }
 
     /**
