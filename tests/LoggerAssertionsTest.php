@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 use PHPUnit\Framework\AssertionFailedError;
 
-final class LoggerAssertionsTest extends CodeceptTestCase
+final class LoggerAssertionsTest extends \Tests\Support\KernelTestCase
 {
     public function testDeprecationsAreReported(): void
     {

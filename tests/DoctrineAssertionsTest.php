@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use Tests\App\Entity\User;
 use Tests\App\Repository\UserRepository;
 use Tests\App\Repository\UserRepositoryInterface;
 
-final class DoctrineAssertionsTest extends CodeceptTestCase
+final class DoctrineAssertionsTest extends \Tests\Support\KernelTestCase
 {
     protected function _getEntityManager(): EntityManagerInterface
     {

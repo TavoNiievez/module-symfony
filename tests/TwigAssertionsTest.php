@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 
-final class TwigAssertionsTest extends CodeceptTestCase
+final class TwigAssertionsTest extends \Tests\Support\KernelTestCase
 {
     public function testDontSeeRenderedTemplate(): void
     {
