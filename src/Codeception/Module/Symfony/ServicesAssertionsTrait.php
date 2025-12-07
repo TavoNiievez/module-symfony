@@ -10,6 +10,20 @@ use PHPUnit\Framework\Assert;
 trait ServicesAssertionsTrait
 {
     /**
+     * Services that should be persistent during test execution between kernel reboots
+     *
+     * @var array<non-empty-string, object>
+     */
+    protected array $persistentServices = [];
+
+    /**
+     * Services that should be persistent permanently for all tests
+     *
+     * @var array<non-empty-string, object>
+     */
+    protected array $permanentServices = [];
+
+    /**
      * Grabs a service from the Symfony dependency injection container (DIC).
      * In the "test" environment, Symfony uses a special `test.service_container`.
      * See the "[Public Versus Private Services](https://symfony.com/doc/current/service_container/alias_private.html#marking-services-as-public-private)" documentation.
