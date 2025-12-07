@@ -466,7 +466,6 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             }
         }
 
-        /** @var list<non-empty-string> */
         $this->internalDomainsCache = array_values(array_unique($domains));
 
         return $this->internalDomainsCache;
