@@ -6,6 +6,7 @@ namespace Codeception\Module\Symfony;
 
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Routing\RouterInterface;
+
 use function array_intersect_assoc;
 use function is_string;
 use function parse_url;

@@ -6,6 +6,7 @@ namespace Codeception\Module\Symfony;
 
 use Symfony\Component\HttpKernel\DataCollector\LoggerDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
+
 use function sprintf;
 
 trait LoggerAssertionsTrait

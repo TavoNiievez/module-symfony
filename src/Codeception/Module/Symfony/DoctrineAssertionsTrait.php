@@ -6,6 +6,7 @@ namespace Codeception\Module\Symfony;
 
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\Assert;
+
 use function interface_exists;
 use function is_object;
 use function is_subclass_of;

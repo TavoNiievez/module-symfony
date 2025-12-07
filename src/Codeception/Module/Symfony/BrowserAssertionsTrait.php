@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\Test\Constraint\ResponseIsRedirected;
 use Symfony\Component\HttpFoundation\Test\Constraint\ResponseIsSuccessful;
 use Symfony\Component\HttpFoundation\Test\Constraint\ResponseIsUnprocessable;
 use Symfony\Component\HttpFoundation\Test\Constraint\ResponseStatusCodeSame;
+
 use function sprintf;
 
 trait BrowserAssertionsTrait

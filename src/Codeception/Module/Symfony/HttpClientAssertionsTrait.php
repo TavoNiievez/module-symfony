@@ -6,6 +6,7 @@ namespace Codeception\Module\Symfony;
 
 use Symfony\Component\HttpClient\DataCollector\HttpClientDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
+
 use function array_change_key_case;
 use function array_filter;
 use function array_intersect_key;
@@ -51,18 +52,18 @@ trait HttpClientAssertionsTrait
                     return false;
                 }
 
-                $options     = $trace['options'] ?? [];
-                $actualBody  = $this->extractValue($options['body'] ?? $options['json'] ?? null);
+                $options = $trace['options'] ?? [];
+                $actualBody = $this->extractValue($options['body'] ?? $options['json'] ?? null);
                 $bodyMatches = $expectedBody === null || $expectedBody === $actualBody;
 
                 $headersMatch = $expectedHeaders === [] || (
                     is_array($headerValues = $this->extractValue($options['headers'] ?? []))
-                        && ($normalizedExpected = array_change_key_case($expectedHeaders))
-                        === array_intersect_key(array_change_key_case($headerValues), $normalizedExpected)
+                    && ($normalizedExpected = array_change_key_case($expectedHeaders))
+                    === array_intersect_key(array_change_key_case($headerValues), $normalizedExpected)
                 );
 
                 return $bodyMatches && $headersMatch;
-            },
+            }
         );
 
         $this->assertNotEmpty(

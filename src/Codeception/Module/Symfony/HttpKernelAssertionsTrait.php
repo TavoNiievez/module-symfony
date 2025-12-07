@@ -17,6 +17,7 @@ use Symfony\Component\HttpKernel\Profiler\Profile;
 use Symfony\Component\Mailer\DataCollector\MessageDataCollector;
 use Symfony\Component\Notifier\DataCollector\NotificationDataCollector;
 use Symfony\Component\Translation\DataCollector\TranslationDataCollector;
+
 use function sprintf;
 
 /**
