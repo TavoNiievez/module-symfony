@@ -47,42 +47,29 @@ trait HttpClientAssertionsTrait
     ): void {
         $matchingRequests = array_filter(
             $this->getHttpClientTraces($httpClientId, __FUNCTION__),
-            fn(array $trace): bool => $this->filterRequest($trace, $expectedUrl, $expectedMethod, $expectedBody, $expectedHeaders)
+            function (array $trace) use ($expectedUrl, $expectedMethod, $expectedBody, $expectedHeaders): bool {
+                if (!$this->matchesUrlAndMethod($trace, $expectedUrl, $expectedMethod)) {
+                    return false;
+                }
+
+                $options = $trace['options'] ?? [];
+                $actualBody = $this->extractValue($options['body'] ?? $options['json'] ?? null);
+                $bodyMatches = $expectedBody === null || $expectedBody === $actualBody;
+
+                $headersMatch = $expectedHeaders === [] || (
+                    is_array($headerValues = $this->extractValue($options['headers'] ?? []))
+                    && ($normalizedExpected = array_change_key_case($expectedHeaders))
+                    === array_intersect_key(array_change_key_case($headerValues), $normalizedExpected)
+                );
+
+                return $bodyMatches && $headersMatch;
+            }
         );
 
         $this->assertNotEmpty(
             $matchingRequests,
             sprintf('The expected request has not been called: "%s" - "%s"', $expectedMethod, $expectedUrl)
         );
-    }
-
-    /**
-     * @param array{
-     *     info: array{url: string},
-     *     url: string,
-     *     method: string,
-     *     options?: array{body?: mixed, json?: mixed, headers?: mixed}
-     * } $trace
-     * @param string|array<mixed>|null      $expectedBody
-     * @param array<string,string|string[]> $expectedHeaders
-     */
-    private function filterRequest(array $trace, string $expectedUrl, string $expectedMethod, string|array|null $expectedBody, array $expectedHeaders): bool
-    {
-        if (!$this->matchesUrlAndMethod($trace, $expectedUrl, $expectedMethod)) {
-            return false;
-        }
-
-        $options = $trace['options'] ?? [];
-        $actualBody = $this->extractValue($options['body'] ?? $options['json'] ?? null);
-        $bodyMatches = $expectedBody === null || $expectedBody === $actualBody;
-
-        $headersMatch = $expectedHeaders === [] || (
-            is_array($headerValues = $this->extractValue($options['headers'] ?? []))
-            && ($normalizedExpected = array_change_key_case($expectedHeaders))
-            === array_intersect_key(array_change_key_case($headerValues), $normalizedExpected)
-        );
-
-        return $bodyMatches && $headersMatch;
     }
 
     /**
