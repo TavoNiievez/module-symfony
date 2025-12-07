@@ -4,18 +4,12 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Tests\App\Entity\User;
 use Tests\App\Repository\UserRepository;
 use Tests\App\Repository\UserRepositoryInterface;
 
 final class DoctrineAssertionsTest extends \Tests\Support\KernelTestCase
 {
-    protected function _getEntityManager(): EntityManagerInterface
-    {
-        return $this->_getContainer()->get('doctrine.orm.entity_manager');
-    }
-
     public function testGrabNumRecords(): void
     {
         $this->assertSame(1, $this->grabNumRecords(User::class));
