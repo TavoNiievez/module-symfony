@@ -19,6 +19,12 @@ use function sprintf;
 
 trait HttpClientAssertionsTrait
 {
+    /** @var array<string, array{traces: list<array{info: array{url: string}, url: string, method: string, options?: array{body?: mixed, json?: mixed, headers?: mixed}}>}>|null */
+    private ?array $cachedHttpClientClients = null;
+
+    /** @var HttpClientDataCollector|null */
+    private ?HttpClientDataCollector $cachedHttpClientCollector = null;
+
     /**
      * Asserts that the given URL has been called using, if specified, the given method, body and/or headers.
      * By default, it will inspect the default Symfony HttpClient; you may check a different one by passing its
@@ -131,7 +137,22 @@ trait HttpClientAssertionsTrait
     private function getHttpClientTraces(string $httpClientId, string $function): array
     {
         $httpClientCollector = $this->grabHttpClientCollector($function);
-        $clients = $httpClientCollector->getClients();
+
+        if ($this->cachedHttpClientCollector === $httpClientCollector && $this->cachedHttpClientClients !== null) {
+            $clients = $this->cachedHttpClientClients;
+        } else {
+            /** @var array<string, array{traces: list<array{
+             *     info: array{url: string},
+             *     url: string,
+             *     method: string,
+             *     options?: array{body?: mixed, json?: mixed, headers?: mixed}
+             * }>}> $clients
+             */
+            $clients = $httpClientCollector->getClients();
+
+            $this->cachedHttpClientClients = $clients;
+            $this->cachedHttpClientCollector = $httpClientCollector;
+        }
 
         if (!isset($clients[$httpClientId])) {
             $this->fail(sprintf('HttpClient "%s" is not registered.', $httpClientId));

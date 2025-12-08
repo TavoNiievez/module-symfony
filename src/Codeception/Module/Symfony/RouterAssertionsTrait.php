@@ -15,6 +15,12 @@ use function str_ends_with;
 
 trait RouterAssertionsTrait
 {
+    /** @var array<string, string>|null */
+    private ?array $cachedActionMap = null;
+
+    /** @var RouterInterface|null */
+    private ?RouterInterface $cachedRouterForActionMap = null;
+
     /**
      * Opens web page by action name
      *
@@ -129,10 +135,21 @@ trait RouterAssertionsTrait
 
     private function findRouteByActionOrFail(string $action): string
     {
+        $router = $this->grabRouterService();
+        if ($this->cachedRouterForActionMap === $router && isset($this->cachedActionMap[$action])) {
+            return $this->cachedActionMap[$action];
+        }
+
+        if ($this->cachedRouterForActionMap !== $router) {
+            $this->cachedActionMap = [];
+            $this->cachedRouterForActionMap = $router;
+        }
+
         $routeCollection = $this->grabRouterService()->getRouteCollection();
         foreach ($routeCollection->all() as $name => $route) {
             $ctrl = $route->getDefault('_controller');
             if (is_string($ctrl) && str_ends_with($ctrl, $action)) {
+                $this->cachedActionMap[$action] = $name;
                 return $name;
             }
         }

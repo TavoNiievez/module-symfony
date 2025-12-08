@@ -14,6 +14,12 @@ use function sprintf;
 
 trait FormAssertionsTrait
 {
+    /** @var array<string, mixed>|null */
+    private ?array $cachedFormCollectorData = null;
+
+    /** @var FormDataCollector|null */
+    private ?FormDataCollector $cachedFormCollector = null;
+
     /**
      * Asserts that value of the field of the first form matching the given selector does equal the expected value.
      *
@@ -215,6 +221,10 @@ trait FormAssertionsTrait
     /** @return array<string, mixed> */
     private function getRawCollectorData(FormDataCollector $collector): array
     {
+        if ($this->cachedFormCollector === $collector && $this->cachedFormCollectorData !== null) {
+            return $this->cachedFormCollectorData;
+        }
+
         $data = $collector->getData();
 
         if ($data instanceof Data) {
@@ -223,6 +233,10 @@ trait FormAssertionsTrait
 
         /** @var array<string, mixed> $result */
         $result = is_array($data) ? $data : [];
+
+        $this->cachedFormCollectorData = $result;
+        $this->cachedFormCollector = $collector;
+
         return $result;
     }
 

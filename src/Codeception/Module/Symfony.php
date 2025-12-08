@@ -270,6 +270,21 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             }
         }
         $this->persistentServices = [];
+
+        $this->cachedDispatchedEvents = null;
+        $this->cachedEventCollectorForDispatched = null;
+        $this->cachedOrphanedEvents = null;
+        $this->cachedEventCollectorForOrphans = null;
+
+        $this->cachedHttpClientClients = null;
+        $this->cachedHttpClientCollector = null;
+
+        $this->cachedActionMap = null;
+        $this->cachedRouterForActionMap = null;
+
+        $this->cachedFormCollectorData = null;
+        $this->cachedFormCollector = null;
+
         parent::_after($test);
     }
 

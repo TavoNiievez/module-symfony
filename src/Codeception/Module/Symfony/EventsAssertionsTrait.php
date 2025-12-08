@@ -18,6 +18,18 @@ use function str_starts_with;
 
 trait EventsAssertionsTrait
 {
+    /** @var list<array{event: string, pretty: string}>|null */
+    private ?array $cachedDispatchedEvents = null;
+
+    /** @var EventDataCollector|null */
+    private ?EventDataCollector $cachedEventCollectorForDispatched = null;
+
+    /** @var list<string>|null */
+    private ?array $cachedOrphanedEvents = null;
+
+    /** @var EventDataCollector|null */
+    private ?EventDataCollector $cachedEventCollectorForOrphans = null;
+
     /**
      * Verifies that **no** events (regular **or** orphan) were dispatched during the test.
      *
@@ -181,25 +193,45 @@ trait EventsAssertionsTrait
     /** @return list<array{event: string, pretty: string}> */
     protected function getDispatchedEvents(): array
     {
-        $eventCollector  = $this->grabEventCollector(__FUNCTION__);
+        $eventCollector = $this->grabEventCollector(__FUNCTION__);
+
+        if ($this->cachedEventCollectorForDispatched === $eventCollector && $this->cachedDispatchedEvents !== null) {
+            return $this->cachedDispatchedEvents;
+        }
+
         $calledListeners = $eventCollector->getCalledListeners($this->getDefaultDispatcher());
 
-        /** @var list<array{event: string, pretty: string}> */
-        return is_array($calledListeners)
+        /** @var list<array{event: string, pretty: string}> $result */
+        $result = is_array($calledListeners)
             ? array_values($calledListeners)
             : $calledListeners->getValue(true);
+
+        $this->cachedDispatchedEvents = $result;
+        $this->cachedEventCollectorForDispatched = $eventCollector;
+
+        return $result;
     }
 
     /** @return list<string> */
     protected function getOrphanedEvents(): array
     {
         $eventCollector = $this->grabEventCollector(__FUNCTION__);
+
+        if ($this->cachedEventCollectorForOrphans === $eventCollector && $this->cachedOrphanedEvents !== null) {
+            return $this->cachedOrphanedEvents;
+        }
+
         $orphanedEvents = $eventCollector->getOrphanedEvents($this->getDefaultDispatcher());
 
-        /** @var list<string> */
-        return is_array($orphanedEvents)
+        /** @var list<string> $result */
+        $result = is_array($orphanedEvents)
             ? array_values($orphanedEvents)
             : $orphanedEvents->getValue(true);
+
+        $this->cachedOrphanedEvents = $result;
+        $this->cachedEventCollectorForOrphans = $eventCollector;
+
+        return $result;
     }
 
     /** @return list<string> */
