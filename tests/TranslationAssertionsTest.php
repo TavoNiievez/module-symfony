@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 
-final class TranslationAssertionsTest extends CodeceptTestCase
+final class TranslationAssertionsTest extends \Tests\Support\KernelTestCase
 {
     public function testDontSeeFallbackTranslations(): void
     {

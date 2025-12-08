@@ -15,6 +15,8 @@ use Symfony\Component\HttpKernel\Kernel;
 
 trait NotifierAssertionsTrait
 {
+    private ?string $notifierLoggerServiceId = null;
+
     /**
      * Asserts that the expected number of notifications was sent.
      *
@@ -251,10 +253,18 @@ trait NotifierAssertionsTrait
             Assert::fail('Notifier assertions require Symfony 6.2 or higher.');
         }
 
+        if ($this->notifierLoggerServiceId !== null) {
+            $notifier = $this->getService($this->notifierLoggerServiceId);
+            if ($notifier instanceof NotificationLoggerListener) {
+                return $notifier->getEvents();
+            }
+        }
+
         $services = ['notifier.notification_logger_listener', 'notifier.logger_notification_listener'];
         foreach ($services as $serviceId) {
             $notifier = $this->getService($serviceId);
             if ($notifier instanceof NotificationLoggerListener) {
+                $this->notifierLoggerServiceId = $serviceId;
                 return $notifier->getEvents();
             }
         }

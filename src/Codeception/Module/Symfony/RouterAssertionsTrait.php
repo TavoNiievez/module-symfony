@@ -6,6 +6,7 @@ namespace Codeception\Module\Symfony;
 
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Routing\RouterInterface;
+
 use function array_intersect_assoc;
 use function is_string;
 use function parse_url;
@@ -67,10 +68,17 @@ trait RouterAssertionsTrait
      */
     public function seeCurrentActionIs(string $action): void
     {
+        if ($action === '') {
+            Assert::fail('Action cannot be empty');
+        }
+
         $this->findRouteByActionOrFail($action);
 
-        /** @var string $current */
         $current = $this->getClient()->getRequest()->attributes->get('_controller');
+        if (!is_string($current)) {
+            Assert::fail('Current action (controller) is not a string.');
+        }
+
         $this->assertStringEndsWith($action, $current, "Current action is '{$current}'.");
     }
 
@@ -121,7 +129,8 @@ trait RouterAssertionsTrait
 
     private function findRouteByActionOrFail(string $action): string
     {
-        foreach ($this->grabRouterService()->getRouteCollection()->all() as $name => $route) {
+        $routeCollection = $this->grabRouterService()->getRouteCollection();
+        foreach ($routeCollection->all() as $name => $route) {
             $ctrl = $route->getDefault('_controller');
             if (is_string($ctrl) && str_ends_with($ctrl, $action)) {
                 return $name;

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 use Codeception\Module\Symfony\HttpClientAssertionsTrait;
 use Symfony\Component\HttpKernel\Kernel;
 
-final class HttpClientAssertionsTest extends CodeceptTestCase
+final class HttpClientAssertionsTest extends \Tests\Support\KernelTestCase
 {
     use HttpClientAssertionsTrait;
 

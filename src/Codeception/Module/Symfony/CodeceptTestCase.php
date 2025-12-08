@@ -5,22 +5,28 @@ declare(strict_types=1);
 namespace Codeception\Module\Symfony;
 
 use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\HttpKernel\Profiler\Profile;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
-use Tests\App\Doctrine\TestDatabaseSetup;
-use Tests\App\TestKernel;
 
 abstract class CodeceptTestCase extends TestCase
 {
     use BrowserAssertionsTrait;
+    use CacheTrait;
     use ConsoleAssertionsTrait;
     use DoctrineAssertionsTrait;
     use DomCrawlerAssertionsTrait;
     use EventsAssertionsTrait;
     use FormAssertionsTrait;
+    use HttpKernelAssertionsTrait;
     use LoggerAssertionsTrait;
     use MailerAssertionsTrait;
     use MimeAssertionsTrait;
@@ -36,23 +42,22 @@ abstract class CodeceptTestCase extends TestCase
     use ValidatorAssertionsTrait;
 
     protected KernelBrowser $client;
-    protected TestKernel $kernel;
+    protected KernelInterface $kernel;
     protected bool $profilerEnabled = true;
 
-    /** @var array<string, object> */
-    protected array $persistentServices = [];
-
-    /** @var array<string, object> */
-    protected array $permanentServices = [];
+    /** @var array<string, bool> */
+    protected array $config = ['guard' => false, 'authenticator' => false];
 
     protected function setUp(): void
     {
-        $this->kernel = new TestKernel('test', true);
+        $this->kernel = $this->createKernel();
         $this->kernel->boot();
 
-        /** @var EntityManagerInterface $em */
-        $em = $this->_getContainer()->get('doctrine.orm.entity_manager');
-        TestDatabaseSetup::init($em);
+        if ($this->_getContainer()->has('doctrine.orm.entity_manager')) {
+            /** @var EntityManagerInterface $em */
+            $em = $this->_getContainer()->get('doctrine.orm.entity_manager');
+            $this->setUpDatabase($em);
+        }
 
         $this->client = new KernelBrowser($this->kernel);
 
@@ -67,29 +72,81 @@ abstract class CodeceptTestCase extends TestCase
         parent::tearDown();
     }
 
+    protected function createKernel(): KernelInterface
+    {
+        $kernelClass = $this->getKernelClass();
+
+        if (!class_exists($kernelClass)) {
+            throw new RuntimeException(sprintf('Kernel class "%s" not found.', $kernelClass));
+        }
+
+        /** @var KernelInterface $kernel */
+        $kernel = new $kernelClass('test', true);
+
+        return $kernel;
+    }
+
+    protected function getKernelClass(): string
+    {
+        if (isset($_SERVER['KERNEL_CLASS']) && is_string($_SERVER['KERNEL_CLASS'])) {
+            return $_SERVER['KERNEL_CLASS'];
+        }
+
+        if (isset($_ENV['KERNEL_CLASS']) && is_string($_ENV['KERNEL_CLASS'])) {
+            return $_ENV['KERNEL_CLASS'];
+        }
+
+        if (class_exists('App\Kernel')) {
+            return 'App\Kernel';
+        }
+
+        throw new LogicException('Kernel class not found. Please define KERNEL_CLASS in your phpunit.xml or .env file.');
+    }
+
+    protected function setUpDatabase(EntityManagerInterface $em): void
+    {
+        // Override this method to perform database setup
+    }
+
     protected function getClient(): KernelBrowser
     {
         return $this->client;
     }
 
-    protected function _getContainer(): ContainerInterface
+    protected function _getEntityManager(): EntityManagerInterface
     {
-        $container = $this->kernel->getContainer();
-        if ($container->has('test.service_container')) {
-            $container = $container->get('test.service_container');
-        }
-        return $container;
+        /** @var EntityManagerInterface $em */
+        $em = $this->_getContainer()->get('doctrine.orm.entity_manager');
+        return $em;
     }
 
-    protected function grabCollector(DataCollectorName $name): DataCollectorInterface
+    protected function getProfile(): ?Profile
     {
         $profile = $this->client->getProfile();
-        if (!$profile) {
-            /** @var Profiler $profiler */
-            $profiler = $this->_getContainer()->get('profiler');
-            $profile = $profiler->collect($this->client->getRequest(), $this->client->getResponse());
+
+        if ($profile instanceof Profile) {
+            return $profile;
         }
 
-        return $profile->getCollector($name->value);
+        /** @var Response $response */
+        $response = $this->client->getResponse();
+
+        if ($profile = $this->getProfileFromCache($response)) {
+            return $profile;
+        }
+
+        /** @var Profiler $profiler */
+        $profiler = $this->_getContainer()->get('profiler');
+        /** @var Request $request */
+        $request = $this->client->getRequest();
+
+        $profile = $profiler->collect($request, $response);
+
+        if ($profile instanceof Profile) {
+            $this->cacheProfile($response, $profile);
+            return $profile;
+        }
+
+        return null;
     }
 }

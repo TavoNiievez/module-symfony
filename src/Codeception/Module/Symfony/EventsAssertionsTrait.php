@@ -202,22 +202,26 @@ trait EventsAssertionsTrait
             : $orphanedEvents->getValue(true);
     }
 
-    /** @return list<list<string>> */
+    /** @return list<string> */
     private function collectEvents(bool $orphanOnly): array
     {
-        return $orphanOnly
-            ? [$this->getOrphanedEvents()]
-            : [$this->getOrphanedEvents(), array_column($this->getDispatchedEvents(), 'event')];
+        $orphaned = $this->getOrphanedEvents();
+
+        if ($orphanOnly) {
+            return $orphaned;
+        }
+
+        $dispatched = array_column($this->getDispatchedEvents(), 'event');
+
+        return array_merge($orphaned, $dispatched);
     }
 
     /**
      * @param class-string|object|list<class-string|object>|null $expected
-     * @param list<list<string>>                                 $actual
+     * @param list<string>                                       $actualEvents
      */
-    protected function assertEventTriggered(array|object|string|null $expected, array $actual, bool $shouldExist): void
+    protected function assertEventTriggered(array|object|string|null $expected, array $actualEvents, bool $shouldExist): void
     {
-        $actualEvents = array_merge(...$actual);
-
         if ($shouldExist) {
             $this->assertNotEmpty($actualEvents, 'No event was triggered.');
         }
@@ -226,10 +230,12 @@ trait EventsAssertionsTrait
             return;
         }
 
+        $actualEventsMap = array_flip($actualEvents);
+
         $expectedEvents = is_object($expected) ? [$expected] : (array) $expected;
         foreach ($expectedEvents as $expectedEvent) {
             $eventName    = is_object($expectedEvent) ? $expectedEvent::class : $expectedEvent;
-            $wasTriggered = in_array($eventName, $actualEvents, true);
+            $wasTriggered = isset($actualEventsMap[$eventName]);
 
             $this->assertSame(
                 $shouldExist,
@@ -288,9 +294,11 @@ trait EventsAssertionsTrait
     private function listenerWasCalled(string $expectedListener, ?string $expectedEvent, array $actualEvents): bool
     {
         foreach ($actualEvents as $actualEvent) {
-            if (str_starts_with($actualEvent['pretty'], $expectedListener)
-                && ($expectedEvent === null || $actualEvent['event'] === $expectedEvent)
-            ) {
+            if ($expectedEvent !== null && $actualEvent['event'] !== $expectedEvent) {
+                continue;
+            }
+
+            if (str_starts_with($actualEvent['pretty'], $expectedListener)) {
                 return true;
             }
         }

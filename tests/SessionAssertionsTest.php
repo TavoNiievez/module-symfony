@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;
 use Tests\App\Entity\User;
 use Tests\App\Repository\UserRepository;
 
-final class SessionAssertionsTest extends CodeceptTestCase
+final class SessionAssertionsTest extends \Tests\Support\KernelTestCase
 {
     public function testAmLoggedInAs(): void
     {
@@ -103,8 +102,7 @@ final class SessionAssertionsTest extends CodeceptTestCase
 
     private function getTestUser(): User
     {
-        /** @var UserRepository $repository */
-        $repository = $this->_getContainer()->get(UserRepository::class);
+        $repository = $this->grabService(UserRepository::class);
         $user = $repository->getByEmail('john_doe@gmail.com');
         $this->assertNotNull($user);
 

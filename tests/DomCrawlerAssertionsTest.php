@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 
-final class DomCrawlerAssertionsTest extends CodeceptTestCase
+final class DomCrawlerAssertionsTest extends \Tests\Support\KernelTestCase
 {
     protected function setUp(): void
     {

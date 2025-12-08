@@ -11,6 +11,7 @@ use Codeception\Lib\Framework;
 use Codeception\Lib\Interfaces\DoctrineProvider;
 use Codeception\Lib\Interfaces\PartedModule;
 use Codeception\Module\Symfony\BrowserAssertionsTrait;
+use Codeception\Module\Symfony\CacheTrait;
 use Codeception\Module\Symfony\ConsoleAssertionsTrait;
 use Codeception\Module\Symfony\DataCollectorName;
 use Codeception\Module\Symfony\DoctrineAssertionsTrait;
@@ -18,6 +19,7 @@ use Codeception\Module\Symfony\DomCrawlerAssertionsTrait;
 use Codeception\Module\Symfony\EventsAssertionsTrait;
 use Codeception\Module\Symfony\FormAssertionsTrait;
 use Codeception\Module\Symfony\HttpClientAssertionsTrait;
+use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
 use Codeception\Module\Symfony\LoggerAssertionsTrait;
 use Codeception\Module\Symfony\MailerAssertionsTrait;
 use Codeception\Module\Symfony\MimeAssertionsTrait;
@@ -55,6 +57,7 @@ use Symfony\Component\Mailer\DataCollector\MessageDataCollector;
 use Symfony\Component\Notifier\DataCollector\NotificationDataCollector;
 use Symfony\Component\Translation\DataCollector\TranslationDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
+
 use function array_keys;
 use function array_map;
 use function array_unique;
@@ -145,12 +148,14 @@ use function sprintf;
 class Symfony extends Framework implements DoctrineProvider, PartedModule
 {
     use BrowserAssertionsTrait;
+    use CacheTrait;
     use ConsoleAssertionsTrait;
     use DoctrineAssertionsTrait;
     use DomCrawlerAssertionsTrait;
     use EventsAssertionsTrait;
     use FormAssertionsTrait;
     use HttpClientAssertionsTrait;
+    use HttpKernelAssertionsTrait;
     use LoggerAssertionsTrait;
     use MailerAssertionsTrait;
     use MimeAssertionsTrait;
@@ -160,8 +165,8 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
     use SecurityAssertionsTrait;
     use ServicesAssertionsTrait;
     use SessionAssertionsTrait;
-    use TranslationAssertionsTrait;
     use TimeAssertionsTrait;
+    use TranslationAssertionsTrait;
     use TwigAssertionsTrait;
     use ValidatorAssertionsTrait;
 
@@ -197,22 +202,7 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         'guard'             => false,
     ];
 
-    /** @var class-string<Kernel>|null */
     protected ?string $kernelClass = null;
-
-    /**
-     * Services that should be persistent permanently for all tests
-     *
-     * @var array<non-empty-string, object>
-     */
-    protected array $permanentServices = [];
-
-    /**
-     * Services that should be persistent during test execution between kernel reboots
-     *
-     * @var array<non-empty-string, object>
-     */
-    protected array $persistentServices = [];
 
     /** @return list<string> */
     public function _parts(): array
@@ -225,12 +215,17 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         $this->kernelClass = $this->getKernelClass();
         $this->setXdebugMaxNestingLevel(200);
 
-        /** @var class-string<Kernel> $kernelClass */
         $kernelClass = $this->kernelClass;
-        $this->kernel = new $kernelClass(
+        $kernel = new $kernelClass(
             $this->config['environment'],
             $this->config['debug']
         );
+
+        if (!$kernel instanceof Kernel) {
+            throw new \LogicException(sprintf('Kernel class "%s" must extend %s.', $kernelClass, Kernel::class));
+        }
+
+        $this->kernel = $kernel;
 
         if ($this->config['bootstrap']) {
             $this->bootstrapEnvironment();
@@ -248,7 +243,11 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     public function _before(TestInterface $test): void
     {
-        $this->persistentServices = array_merge($this->persistentServices, $this->permanentServices);
+        if ($this->persistentServices === []) {
+            $this->persistentServices = $this->permanentServices;
+        } else {
+            $this->persistentServices = array_merge($this->persistentServices, $this->permanentServices);
+        }
 
         $this->client = new SymfonyConnector(
             $this->kernel,
@@ -262,7 +261,7 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     public function _after(TestInterface $test): void
     {
-        foreach (array_keys($this->permanentServices) as $serviceName) {
+        foreach ($this->permanentServices as $serviceName => $_) {
             $service = $this->getService($serviceName);
             if (is_object($service)) {
                 $this->permanentServices[$serviceName] = $service;
@@ -270,6 +269,7 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
                 unset($this->permanentServices[$serviceName]);
             }
         }
+        $this->persistentServices = [];
         parent::_after($test);
     }
 
@@ -286,8 +286,10 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     public function _getEntityManager(): EntityManagerInterface
     {
-        /** @var non-empty-string $emService */
         $emService = $this->config['em_service'];
+        if ($emService === '') {
+            throw new \LogicException('The "em_service" config option must be a non-empty string.');
+        }
 
         if (!isset($this->permanentServices[$emService])) {
             $this->persistPermanentService($emService);
@@ -303,14 +305,6 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
 
         /** @var EntityManagerInterface */
         return $this->permanentServices[$emService];
-    }
-
-    public function _getContainer(): ContainerInterface
-    {
-        $container = $this->kernel->getContainer();
-        /** @var ContainerInterface $testContainer */
-        $testContainer = $container->has('test.service_container') ? $container->get('test.service_container') : $container;
-        return $testContainer;
     }
 
     protected function getClient(): SymfonyConnector
@@ -330,17 +324,21 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     protected function getKernelClass(): string
     {
-        /** @var class-string<Kernel> $kernelClass */
         $kernelClass = $this->config['kernel_class'];
         $this->requireAdditionalAutoloader();
 
         if (class_exists($kernelClass)) {
+            if (!is_subclass_of($kernelClass, Kernel::class)) {
+                throw new \LogicException(sprintf('The "kernel_class" config option must be a valid class string extending Symfony\Component\HttpKernel\Kernel. "%s" given.', $kernelClass));
+            }
             return $kernelClass;
         }
 
-        /** @var string $rootDir */
         $rootDir = codecept_root_dir();
-        $path    = $rootDir . $this->config['app_path'];
+        if (!is_string($rootDir)) {
+            throw new \UnexpectedValueException('Root directory must be a string.');
+        }
+        $path = $rootDir . $this->config['app_path'];
 
         if (!file_exists($path)) {
             throw new ModuleRequireException(
@@ -350,14 +348,22 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             );
         }
 
-        $finder = new Finder();
-        $finder->name('*Kernel.php')->depth('0')->in($path);
+        $expectedKernelPath = $path . DIRECTORY_SEPARATOR . 'Kernel.php';
+        if (file_exists($expectedKernelPath)) {
+            include_once $expectedKernelPath;
+        } else {
+            $finder = new Finder();
+            $finder->name('*Kernel.php')->depth('0')->in($path);
 
-        foreach ($finder as $file) {
-            include_once $file->getRealPath();
+            foreach ($finder as $file) {
+                include_once $file->getRealPath();
+            }
         }
 
         if (class_exists($kernelClass, false)) {
+            if (!is_subclass_of($kernelClass, Kernel::class)) {
+                throw new \LogicException(sprintf('The "kernel_class" config option must be a valid class string extending Symfony\Component\HttpKernel\Kernel. "%s" given.', $kernelClass));
+            }
             return $kernelClass;
         }
 
@@ -381,51 +387,20 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         }
 
         try {
-            return $profiler->loadProfileFromResponse($this->getClient()->getResponse());
+            $response = $this->getClient()->getResponse();
+            if ($profile = $this->getProfileFromCache($response)) {
+                return $profile;
+            }
+
+            $profile = $profiler->loadProfileFromResponse($response);
+            if ($profile !== null) {
+                $this->cacheProfile($response, $profile);
+            }
+
+            return $profile;
         } catch (BadMethodCallException) {
             Assert::fail('You must perform a request before using this method.');
         }
-    }
-
-    /**
-     * Grab a Symfony Data Collector from the current profile.
-     *
-     * @phpstan-return (
-     *     $collector is DataCollectorName::EVENTS ? EventDataCollector :
-     *     ($collector is DataCollectorName::FORM ? FormDataCollector :
-     *     ($collector is DataCollectorName::HTTP_CLIENT ? HttpClientDataCollector :
-     *     ($collector is DataCollectorName::LOGGER ? LoggerDataCollector :
-     *     ($collector is DataCollectorName::TIME ? TimeDataCollector :
-     *     ($collector is DataCollectorName::TRANSLATION ? TranslationDataCollector :
-     *     ($collector is DataCollectorName::TWIG ? TwigDataCollector :
-     *     ($collector is DataCollectorName::SECURITY ? SecurityDataCollector :
-     *     ($collector is DataCollectorName::MAILER ? MessageDataCollector :
-     *     ($collector is DataCollectorName::NOTIFIER ? NotificationDataCollector :
-     *      DataCollectorInterface
-     *     )))))))))
-     * )
-     *
-     * @throws AssertionFailedError
-     */
-    protected function grabCollector(DataCollectorName $collector, string $function, ?string $message = null): DataCollectorInterface
-    {
-        $profile = $this->getProfile();
-
-        if ($profile === null) {
-            Assert::fail(sprintf("The Profile is needed to use the '%s' function.", $function));
-        }
-
-        if (!$profile->hasCollector($collector->value)) {
-            Assert::fail(
-                $message ?: sprintf(
-                    "The '%s' collector is needed to use the '%s' function.",
-                    $collector->value,
-                    $function
-                )
-            );
-        }
-
-        return $profile->getCollector($collector->value);
     }
 
     /**
@@ -440,40 +415,35 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             return;
         }
 
-        $collectors = [
-            DataCollectorName::SECURITY->value => [$this->debugSecurityData(...), SecurityDataCollector::class],
-            DataCollectorName::MAILER->value   => [$this->debugMailerData(...), MessageDataCollector::class],
-            DataCollectorName::NOTIFIER->value => [$this->debugNotifierData(...), NotificationDataCollector::class],
-            DataCollectorName::TIME->value     => [$this->debugTimeData(...), TimeDataCollector::class],
-        ];
+        if ($profile->hasCollector(DataCollectorName::SECURITY->value)) {
+            $collector = $profile->getCollector(DataCollectorName::SECURITY->value);
+            if ($collector instanceof SecurityDataCollector) {
+                $this->debugSecurityData($collector);
+            }
+        }
 
-        foreach ($collectors as $name => [$callback, $expectedClass]) {
-            if ($profile->hasCollector($name)) {
-                $collector = $profile->getCollector($name);
-                if ($collector instanceof $expectedClass) {
-                    $callback($collector);
-                }
+        if ($profile->hasCollector(DataCollectorName::MAILER->value)) {
+            $collector = $profile->getCollector(DataCollectorName::MAILER->value);
+            if ($collector instanceof MessageDataCollector) {
+                $this->debugMailerData($collector);
+            }
+        }
+
+        if ($profile->hasCollector(DataCollectorName::NOTIFIER->value)) {
+            $collector = $profile->getCollector(DataCollectorName::NOTIFIER->value);
+            if ($collector instanceof NotificationDataCollector) {
+                $this->debugNotifierData($collector);
+            }
+        }
+
+        if ($profile->hasCollector(DataCollectorName::TIME->value)) {
+            $collector = $profile->getCollector(DataCollectorName::TIME->value);
+            if ($collector instanceof TimeDataCollector) {
+                $this->debugTimeData($collector);
             }
         }
     }
 
-    /** @return list<non-empty-string> */
-    protected function getInternalDomains(): array
-    {
-        $domains = [];
-
-        foreach ($this->grabRouterService()->getRouteCollection() as $route) {
-            if ($route->getHost() !== '') {
-                $regex = $route->compile()->getHostRegex();
-                if ($regex !== null && $regex !== '') {
-                    $domains[] = $regex;
-                }
-            }
-        }
-
-        /** @var list<non-empty-string> */
-        return array_values(array_unique($domains));
-    }
 
     /**
      * Ensure Xdebug allows deep nesting.
@@ -544,12 +514,26 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     private function requireAdditionalAutoloader(): void
     {
-        /** @var string $rootDir */
-        $rootDir  = codecept_root_dir();
+        $rootDir = codecept_root_dir();
+        if (!is_string($rootDir)) {
+            throw new \UnexpectedValueException('Root directory must be a string.');
+        }
         $autoload = $rootDir . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
         if (file_exists($autoload)) {
             include_once $autoload;
+        }
+    }
+
+    /** @param non-empty-string $name */
+    protected function updateClientPersistentService(string $name, ?object $service): void
+    {
+        if ($this->client instanceof SymfonyConnector) {
+            if ($service === null) {
+                unset($this->client->persistentServices[$name]);
+            } else {
+                $this->client->persistentServices[$name] = $service;
+            }
         }
     }
 }

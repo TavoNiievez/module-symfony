@@ -101,8 +101,6 @@ trait ConsoleAssertionsTrait
 
     protected function grabKernelService(): KernelInterface
     {
-        /** @var KernelInterface $kernel */
-        $kernel = $this->grabService(KernelInterface::class);
-        return $kernel;
+        return $this->grabService(KernelInterface::class);
     }
 }

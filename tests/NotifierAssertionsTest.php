@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Notifier\Event\MessageEvent;
 use Symfony\Component\Notifier\EventListener\NotificationLoggerListener;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Tests\App\Notifier\NotifierFixture;
 
-final class NotifierAssertionsTest extends CodeceptTestCase
+final class NotifierAssertionsTest extends \Tests\Support\KernelTestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
-        /** @var NotificationLoggerListener $logger */
-        $logger = $this->getService('notifier.notification_logger_listener');
+        $logger = $this->grabService('notifier.notification_logger_listener');
+        $this->assertInstanceOf(NotificationLoggerListener::class, $logger);
         $logger->reset();
     }
 
@@ -65,8 +64,7 @@ final class NotifierAssertionsTest extends CodeceptTestCase
         $this->sendNotifications();
         $this->grabLastSentNotification();
 
-        /** @var NotifierFixture $fixture */
-        $fixture = $this->getService(NotifierFixture::class);
+        $fixture = $this->grabService(NotifierFixture::class);
         $fixture->sendNotification('Primary alert', 'chat');
         $last = $this->grabLastSentNotification();
 
@@ -76,8 +74,7 @@ final class NotifierAssertionsTest extends CodeceptTestCase
     public function testAssertNotificationTransportIsNotEqual(): void
     {
         $this->checkVersion();
-        /** @var NotifierFixture $fixture */
-        $fixture = $this->getService(NotifierFixture::class);
+        $fixture = $this->grabService(NotifierFixture::class);
         $fixture->sendNotification('Primary alert', 'chat');
         $last = $this->grabLastSentNotification();
 
@@ -133,8 +130,7 @@ final class NotifierAssertionsTest extends CodeceptTestCase
     public function testGrabLastSentNotification(): void
     {
         $this->checkVersion();
-        /** @var NotifierFixture $fixture */
-        $fixture = $this->getService(NotifierFixture::class);
+        $fixture = $this->grabService(NotifierFixture::class);
         $fixture->sendNotification('Last One', 'chat');
 
         $last = $this->grabLastSentNotification();
@@ -166,8 +162,7 @@ final class NotifierAssertionsTest extends CodeceptTestCase
 
     private function sendNotifications(): array
     {
-        /** @var NotifierFixture $fixture */
-        $fixture = $this->getService(NotifierFixture::class);
+        $fixture = $this->grabService(NotifierFixture::class);
 
         $sentEvent = $fixture->sendNotification('Welcome notification', 'primary');
         $queuedEvent = $fixture->sendNotification('Queued notification', 'queued', true);

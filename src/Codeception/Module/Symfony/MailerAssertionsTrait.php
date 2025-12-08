@@ -14,6 +14,8 @@ use Symfony\Component\Mime\Email;
 
 trait MailerAssertionsTrait
 {
+    private ?string $mailerLoggerServiceId = null;
+
     /**
      * Asserts that the expected number of emails was sent.
      *
@@ -164,10 +166,18 @@ trait MailerAssertionsTrait
 
     protected function getMessageMailerEvents(): MessageEvents
     {
+        if ($this->mailerLoggerServiceId !== null) {
+            $mailer = $this->getService($this->mailerLoggerServiceId);
+            if ($mailer instanceof MessageLoggerListener) {
+                return $mailer->getEvents();
+            }
+        }
+
         $services = ['mailer.message_logger_listener', 'mailer.logger_message_listener'];
         foreach ($services as $serviceId) {
             $mailer = $this->getService($serviceId);
             if ($mailer instanceof MessageLoggerListener) {
+                $this->mailerLoggerServiceId = $serviceId;
                 return $mailer->getEvents();
             }
         }

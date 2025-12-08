@@ -101,8 +101,6 @@ trait ValidatorAssertionsTrait
 
     protected function getValidatorService(): ValidatorInterface
     {
-        /** @var ValidatorInterface $validator */
-        $validator = $this->grabService(ValidatorInterface::class);
-        return $validator;
+        return $this->grabService(ValidatorInterface::class);
     }
 }

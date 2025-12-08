@@ -16,6 +16,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
+
 use function function_exists;
 
 /**
@@ -56,9 +57,9 @@ class Symfony extends HttpKernelBrowser
      */
     public function rebootKernel(): void
     {
-        foreach (array_keys($this->persistentServices) as $service) {
-            if ($this->container->has($service)) {
-                $this->persistentServices[$service] = $this->container->get($service);
+        foreach ($this->persistentServices as $serviceName => $serviceObject) {
+            if ($this->container->has($serviceName)) {
+                $this->persistentServices[$serviceName] = $this->container->get($serviceName);
             }
         }
 
@@ -120,8 +121,7 @@ class Symfony extends HttpKernelBrowser
         }
 
         if ($this->container instanceof TestContainer) {
-            $method = new ReflectionMethod($this->container, 'getPublicContainer');
-            $publicContainer = $method->invoke($this->container);
+            $publicContainer = (new ReflectionMethod($this->container, 'getPublicContainer'))->invoke($this->container);
         } else {
             $publicContainer = $this->container;
         }

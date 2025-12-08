@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\CodeceptTestCase;
 use Symfony\Component\HttpKernel\Kernel;
 use Tests\App\Event\TestEvent;
 use Tests\App\Listener\TestEventListener;
 
-final class EventsAssertionsTest extends CodeceptTestCase
+final class EventsAssertionsTest extends \Tests\Support\KernelTestCase
 {
     public function testDontSeeEvent(): void
     {
