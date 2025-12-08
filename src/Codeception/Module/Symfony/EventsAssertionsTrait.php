@@ -226,10 +226,11 @@ trait EventsAssertionsTrait
             return;
         }
 
+        $actualEventsMap = array_flip($actualEvents);
         $expectedEvents = is_object($expected) ? [$expected] : (array) $expected;
         foreach ($expectedEvents as $expectedEvent) {
             $eventName    = is_object($expectedEvent) ? $expectedEvent::class : $expectedEvent;
-            $wasTriggered = in_array($eventName, $actualEvents, true);
+            $wasTriggered = isset($actualEventsMap[$eventName]);
 
             $this->assertSame(
                 $shouldExist,

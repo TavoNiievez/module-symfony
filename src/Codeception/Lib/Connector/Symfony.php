@@ -121,8 +121,7 @@ class Symfony extends HttpKernelBrowser
         }
 
         if ($this->container instanceof TestContainer) {
-            $method = new ReflectionMethod($this->container, 'getPublicContainer');
-            $publicContainer = $method->invoke($this->container);
+            $publicContainer = (new ReflectionMethod($this->container, 'getPublicContainer'))->invoke($this->container);
         } else {
             $publicContainer = $this->container;
         }
