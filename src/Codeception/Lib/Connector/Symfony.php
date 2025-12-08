@@ -57,9 +57,9 @@ class Symfony extends HttpKernelBrowser
      */
     public function rebootKernel(): void
     {
-        foreach (array_keys($this->persistentServices) as $service) {
-            if ($this->container->has($service)) {
-                $this->persistentServices[$service] = $this->container->get($service);
+        foreach ($this->persistentServices as $serviceName => $serviceObject) {
+            if ($this->container->has($serviceName)) {
+                $this->persistentServices[$serviceName] = $this->container->get($serviceName);
             }
         }
 

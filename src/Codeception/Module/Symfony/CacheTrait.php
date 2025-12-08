@@ -67,8 +67,9 @@ trait CacheTrait
         }
 
         $domains = [];
+        $routeCollection = $this->grabRouterService()->getRouteCollection();
 
-        foreach ($this->grabRouterService()->getRouteCollection() as $route) {
+        foreach ($routeCollection as $route) {
             if ($route->getHost() !== '') {
                 $regex = $route->compile()->getHostRegex();
                 if ($regex !== null && $regex !== '') {
