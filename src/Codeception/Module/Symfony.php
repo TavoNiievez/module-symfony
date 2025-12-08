@@ -348,11 +348,16 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             );
         }
 
-        $finder = new Finder();
-        $finder->name('*Kernel.php')->depth('0')->in($path);
+        $expectedKernelPath = $path . DIRECTORY_SEPARATOR . 'Kernel.php';
+        if (file_exists($expectedKernelPath)) {
+            include_once $expectedKernelPath;
+        } else {
+            $finder = new Finder();
+            $finder->name('*Kernel.php')->depth('0')->in($path);
 
-        foreach ($finder as $file) {
-            include_once $file->getRealPath();
+            foreach ($finder as $file) {
+                include_once $file->getRealPath();
+            }
         }
 
         if (class_exists($kernelClass, false)) {
