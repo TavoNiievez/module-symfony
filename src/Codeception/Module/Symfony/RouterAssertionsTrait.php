@@ -129,7 +129,8 @@ trait RouterAssertionsTrait
 
     private function findRouteByActionOrFail(string $action): string
     {
-        foreach ($this->grabRouterService()->getRouteCollection()->all() as $name => $route) {
+        $routeCollection = $this->grabRouterService()->getRouteCollection();
+        foreach ($routeCollection->all() as $name => $route) {
             $ctrl = $route->getDefault('_controller');
             if (is_string($ctrl) && str_ends_with($ctrl, $action)) {
                 return $name;

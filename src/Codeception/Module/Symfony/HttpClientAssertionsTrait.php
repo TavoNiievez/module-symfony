@@ -45,29 +45,41 @@ trait HttpClientAssertionsTrait
         array             $expectedHeaders = [],
         string            $httpClientId = 'http_client',
     ): void {
-        $matchingRequests = array_filter(
-            $this->getHttpClientTraces($httpClientId, __FUNCTION__),
-            function (array $trace) use ($expectedUrl, $expectedMethod, $expectedBody, $expectedHeaders): bool {
-                if (!$this->matchesUrlAndMethod($trace, $expectedUrl, $expectedMethod)) {
-                    return false;
+        $traces = $this->getHttpClientTraces($httpClientId, __FUNCTION__);
+
+        $found = false;
+        foreach ($traces as $trace) {
+            if (!$this->matchesUrlAndMethod($trace, $expectedUrl, $expectedMethod)) {
+                continue;
+            }
+
+            $options = $trace['options'] ?? [];
+            $actualBody = $this->extractValue($options['body'] ?? $options['json'] ?? null);
+
+            if ($expectedBody !== null && $expectedBody !== $actualBody) {
+                continue;
+            }
+
+            if ($expectedHeaders !== []) {
+                $actualHeaders = $this->extractValue($options['headers'] ?? []);
+                if (!is_array($actualHeaders)) {
+                    continue;
                 }
 
-                $options = $trace['options'] ?? [];
-                $actualBody = $this->extractValue($options['body'] ?? $options['json'] ?? null);
-                $bodyMatches = $expectedBody === null || $expectedBody === $actualBody;
+                $normalizedExpected = array_change_key_case($expectedHeaders);
+                $normalizedActual = array_change_key_case($actualHeaders);
 
-                $headersMatch = $expectedHeaders === [] || (
-                    is_array($headerValues = $this->extractValue($options['headers'] ?? []))
-                    && ($normalizedExpected = array_change_key_case($expectedHeaders))
-                    === array_intersect_key(array_change_key_case($headerValues), $normalizedExpected)
-                );
-
-                return $bodyMatches && $headersMatch;
+                if (array_intersect_key($normalizedActual, $normalizedExpected) !== $normalizedExpected) {
+                    continue;
+                }
             }
-        );
 
-        $this->assertNotEmpty(
-            $matchingRequests,
+            $found = true;
+            break;
+        }
+
+        $this->assertTrue(
+            $found,
             sprintf('The expected request has not been called: "%s" - "%s"', $expectedMethod, $expectedUrl)
         );
     }
@@ -99,15 +111,13 @@ trait HttpClientAssertionsTrait
         string $unexpectedMethod = 'GET',
         string $httpClientId = 'http_client',
     ): void {
-        $matchingRequests = array_filter(
-            $this->getHttpClientTraces($httpClientId, __FUNCTION__),
-            fn(array $trace): bool => $this->matchesUrlAndMethod($trace, $unexpectedUrl, $unexpectedMethod)
-        );
+        $traces = $this->getHttpClientTraces($httpClientId, __FUNCTION__);
 
-        $this->assertEmpty(
-            $matchingRequests,
-            sprintf('Unexpected URL was called: "%s" - "%s"', $unexpectedMethod, $unexpectedUrl)
-        );
+        foreach ($traces as $trace) {
+            if ($this->matchesUrlAndMethod($trace, $unexpectedUrl, $unexpectedMethod)) {
+                $this->fail(sprintf('Unexpected URL was called: "%s" - "%s"', $unexpectedMethod, $unexpectedUrl));
+            }
+        }
     }
 
     /**
@@ -121,38 +131,43 @@ trait HttpClientAssertionsTrait
     private function getHttpClientTraces(string $httpClientId, string $function): array
     {
         $httpClientCollector = $this->grabHttpClientCollector($function);
+        $clients = $httpClientCollector->getClients();
 
-        /** @var array<string, array{traces: list<array{
+        if (!isset($clients[$httpClientId])) {
+            $this->fail(sprintf('HttpClient "%s" is not registered.', $httpClientId));
+        }
+
+        /** @var array{traces: list<array{
          *     info: array{url: string},
          *     url: string,
          *     method: string,
          *     options?: array{body?: mixed, json?: mixed, headers?: mixed}
-         * }>}> $clients
-         */
-        $clients = $httpClientCollector->getClients();
+         * }>} $clientData */
+        $clientData = $clients[$httpClientId];
 
-        if (!array_key_exists($httpClientId, $clients)) {
-            $this->fail(sprintf('HttpClient "%s" is not registered.', $httpClientId));
-        }
-
-        return $clients[$httpClientId]['traces'];
+        return $clientData['traces'];
     }
 
     /** @param array{info: array{url: string}, url: string, method: string} $trace */
     private function matchesUrlAndMethod(array $trace, string $expectedUrl, string $expectedMethod): bool
     {
-        return in_array($expectedUrl, [$trace['info']['url'], $trace['url']], true)
-            && $expectedMethod === $trace['method'];
+        return $expectedMethod === $trace['method'] && in_array($expectedUrl, [$trace['info']['url'], $trace['url']], true);
     }
 
     private function extractValue(mixed $value): mixed
     {
-        return match (true) {
-            $value instanceof Data => $value->getValue(true),
-            is_object($value) && method_exists($value, 'getValue') => $value->getValue(true),
-            is_object($value) && method_exists($value, '__toString') => (string) $value,
-            default => $value,
-        };
+        if ($value instanceof Data) {
+            return $value->getValue(true);
+        }
+        if (is_object($value)) {
+            if (method_exists($value, 'getValue')) {
+                return $value->getValue(true);
+            }
+            if (method_exists($value, '__toString')) {
+                return (string) $value;
+            }
+        }
+        return $value;
     }
 
     protected function grabHttpClientCollector(string $function): HttpClientDataCollector
