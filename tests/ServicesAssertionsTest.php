@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Tests;
 
 use Symfony\Bundle\SecurityBundle\Security;
+use Tests\Support\KernelTestCase;
 
-final class ServicesAssertionsTest extends \Tests\Support\KernelTestCase
+final class ServicesAssertionsTest extends KernelTestCase
 {
     public function testGrabService(): void
     {
-        $securityHelper = $this->grabService('security.helper');
-
-        $this->assertInstanceOf(Security::class, $securityHelper);
+        $this->assertInstanceOf(Security::class, $this->grabService('security.helper'));
     }
 
     public function testPersistService(): void

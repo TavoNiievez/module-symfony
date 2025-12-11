@@ -8,13 +8,16 @@ use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpKernel\DataCollector\EventDataCollector;
 
 use function array_column;
+use function array_flip;
 use function array_merge;
+use function array_values;
 use function count;
-use function in_array;
 use function is_array;
 use function is_object;
 use function is_string;
+use function sprintf;
 use function str_starts_with;
+use function trigger_error;
 
 trait EventsAssertionsTrait
 {
@@ -32,8 +35,7 @@ trait EventsAssertionsTrait
      */
     public function dontSeeEvent(array|string|null $expected = null): void
     {
-        $actual = $this->collectEvents(orphanOnly: false);
-        $this->assertEventTriggered($expected, $actual, shouldExist: false);
+        $this->assertEventTriggered($expected, $this->collectEvents(false), false);
     }
 
     /**
@@ -52,7 +54,7 @@ trait EventsAssertionsTrait
      */
     public function dontSeeEventListenerIsCalled(array|object|string $expected, array|string $events = []): void
     {
-        $this->assertListenerCalled($expected, $events, shouldBeCalled: false);
+        $this->assertListenerCalled($expected, $events, false);
     }
 
     /**
@@ -70,10 +72,7 @@ trait EventsAssertionsTrait
      */
     public function dontSeeEventTriggered(array|object|string $expected): void
     {
-        trigger_error(
-            'dontSeeEventTriggered is deprecated, please use dontSeeEventListenerIsCalled instead',
-            E_USER_DEPRECATED
-        );
+        trigger_error('dontSeeEventTriggered is deprecated, please use dontSeeEventListenerIsCalled instead', E_USER_DEPRECATED);
         $this->dontSeeEventListenerIsCalled($expected);
     }
 
@@ -95,8 +94,7 @@ trait EventsAssertionsTrait
      */
     public function dontSeeOrphanEvent(array|string|null $expected = null): void
     {
-        $actual = $this->collectEvents(orphanOnly: true);
-        $this->assertEventTriggered($expected, $actual, shouldExist: false);
+        $this->assertEventTriggered($expected, $this->collectEvents(true), false);
     }
 
     /**
@@ -112,8 +110,7 @@ trait EventsAssertionsTrait
      */
     public function seeEvent(array|string $expected): void
     {
-        $actual = $this->collectEvents(orphanOnly: false);
-        $this->assertEventTriggered($expected, $actual, shouldExist: true);
+        $this->assertEventTriggered($expected, $this->collectEvents(false), true);
     }
 
     /**
@@ -132,7 +129,7 @@ trait EventsAssertionsTrait
      */
     public function seeEventListenerIsCalled(array|object|string $expected, array|string $events = []): void
     {
-        $this->assertListenerCalled($expected, $events, shouldBeCalled: true);
+        $this->assertListenerCalled($expected, $events, true);
     }
 
     /**
@@ -150,10 +147,7 @@ trait EventsAssertionsTrait
      */
     public function seeEventTriggered(array|object|string $expected): void
     {
-        trigger_error(
-            'seeEventTriggered is deprecated, please use seeEventListenerIsCalled instead',
-            E_USER_DEPRECATED
-        );
+        trigger_error('seeEventTriggered is deprecated, please use seeEventListenerIsCalled instead', E_USER_DEPRECATED);
         $this->seeEventListenerIsCalled($expected);
     }
 
@@ -174,46 +168,28 @@ trait EventsAssertionsTrait
      */
     public function seeOrphanEvent(array|string $expected): void
     {
-        $actual = $this->collectEvents(orphanOnly: true);
-        $this->assertEventTriggered($expected, $actual, shouldExist: true);
+        $this->assertEventTriggered($expected, $this->collectEvents(true), true);
     }
 
     /** @return list<array{event: string, pretty: string}> */
     protected function getDispatchedEvents(): array
     {
-        $eventCollector  = $this->grabEventCollector(__FUNCTION__);
-        $calledListeners = $eventCollector->getCalledListeners($this->getDefaultDispatcher());
-
-        /** @var list<array{event: string, pretty: string}> */
-        return is_array($calledListeners)
-            ? array_values($calledListeners)
-            : $calledListeners->getValue(true);
+        $calledListeners = $this->grabEventCollector(__FUNCTION__)->getCalledListeners($this->getDefaultDispatcher());
+        return is_array($calledListeners) ? array_values($calledListeners) : $calledListeners->getValue(true);
     }
 
     /** @return list<string> */
     protected function getOrphanedEvents(): array
     {
-        $eventCollector = $this->grabEventCollector(__FUNCTION__);
-        $orphanedEvents = $eventCollector->getOrphanedEvents($this->getDefaultDispatcher());
-
-        /** @var list<string> */
-        return is_array($orphanedEvents)
-            ? array_values($orphanedEvents)
-            : $orphanedEvents->getValue(true);
+        $orphanedEvents = $this->grabEventCollector(__FUNCTION__)->getOrphanedEvents($this->getDefaultDispatcher());
+        return is_array($orphanedEvents) ? array_values($orphanedEvents) : $orphanedEvents->getValue(true);
     }
 
     /** @return list<string> */
     private function collectEvents(bool $orphanOnly): array
     {
         $orphaned = $this->getOrphanedEvents();
-
-        if ($orphanOnly) {
-            return $orphaned;
-        }
-
-        $dispatched = array_column($this->getDispatchedEvents(), 'event');
-
-        return array_merge($orphaned, $dispatched);
+        return $orphanOnly ? $orphaned : array_merge($orphaned, array_column($this->getDispatchedEvents(), 'event'));
     }
 
     /**
@@ -225,21 +201,18 @@ trait EventsAssertionsTrait
         if ($shouldExist) {
             $this->assertNotEmpty($actualEvents, 'No event was triggered.');
         }
+
         if ($expected === null) {
             $this->assertEmpty($actualEvents);
             return;
         }
 
         $actualEventsMap = array_flip($actualEvents);
-
-        $expectedEvents = is_object($expected) ? [$expected] : (array) $expected;
-        foreach ($expectedEvents as $expectedEvent) {
-            $eventName    = is_object($expectedEvent) ? $expectedEvent::class : $expectedEvent;
-            $wasTriggered = isset($actualEventsMap[$eventName]);
-
+        foreach ((array) $expected as $expectedEvent) {
+            $eventName = is_object($expectedEvent) ? $expectedEvent::class : $expectedEvent;
             $this->assertSame(
                 $shouldExist,
-                $wasTriggered,
+                isset($actualEventsMap[$eventName]),
                 sprintf("The '%s' event %s triggered", $eventName, $shouldExist ? 'did not' : 'was')
             );
         }
@@ -254,37 +227,25 @@ trait EventsAssertionsTrait
         array|string $expectedEvents,
         bool $shouldBeCalled
     ): void {
-        $expectedListeners = is_array($expectedListeners) ? $expectedListeners : [$expectedListeners];
-        $expectedEvents    = is_array($expectedEvents) ? $expectedEvents : [$expectedEvents];
+        $expectedListeners = (array) $expectedListeners;
+        $expectedEvents    = (array) $expectedEvents ?: [null];
 
-        if ($expectedEvents === []) {
-            $expectedEvents = [null];
-        } elseif (count($expectedListeners) > 1) {
+        if (count($expectedListeners) > 1 && count($expectedEvents) > 1 && $expectedEvents !== [null]) {
             Assert::fail('Cannot check for events when using multiple listeners. Make multiple assertions instead.');
         }
 
         $actualEvents = $this->getDispatchedEvents();
-
         if ($shouldBeCalled && $actualEvents === []) {
             Assert::fail('No event listener was called.');
         }
 
-        foreach ($expectedListeners as $expectedListener) {
-            $expectedListener = is_string($expectedListener) ? $expectedListener : $expectedListener::class;
-
-            foreach ($expectedEvents as $expectedEvent) {
-                $eventName = $expectedEvent ?: null;
-                $wasCalled = $this->listenerWasCalled($expectedListener, $eventName, $actualEvents);
-
+        foreach ($expectedListeners as $listener) {
+            $listenerName = is_string($listener) ? $listener : $listener::class;
+            foreach ($expectedEvents as $event) {
                 $this->assertSame(
                     $shouldBeCalled,
-                    $wasCalled,
-                    sprintf(
-                        "The '%s' listener was %scalled%s",
-                        $expectedListener,
-                        $shouldBeCalled ? 'not ' : '',
-                        $eventName ? " for the '{$eventName}' event" : ''
-                    )
+                    $this->listenerWasCalled($listenerName, $event, $actualEvents),
+                    sprintf("The '%s' listener was %scalled%s", $listenerName, $shouldBeCalled ? 'not ' : '', $event ? " for the '{$event}' event" : '')
                 );
             }
         }
@@ -297,7 +258,6 @@ trait EventsAssertionsTrait
             if ($expectedEvent !== null && $actualEvent['event'] !== $expectedEvent) {
                 continue;
             }
-
             if (str_starts_with($actualEvent['pretty'], $expectedListener)) {
                 return true;
             }

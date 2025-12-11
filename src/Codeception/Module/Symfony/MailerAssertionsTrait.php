@@ -12,6 +12,8 @@ use Symfony\Component\Mailer\EventListener\MessageLoggerListener;
 use Symfony\Component\Mailer\Test\Constraint as MailerConstraint;
 use Symfony\Component\Mime\Email;
 
+use function end;
+
 trait MailerAssertionsTrait
 {
     private ?string $mailerLoggerServiceId = null;
@@ -159,9 +161,7 @@ trait MailerAssertionsTrait
      */
     public function getMailerEvent(int $index = 0, ?string $transport = null): ?MessageEvent
     {
-        $mailerEvents = $this->getMessageMailerEvents();
-        $events = $mailerEvents->getEvents($transport);
-        return $events[$index] ?? null;
+        return $this->getMessageMailerEvents()->getEvents($transport)[$index] ?? null;
     }
 
     protected function getMessageMailerEvents(): MessageEvents
@@ -173,14 +173,14 @@ trait MailerAssertionsTrait
             }
         }
 
-        $services = ['mailer.message_logger_listener', 'mailer.logger_message_listener'];
-        foreach ($services as $serviceId) {
+        foreach (['mailer.message_logger_listener', 'mailer.logger_message_listener'] as $serviceId) {
             $mailer = $this->getService($serviceId);
             if ($mailer instanceof MessageLoggerListener) {
                 $this->mailerLoggerServiceId = $serviceId;
                 return $mailer->getEvents();
             }
         }
+
         Assert::fail("Emails can't be tested without Symfony Mailer service.");
     }
 }

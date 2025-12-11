@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Tests;
 
 use PHPUnit\Framework\AssertionFailedError;
+use Tests\Support\KernelTestCase;
 
-final class LoggerAssertionsTest extends \Tests\Support\KernelTestCase
+final class LoggerAssertionsTest extends KernelTestCase
 {
     public function testDeprecationsAreReported(): void
     {

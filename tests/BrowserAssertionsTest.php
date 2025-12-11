@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Tests;
 
 use Symfony\Component\BrowserKit\Cookie;
+use Tests\Support\KernelTestCase;
 
-final class BrowserAssertionsTest extends \Tests\Support\KernelTestCase
+final class BrowserAssertionsTest extends KernelTestCase
 {
     protected function setUp(): void
     {
@@ -28,84 +29,72 @@ final class BrowserAssertionsTest extends \Tests\Support\KernelTestCase
     public function testAssertBrowserNotHasCookie(): void
     {
         $this->client->getCookieJar()->expire('browser_cookie');
-
         $this->assertBrowserNotHasCookie('browser_cookie');
     }
 
     public function testAssertRequestAttributeValueSame(): void
     {
         $this->client->request('GET', '/request_attr');
-
         $this->assertRequestAttributeValueSame('page', 'register');
     }
 
     public function testAssertResponseCookieValueSame(): void
     {
         $this->client->request('GET', '/response_cookie');
-
         $this->assertResponseCookieValueSame('TESTCOOKIE', 'codecept');
     }
 
     public function testAssertResponseFormatSame(): void
     {
         $this->client->request('GET', '/response_json');
-
         $this->assertResponseFormatSame('json');
     }
 
     public function testAssertResponseHasCookie(): void
     {
         $this->client->request('GET', '/response_cookie');
-
         $this->assertResponseHasCookie('TESTCOOKIE');
     }
 
     public function testAssertResponseHasHeader(): void
     {
         $this->client->request('GET', '/response_json');
-
         $this->assertResponseHasHeader('content-type');
     }
 
     public function testAssertResponseHeaderNotSame(): void
     {
         $this->client->request('GET', '/response_json');
-
         $this->assertResponseHeaderNotSame('content-type', 'application/octet-stream');
     }
 
     public function testAssertResponseHeaderSame(): void
     {
         $this->client->request('GET', '/response_json');
-
         $this->assertResponseHeaderSame('content-type', 'application/json');
     }
 
     public function testAssertResponseIsSuccessful(): void
     {
         $this->client->request('GET', '/');
-
         $this->assertResponseIsSuccessful();
     }
 
     public function testAssertResponseIsUnprocessable(): void
     {
         $this->client->request('GET', '/unprocessable_entity');
-
         $this->assertResponseIsUnprocessable();
     }
 
     public function testAssertResponseNotHasCookie(): void
     {
         $this->client->request('GET', '/');
-
         $this->assertResponseNotHasCookie('TESTCOOKIE');
     }
 
     public function testAssertResponseNotHasHeader(): void
     {
         $this->client->request('GET', '/');
-
         $this->assertResponseNotHasHeader('accept-charset');
     }
 
@@ -113,7 +102,6 @@ final class BrowserAssertionsTest extends \Tests\Support\KernelTestCase
     {
         $this->client->followRedirects(false);
         $this->client->request('GET', '/redirect_home');
-
         $this->assertResponseRedirects();
         $this->assertResponseRedirects('/');
     }
@@ -122,7 +110,6 @@ final class BrowserAssertionsTest extends \Tests\Support\KernelTestCase
     {
         $this->client->followRedirects(false);
         $this->client->request('GET', '/redirect_home');
-
         $this->assertResponseStatusCodeSame(302);
     }
 
@@ -130,7 +117,6 @@ final class BrowserAssertionsTest extends \Tests\Support\KernelTestCase
     {
         $this->client->request('GET', '/');
         $this->assertRouteSame('index');
-
         $this->client->request('GET', '/login');
         $this->assertRouteSame('app_login');
     }
@@ -143,7 +129,6 @@ final class BrowserAssertionsTest extends \Tests\Support\KernelTestCase
     public function testSeePageIsAvailable(): void
     {
         $this->seePageIsAvailable('/login');
-
         $this->client->request('GET', '/register');
         $this->seePageIsAvailable();
     }
@@ -161,8 +146,6 @@ final class BrowserAssertionsTest extends \Tests\Support\KernelTestCase
             '[password]' => '123456',
             '[agreeTerms]' => true,
         ]);
-
         $this->assertResponseRedirects('/dashboard');
     }
-
 }

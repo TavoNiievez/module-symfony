@@ -7,16 +7,14 @@ namespace Tests;
 use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;
 use Tests\App\Entity\User;
 use Tests\App\Repository\UserRepository;
+use Tests\Support\KernelTestCase;
 
-final class SessionAssertionsTest extends \Tests\Support\KernelTestCase
+final class SessionAssertionsTest extends KernelTestCase
 {
     public function testAmLoggedInAs(): void
     {
-        $user = $this->getTestUser();
-
-        $this->amLoggedInAs($user);
+        $this->amLoggedInAs($this->getTestUser());
         $this->client->request('GET', '/dashboard');
-
         $this->seeAuthentication();
         $this->assertSame(200, $this->client->getResponse()->getStatusCode());
         $this->assertStringContainsString('You are in the Dashboard!', $this->client->getResponse()->getContent());
@@ -25,11 +23,8 @@ final class SessionAssertionsTest extends \Tests\Support\KernelTestCase
     public function testAmLoggedInWithToken(): void
     {
         $user = $this->getTestUser();
-        $token = new PostAuthenticationToken($user, 'main', $user->getRoles());
-
-        $this->amLoggedInWithToken($token);
+        $this->amLoggedInWithToken(new PostAuthenticationToken($user, 'main', $user->getRoles()));
         $this->client->request('GET', '/dashboard');
-
         $this->seeAuthentication();
         $this->assertStringContainsString('You are in the Dashboard!', $this->client->getResponse()->getContent());
     }
@@ -46,8 +41,7 @@ final class SessionAssertionsTest extends \Tests\Support\KernelTestCase
 
     public function testGoToLogoutPath(): void
     {
-        $user = $this->getTestUser();
-        $this->amLoggedInAs($user);
+        $this->amLoggedInAs($this->getTestUser());
         $this->client->request('GET', '/dashboard');
         $this->assertStringContainsString('You are in the Dashboard!', $this->client->getResponse()->getContent());
 
@@ -62,24 +56,18 @@ final class SessionAssertionsTest extends \Tests\Support\KernelTestCase
 
     public function testLogout(): void
     {
-        $user = $this->getTestUser();
-        $this->amLoggedInAs($user);
-
+        $this->amLoggedInAs($this->getTestUser());
         $this->logout();
         $this->client->request('GET', '/dashboard');
-
         $this->dontSeeAuthentication();
         $this->assertSame(302, $this->client->getResponse()->getStatusCode());
     }
 
     public function testLogoutProgrammatically(): void
     {
-        $user = $this->getTestUser();
-        $this->amLoggedInAs($user);
-
+        $this->amLoggedInAs($this->getTestUser());
         $this->logoutProgrammatically();
         $this->client->request('GET', '/dashboard');
-
         $this->dontSeeAuthentication();
         $this->assertSame(302, $this->client->getResponse()->getStatusCode());
     }
@@ -87,7 +75,6 @@ final class SessionAssertionsTest extends \Tests\Support\KernelTestCase
     public function testSeeInSession(): void
     {
         $this->initSession(['key1' => 'value1']);
-
         $this->seeInSession('key1');
         $this->seeInSession('key1', 'value1');
     }
@@ -95,30 +82,18 @@ final class SessionAssertionsTest extends \Tests\Support\KernelTestCase
     public function testSeeSessionHasValues(): void
     {
         $this->initSession(['key1' => 'value1', 'key2' => 'value2']);
-
         $this->seeSessionHasValues(['key1', 'key2']);
         $this->seeSessionHasValues(['key1' => 'value1', 'key2' => 'value2']);
     }
 
     private function getTestUser(): User
     {
-        $repository = $this->grabService(UserRepository::class);
-        $user = $repository->getByEmail('john_doe@gmail.com');
-        $this->assertNotNull($user);
-
-        return $user;
+        return $this->grabService(UserRepository::class)->getByEmail('john_doe@gmail.com') ?? $this->fail('User not found');
     }
 
     private function initSession(array $data): void
     {
-        if ($this->_getContainer()->has('session')) {
-            $session = $this->_getContainer()->get('session');
-        } else {
-            $factory = $this->_getContainer()->get('session.factory');
-            $session = $factory->createSession();
-            $this->_getContainer()->set('session', $session);
-        }
-
+        $session = $this->getCurrentSession();
         foreach ($data as $key => $value) {
             $session->set($key, $value);
         }

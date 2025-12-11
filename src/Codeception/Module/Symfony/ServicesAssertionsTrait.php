@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Codeception\Module\Symfony;
 
-use Codeception\Lib\Connector\Symfony as SymfonyConnector;
 use PHPUnit\Framework\Assert;
 
 trait ServicesAssertionsTrait
@@ -67,9 +66,7 @@ trait ServicesAssertionsTrait
      */
     public function persistService(string $serviceName): void
     {
-        $service = $this->grabService($serviceName);
-        $this->persistentServices[$serviceName] = $service;
-        $this->updateClientPersistentService($serviceName, $service);
+        $this->doPersistService($serviceName, false);
     }
 
     /**
@@ -81,10 +78,7 @@ trait ServicesAssertionsTrait
      */
     public function persistPermanentService(string $serviceName): void
     {
-        $service = $this->grabService($serviceName);
-        $this->persistentServices[$serviceName] = $service;
-        $this->permanentServices[$serviceName] = $service;
-        $this->updateClientPersistentService($serviceName, $service);
+        $this->doPersistService($serviceName, true);
     }
 
     /**
@@ -95,9 +89,7 @@ trait ServicesAssertionsTrait
      */
     public function unpersistService(string $serviceName): void
     {
-        unset($this->persistentServices[$serviceName]);
-        unset($this->permanentServices[$serviceName]);
-
+        unset($this->persistentServices[$serviceName], $this->permanentServices[$serviceName]);
         $this->updateClientPersistentService($serviceName, null);
     }
 
@@ -107,10 +99,17 @@ trait ServicesAssertionsTrait
     protected function getService(string $serviceId): ?object
     {
         $container = $this->_getContainer();
-        if (!$container->has($serviceId)) {
-            return null;
-        }
+        return $container->has($serviceId) ? $container->get($serviceId) : null;
+    }
 
-        return $container->get($serviceId);
+    /** @param non-empty-string $name */
+    private function doPersistService(string $name, bool $permanent): void
+    {
+        $service = $this->grabService($name);
+        $this->persistentServices[$name] = $service;
+        if ($permanent) {
+            $this->permanentServices[$name] = $service;
+        }
+        $this->updateClientPersistentService($name, $service);
     }
 }

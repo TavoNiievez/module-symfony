@@ -26,6 +26,7 @@ abstract class CodeceptTestCase extends TestCase
     use DomCrawlerAssertionsTrait;
     use EventsAssertionsTrait;
     use FormAssertionsTrait;
+    use HttpClientAssertionsTrait;
     use HttpKernelAssertionsTrait;
     use LoggerAssertionsTrait;
     use MailerAssertionsTrait;

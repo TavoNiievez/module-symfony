@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Tests\Support\KernelTestCase;
 
-final class FormAssertionsTest extends \Tests\Support\KernelTestCase
+final class FormAssertionsTest extends KernelTestCase
 {
     protected function setUp(): void
     {
@@ -25,52 +26,25 @@ final class FormAssertionsTest extends \Tests\Support\KernelTestCase
 
     public function testDontSeeFormErrors(): void
     {
-        $this->client->request('POST', '/form', [
-            'registration_form' => [
-                'email' => 'john@example.com',
-                'password' => 'top-secret',
-            ],
-        ]);
-
+        $this->client->request('POST', '/form', ['registration_form' => ['email' => 'john@example.com', 'password' => 'top-secret']]);
         $this->dontSeeFormErrors();
     }
 
     public function testSeeFormErrorMessage(): void
     {
-        $this->client->request('POST', '/form', [
-            'registration_form' => [
-                'email' => 'not-an-email',
-                'password' => '',
-            ],
-        ]);
-
+        $this->client->request('POST', '/form', ['registration_form' => ['email' => 'not-an-email', 'password' => '']]);
         $this->seeFormErrorMessage('email', 'valid email address');
     }
 
     public function testSeeFormErrorMessages(): void
     {
-        $this->client->request('POST', '/form', [
-            'registration_form' => [
-                'email' => 'not-an-email',
-                'password' => '',
-            ],
-        ]);
-
-        $this->seeFormErrorMessages([
-            'email' => 'valid email address',
-            'password' => 'not be blank',
-        ]);
+        $this->client->request('POST', '/form', ['registration_form' => ['email' => 'not-an-email', 'password' => '']]);
+        $this->seeFormErrorMessages(['email' => 'valid email address', 'password' => 'not be blank']);
     }
 
     public function testSeeFormHasErrors(): void
     {
-        $this->client->request('POST', '/form', [
-            'registration_form' => [
-                'email' => 'not-an-email',
-                'password' => '',
-            ],
-        ]);
-
+        $this->client->request('POST', '/form', ['registration_form' => ['email' => 'not-an-email', 'password' => '']]);
         $this->seeFormHasErrors();
     }
 }

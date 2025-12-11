@@ -4,21 +4,15 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Tests\Support\KernelTestCase;
 
-final class ConsoleAssertionsTest extends \Tests\Support\KernelTestCase
+final class ConsoleAssertionsTest extends KernelTestCase
 {
     public function testRunSymfonyConsoleCommand(): void
     {
-        $output = $this->runSymfonyConsoleCommand('app:test-command');
-        $this->assertStringContainsString('No option', $output);
-
-        $output = $this->runSymfonyConsoleCommand('app:test-command', ['--opt' => true]);
-        $this->assertStringContainsString('Option selected', $output);
-
-        $output = $this->runSymfonyConsoleCommand('app:test-command', ['-o' => true]);
-        $this->assertStringContainsString('Option selected', $output);
-
-        $output = $this->runSymfonyConsoleCommand('app:test-command', ['-q']);
-        $this->assertSame('', $output);
+        $this->assertStringContainsString('No option', $this->runSymfonyConsoleCommand('app:test-command'));
+        $this->assertStringContainsString('Option selected', $this->runSymfonyConsoleCommand('app:test-command', ['--opt' => true]));
+        $this->assertStringContainsString('Option selected', $this->runSymfonyConsoleCommand('app:test-command', ['-o' => true]));
+        $this->assertSame('', $this->runSymfonyConsoleCommand('app:test-command', ['-q']));
     }
 }

@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Symfony\Component\Mailer\EventListener\MessageLoggerListener;
 use Symfony\Component\Mime\Email;
+use Tests\Support\KernelTestCase;
 
-final class MimeAssertionsTest extends \Tests\Support\KernelTestCase
+final class MimeAssertionsTest extends KernelTestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
-        $logger = $this->getService('mailer.message_logger_listener');
-        $this->assertInstanceOf(MessageLoggerListener::class, $logger);
-        $logger->reset();
-
+        $this->getService('mailer.message_logger_listener')->reset();
         $this->client->request('GET', '/send-email');
     }
 
@@ -71,10 +68,7 @@ final class MimeAssertionsTest extends \Tests\Support\KernelTestCase
 
     public function testAssertionsWorkWithProvidedEmail(): void
     {
-        $email = (new Email())
-            ->from('custom@example.com')
-            ->to('custom@example.com')
-            ->text('Custom body text');
+        $email = (new Email())->from('custom@example.com')->to('custom@example.com')->text('Custom body text');
 
         $this->assertEmailAddressContains('To', 'custom@example.com', $email);
         $this->assertEmailTextBodyContains('Custom body text', $email);
