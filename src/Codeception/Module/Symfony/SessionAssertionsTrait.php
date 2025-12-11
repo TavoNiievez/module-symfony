@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Codeception\Module\Symfony;
 
 use InvalidArgumentException;
+use LogicException;
 use Symfony\Component\BrowserKit\Cookie;
+use Symfony\Component\HttpFoundation\Session\SessionFactoryInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -182,12 +184,17 @@ trait SessionAssertionsTrait
     {
         $container = $this->_getContainer();
 
-        if (Kernel::MAJOR_VERSION < 6 || $container->has('session')) {
+        if (Kernel::MAJOR_VERSION < 6 || $container->has('session')) { // @phpstan-ignore smaller.alwaysFalse
             /** @var SessionInterface */
             return $container->get('session');
         }
 
-        $session = $container->get('session.factory')->createSession();
+        $factory = $container->get('session.factory');
+        if (!$factory instanceof SessionFactoryInterface) {
+            throw new LogicException('Session factory not found.');
+        }
+
+        $session = $factory->createSession();
         $container->set('session', $session);
         return $session;
     }
@@ -196,13 +203,13 @@ trait SessionAssertionsTrait
     {
         $roles = $user->getRoles();
 
-        if (Kernel::MAJOR_VERSION >= 6 && ($this->config['authenticator'] ?? false) === true) {
+        if (Kernel::MAJOR_VERSION >= 6 && ($this->config['authenticator'] ?? false) === true) { // @phpstan-ignore greaterOrEqual.alwaysTrue
             /** @var AuthenticatorInterface $authenticator */
             $authenticator = $this->grabService(AuthenticatorInterface::class);
             return $authenticator->createToken(new SelfValidatingPassport(new UserBadge($user->getUserIdentifier(), static fn() => $user)), $firewallName);
         }
 
-        if (Kernel::MAJOR_VERSION < 6 && ($this->config['guard'] ?? false) === true) {
+        if (Kernel::MAJOR_VERSION < 6 && ($this->config['guard'] ?? false) === true) { // @phpstan-ignore smaller.alwaysFalse, booleanAnd.alwaysFalse
             $postClass = 'Symfony\\Component\\Security\\Guard\\Token\\PostAuthenticationGuardToken';
             if (class_exists($postClass)) {
                 /** @var TokenInterface */

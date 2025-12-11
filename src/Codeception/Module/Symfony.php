@@ -389,17 +389,28 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             return;
         }
 
-        $collectors = [
-            DataCollectorName::SECURITY->value => $this->debugSecurityData(...),
-            DataCollectorName::MAILER->value => $this->debugMailerData(...),
-            DataCollectorName::NOTIFIER->value => $this->debugNotifierData(...),
-            DataCollectorName::TIME->value => $this->debugTimeData(...),
-        ];
+        if ($profile->hasCollector(DataCollectorName::SECURITY->value)) {
+            /** @var SecurityDataCollector $collector */
+            $collector = $profile->getCollector(DataCollectorName::SECURITY->value);
+            $this->debugSecurityData($collector);
+        }
 
-        foreach ($collectors as $name => $debugMethod) {
-            if ($profile->hasCollector($name)) {
-                $debugMethod($profile->getCollector($name));
-            }
+        if ($profile->hasCollector(DataCollectorName::MAILER->value)) {
+            /** @var MessageDataCollector $collector */
+            $collector = $profile->getCollector(DataCollectorName::MAILER->value);
+            $this->debugMailerData($collector);
+        }
+
+        if ($profile->hasCollector(DataCollectorName::NOTIFIER->value)) {
+            /** @var NotificationDataCollector $collector */
+            $collector = $profile->getCollector(DataCollectorName::NOTIFIER->value);
+            $this->debugNotifierData($collector);
+        }
+
+        if ($profile->hasCollector(DataCollectorName::TIME->value)) {
+            /** @var TimeDataCollector $collector */
+            $collector = $profile->getCollector(DataCollectorName::TIME->value);
+            $this->debugTimeData($collector);
         }
     }
 

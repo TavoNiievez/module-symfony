@@ -118,6 +118,7 @@ trait RouterAssertionsTrait
     private function getCurrentRouteMatch(string $routeName): array
     {
         $this->assertRouteExists($routeName);
+        /** @var array<string, mixed> */
         return $this->grabRouterService()->match((string) parse_url($this->getClient()->getRequest()->getRequestUri(), PHP_URL_PATH));
     }
 

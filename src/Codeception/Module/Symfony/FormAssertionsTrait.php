@@ -183,6 +183,7 @@ trait FormAssertionsTrait
         if ($data instanceof Data) {
             $data = $data->getValue(true);
         }
+        /** @var array<string, mixed> */
         return is_array($data) ? $data : [];
     }
 }

@@ -175,14 +175,22 @@ trait EventsAssertionsTrait
     protected function getDispatchedEvents(): array
     {
         $calledListeners = $this->grabEventCollector(__FUNCTION__)->getCalledListeners($this->getDefaultDispatcher());
-        return is_array($calledListeners) ? array_values($calledListeners) : $calledListeners->getValue(true);
+        if (!is_array($calledListeners)) {
+            $calledListeners = $calledListeners->getValue(true);
+        }
+        /** @var list<array{event: string, pretty: string}> */
+        return is_array($calledListeners) ? array_values($calledListeners) : [];
     }
 
     /** @return list<string> */
     protected function getOrphanedEvents(): array
     {
         $orphanedEvents = $this->grabEventCollector(__FUNCTION__)->getOrphanedEvents($this->getDefaultDispatcher());
-        return is_array($orphanedEvents) ? array_values($orphanedEvents) : $orphanedEvents->getValue(true);
+        if (!is_array($orphanedEvents)) {
+            $orphanedEvents = $orphanedEvents->getValue(true);
+        }
+        /** @var list<string> */
+        return is_array($orphanedEvents) ? array_values($orphanedEvents) : [];
     }
 
     /** @return list<string> */
@@ -209,7 +217,8 @@ trait EventsAssertionsTrait
 
         $actualEventsMap = array_flip($actualEvents);
         foreach ((array) $expected as $expectedEvent) {
-            $eventName = is_object($expectedEvent) ? $expectedEvent::class : $expectedEvent;
+            // @phpstan-ignore cast.string
+            $eventName = is_object($expectedEvent) ? $expectedEvent::class : (string) $expectedEvent;
             $this->assertSame(
                 $shouldExist,
                 isset($actualEventsMap[$eventName]),
@@ -240,7 +249,8 @@ trait EventsAssertionsTrait
         }
 
         foreach ($expectedListeners as $listener) {
-            $listenerName = is_string($listener) ? $listener : $listener::class;
+            // @phpstan-ignore cast.string
+            $listenerName = is_object($listener) ? $listener::class : (string) $listener;
             foreach ($expectedEvents as $event) {
                 $this->assertSame(
                     $shouldBeCalled,
