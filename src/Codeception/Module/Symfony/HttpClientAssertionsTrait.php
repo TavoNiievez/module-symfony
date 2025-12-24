@@ -49,6 +49,8 @@ trait HttpClientAssertionsTrait
             }
             /** @var array{info: array{url: string}, url: string, method: string, options?: array{body?: mixed, json?: mixed, headers?: mixed}} $trace */
             if ($this->matchRequest($trace, $expectedUrl, $expectedMethod, $expectedBody, $expectedHeaders)) {
+                // @phpstan-ignore method.alreadyNarrowedType
+                $this->assertTrue(true);
                 return;
             }
         }

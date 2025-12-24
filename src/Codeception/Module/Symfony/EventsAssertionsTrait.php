@@ -12,6 +12,7 @@ use function array_flip;
 use function array_merge;
 use function array_values;
 use function count;
+use function get_debug_type;
 use function is_array;
 use function is_object;
 use function is_string;
@@ -216,7 +217,7 @@ trait EventsAssertionsTrait
         }
 
         $actualEventsMap = array_flip($actualEvents);
-        foreach ((array) $expected as $expectedEvent) {
+        foreach (is_array($expected) ? $expected : [$expected] as $expectedEvent) {
             // @phpstan-ignore cast.string
             $eventName = is_object($expectedEvent) ? $expectedEvent::class : (string) $expectedEvent;
             $this->assertSame(
@@ -228,7 +229,7 @@ trait EventsAssertionsTrait
     }
 
     /**
-     * @param class-string|object|list<class-string|object> $expectedListeners
+     * @param class-string|object|list<class-string|object|array<mixed>> $expectedListeners
      * @param string|list<string>                           $expectedEvents
      */
     protected function assertListenerCalled(
@@ -236,7 +237,7 @@ trait EventsAssertionsTrait
         array|string $expectedEvents,
         bool $shouldBeCalled
     ): void {
-        $expectedListeners = (array) $expectedListeners;
+        $expectedListeners = is_array($expectedListeners) ? $expectedListeners : [$expectedListeners];
         $expectedEvents    = (array) $expectedEvents ?: [null];
 
         if (count($expectedListeners) > 1 && count($expectedEvents) > 1 && $expectedEvents !== [null]) {
@@ -249,13 +250,24 @@ trait EventsAssertionsTrait
         }
 
         foreach ($expectedListeners as $listener) {
-            // @phpstan-ignore cast.string
-            $listenerName = is_object($listener) ? $listener::class : (string) $listener;
+            // @phpstan-ignore function.impossibleType
+            if (is_array($listener) && isset($listener[0])) {
+                $listenerName = is_string($listener[0]) ? $listener[0] : (is_object($listener[0]) ? $listener[0]::class : 'array');
+            } elseif (is_object($listener)) {
+                $listenerName = $listener::class;
+            } elseif (is_string($listener)) {
+                $listenerName = $listener;
+            } else {
+                $listenerName = get_debug_type($listener);
+            }
+
             foreach ($expectedEvents as $event) {
+                // @phpstan-ignore booleanOr.alwaysTrue, identical.alwaysTrue
+                $eventStr = is_string($event) || $event === null ? (string) $event : get_debug_type($event);
                 $this->assertSame(
                     $shouldBeCalled,
                     $this->listenerWasCalled($listenerName, $event, $actualEvents),
-                    sprintf("The '%s' listener was %scalled%s", $listenerName, $shouldBeCalled ? 'not ' : '', $event ? " for the '{$event}' event" : '')
+                    sprintf("The '%s' listener was %scalled%s", $listenerName, $shouldBeCalled ? 'not ' : '', $event ? " for the '{$eventStr}' event" : '')
                 );
             }
         }
