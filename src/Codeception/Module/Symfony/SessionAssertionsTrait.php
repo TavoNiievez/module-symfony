@@ -184,7 +184,7 @@ trait SessionAssertionsTrait
     {
         $container = $this->_getContainer();
 
-        if (Kernel::MAJOR_VERSION < 6 || $container->has('session')) { // @phpstan-ignore smaller.alwaysFalse
+        if ($this->getSymfonyMajorVersion() < 6 || $container->has('session')) {
             /** @var SessionInterface */
             return $container->get('session');
         }
@@ -203,13 +203,13 @@ trait SessionAssertionsTrait
     {
         $roles = $user->getRoles();
 
-        if (Kernel::MAJOR_VERSION >= 6 && ($this->config['authenticator'] ?? false) === true) { // @phpstan-ignore greaterOrEqual.alwaysTrue
+        if ($this->getSymfonyMajorVersion() >= 6 && ($this->config['authenticator'] ?? false) === true) {
             /** @var AuthenticatorInterface $authenticator */
             $authenticator = $this->grabService(AuthenticatorInterface::class);
             return $authenticator->createToken(new SelfValidatingPassport(new UserBadge($user->getUserIdentifier(), static fn() => $user)), $firewallName);
         }
 
-        if (Kernel::MAJOR_VERSION < 6 && ($this->config['guard'] ?? false) === true) { // @phpstan-ignore smaller.alwaysFalse, booleanAnd.alwaysFalse
+        if ($this->getSymfonyMajorVersion() < 6 && ($this->config['guard'] ?? false) === true) {
             $postClass = 'Symfony\\Component\\Security\\Guard\\Token\\PostAuthenticationGuardToken';
             if (class_exists($postClass)) {
                 /** @var TokenInterface */
@@ -218,5 +218,10 @@ trait SessionAssertionsTrait
         }
 
         return new UsernamePasswordToken($user, $firewallName, $roles);
+    }
+
+    private function getSymfonyMajorVersion(): int
+    {
+        return Kernel::MAJOR_VERSION;
     }
 }
