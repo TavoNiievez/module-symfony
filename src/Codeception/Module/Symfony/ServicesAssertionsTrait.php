@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Codeception\Module\Symfony;
 
 use PHPUnit\Framework\Assert;
+use Psr\Container\NotFoundExceptionInterface;
 
 trait ServicesAssertionsTrait
 {
@@ -40,15 +41,9 @@ trait ServicesAssertionsTrait
      */
     public function grabService(string $serviceId): object
     {
-        $container = $this->_getContainer();
-
         try {
-            return $container->get($serviceId);
-        } catch (\Exception $e) {
-            if ($container->has($serviceId)) {
-                throw $e;
-            }
-
+            return $this->_getContainer()->get($serviceId);
+        } catch (NotFoundExceptionInterface) {
             Assert::fail(
                 "Service `{$serviceId}` is required by Codeception, but not loaded by Symfony. Possible solutions:\n
             In your `config/packages/framework.php`/`.yaml`, set `test` to `true` (when in test environment), see https://symfony.com/doc/current/reference/configuration/framework.html#test\n

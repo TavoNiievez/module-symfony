@@ -43,6 +43,7 @@ use Symfony\Bundle\SecurityBundle\DataCollector\SecurityDataCollector;
 use Symfony\Component\BrowserKit\AbstractBrowser;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
 use Symfony\Component\HttpKernel\DataCollector\TimeDataCollector;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpKernel\Profiler\Profile;
@@ -389,28 +390,17 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             return;
         }
 
-        if ($profile->hasCollector(DataCollectorName::SECURITY->value)) {
-            /** @var SecurityDataCollector $collector */
-            $collector = $profile->getCollector(DataCollectorName::SECURITY->value);
-            $this->debugSecurityData($collector);
-        }
+        $collectors = [
+            DataCollectorName::SECURITY->value => fn(DataCollectorInterface $c) => $c instanceof SecurityDataCollector ? $this->debugSecurityData($c) : null,
+            DataCollectorName::MAILER->value   => fn(DataCollectorInterface $c) => $c instanceof MessageDataCollector ? $this->debugMailerData($c) : null,
+            DataCollectorName::NOTIFIER->value => fn(DataCollectorInterface $c) => $c instanceof NotificationDataCollector ? $this->debugNotifierData($c) : null,
+            DataCollectorName::TIME->value     => fn(DataCollectorInterface $c) => $c instanceof TimeDataCollector ? $this->debugTimeData($c) : null,
+        ];
 
-        if ($profile->hasCollector(DataCollectorName::MAILER->value)) {
-            /** @var MessageDataCollector $collector */
-            $collector = $profile->getCollector(DataCollectorName::MAILER->value);
-            $this->debugMailerData($collector);
-        }
-
-        if ($profile->hasCollector(DataCollectorName::NOTIFIER->value)) {
-            /** @var NotificationDataCollector $collector */
-            $collector = $profile->getCollector(DataCollectorName::NOTIFIER->value);
-            $this->debugNotifierData($collector);
-        }
-
-        if ($profile->hasCollector(DataCollectorName::TIME->value)) {
-            /** @var TimeDataCollector $collector */
-            $collector = $profile->getCollector(DataCollectorName::TIME->value);
-            $this->debugTimeData($collector);
+        foreach ($collectors as $name => $debugger) {
+            if ($profile->hasCollector($name)) {
+                $debugger($profile->getCollector($name));
+            }
         }
     }
 
@@ -420,7 +410,6 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             $this->client->rebootKernel();
         }
     }
-
 
     /**
      * Ensure Xdebug allows deep nesting.
@@ -503,12 +492,14 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
     /** @param non-empty-string $name */
     protected function updateClientPersistentService(string $name, ?object $service): void
     {
-        if ($this->client instanceof SymfonyConnector) {
-            if ($service === null) {
-                unset($this->client->persistentServices[$name]);
-            } else {
-                $this->client->persistentServices[$name] = $service;
-            }
+        if (!$this->client instanceof SymfonyConnector) {
+            return;
+        }
+
+        if ($service === null) {
+            unset($this->client->persistentServices[$name]);
+        } else {
+            $this->client->persistentServices[$name] = $service;
         }
     }
 

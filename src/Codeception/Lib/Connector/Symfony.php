@@ -64,11 +64,14 @@ class Symfony extends HttpKernelBrowser
         }
 
         $this->persistDoctrineConnections();
+
         if ($this->kernel instanceof Kernel) {
             $this->ensureKernelShutdown();
             $this->kernel->boot();
         }
+
         $this->container = $this->resolveContainer();
+
         foreach ($this->persistentServices as $name => $service) {
             try {
                 $this->container->set($name, $service);
@@ -92,26 +95,22 @@ class Symfony extends HttpKernelBrowser
     {
         $container = $this->kernel->getContainer();
 
-        if ($container->has('test.service_container')) {
-            $testContainer = $container->get('test.service_container');
-
-            return $testContainer instanceof ContainerInterface
-                ? $testContainer
-                : throw new LogicException('Service "test.service_container" must implement ' . ContainerInterface::class);
+        if (!$container->has('test.service_container')) {
+            return $container;
         }
 
-        return $container;
+        $testContainer = $container->get('test.service_container');
+
+        return $testContainer instanceof ContainerInterface
+            ? $testContainer
+            : throw new LogicException('Service "test.service_container" must implement ' . ContainerInterface::class);
     }
 
     private function getProfiler(): ?Profiler
     {
-        if (!$this->container->has('profiler')) {
-            return null;
-        }
-
-        $profiler = $this->container->get('profiler');
-
-        return $profiler instanceof Profiler ? $profiler : null;
+        return $this->container->has('profiler') && ($profiler = $this->container->get('profiler')) instanceof Profiler
+            ? $profiler
+            : null;
     }
 
     private function persistDoctrineConnections(): void
@@ -120,11 +119,9 @@ class Symfony extends HttpKernelBrowser
             return;
         }
 
-        if ($this->container instanceof TestContainer) {
-            $publicContainer = (new ReflectionMethod($this->container, 'getPublicContainer'))->invoke($this->container);
-        } else {
-            $publicContainer = $this->container;
-        }
+        $publicContainer = $this->container instanceof TestContainer
+            ? (new ReflectionMethod($this->container, 'getPublicContainer'))->invoke($this->container)
+            : $this->container;
 
         if (!is_object($publicContainer) || !method_exists($publicContainer, 'getParameterBag')) {
             return;
@@ -137,8 +134,8 @@ class Symfony extends HttpKernelBrowser
         if (!is_object($target) || !property_exists($target, 'parameters')) {
             return;
         }
-        $prop = new ReflectionProperty($target, 'parameters');
 
+        $prop = new ReflectionProperty($target, 'parameters');
         $params = (array) $prop->getValue($target);
         unset($params['doctrine.connections']);
         $prop->setValue($target, $params);
