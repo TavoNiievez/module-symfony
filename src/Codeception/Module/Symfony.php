@@ -414,6 +414,13 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         }
     }
 
+    protected function doRebootClientKernel(): void
+    {
+        if ($this->client instanceof SymfonyConnector) {
+            $this->client->rebootKernel();
+        }
+    }
+
 
     /**
      * Ensure Xdebug allows deep nesting.

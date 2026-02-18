@@ -84,7 +84,6 @@ class Symfony extends HttpKernelBrowser
 
     protected function ensureKernelShutdown(): void
     {
-        $this->kernel->boot();
         $this->kernel->shutdown();
     }
 
@@ -94,10 +93,10 @@ class Symfony extends HttpKernelBrowser
 
         if ($container->has('test.service_container')) {
             $testContainer = $container->get('test.service_container');
-            if (!$testContainer instanceof ContainerInterface) {
-                throw new LogicException('Service "test.service_container" must implement ' . ContainerInterface::class);
-            }
-            $container = $testContainer;
+
+            return $testContainer instanceof ContainerInterface
+                ? $testContainer
+                : throw new LogicException('Service "test.service_container" must implement ' . ContainerInterface::class);
         }
 
         return $container;

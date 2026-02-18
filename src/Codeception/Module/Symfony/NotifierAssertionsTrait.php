@@ -251,8 +251,7 @@ trait NotifierAssertionsTrait
 
     protected function getNotificationEvents(): NotificationEvents
     {
-        // @phpstan-ignore if.alwaysFalse
-        if (version_compare(Kernel::VERSION, '6.2', '<')) {
+        if (!class_exists(NotificationEvents::class)) {
             Assert::fail('Notifier assertions require Symfony 6.2 or higher.');
         }
 
