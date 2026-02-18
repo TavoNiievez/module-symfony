@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Codeception\Module\Symfony;
 
+use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpClient\DataCollector\HttpClientDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
 
@@ -43,19 +44,19 @@ trait HttpClientAssertionsTrait
         array             $expectedHeaders = [],
         string            $httpClientId = 'http_client',
     ): void {
+        $found = false;
         foreach ($this->getHttpClientTraces($httpClientId, __FUNCTION__) as $trace) {
             if (!is_array($trace)) {
                 continue;
             }
             /** @var array{info: array{url: string}, url: string, method: string, options?: array{body?: mixed, json?: mixed, headers?: mixed}} $trace */
             if ($this->matchRequest($trace, $expectedUrl, $expectedMethod, $expectedBody, $expectedHeaders)) {
-                // @phpstan-ignore method.alreadyNarrowedType
-                $this->assertTrue(true);
-                return;
+                $found = true;
+                break;
             }
         }
 
-        $this->fail(sprintf('The expected request has not been called: "%s" - "%s"', $expectedMethod, $expectedUrl));
+        Assert::assertTrue($found, sprintf('The expected request has not been called: "%s" - "%s"', $expectedMethod, $expectedUrl));
     }
 
     /**
@@ -85,15 +86,18 @@ trait HttpClientAssertionsTrait
         string $unexpectedMethod = 'GET',
         string $httpClientId = 'http_client',
     ): void {
+        $found = false;
         foreach ($this->getHttpClientTraces($httpClientId, __FUNCTION__) as $trace) {
             if (!is_array($trace)) {
                 continue;
             }
             /** @var array{info: array{url: string}, url: string, method: string} $trace */
             if ($this->matchesUrlAndMethod($trace, $unexpectedUrl, $unexpectedMethod)) {
-                $this->fail(sprintf('Unexpected URL was called: "%s" - "%s"', $unexpectedMethod, $unexpectedUrl));
+                $found = true;
+                break;
             }
         }
+        Assert::assertFalse($found, sprintf('Unexpected URL was called: "%s" - "%s"', $unexpectedMethod, $unexpectedUrl));
     }
 
     /**

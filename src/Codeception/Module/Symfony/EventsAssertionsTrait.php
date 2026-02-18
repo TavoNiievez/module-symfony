@@ -218,8 +218,7 @@ trait EventsAssertionsTrait
 
         $actualEventsMap = array_flip($actualEvents);
         foreach (is_array($expected) ? $expected : [$expected] as $expectedEvent) {
-            // @phpstan-ignore cast.string
-            $eventName = is_object($expectedEvent) ? $expectedEvent::class : (string) $expectedEvent;
+            $eventName = is_object($expectedEvent) ? $expectedEvent::class : $expectedEvent;
             $this->assertSame(
                 $shouldExist,
                 isset($actualEventsMap[$eventName]),
@@ -250,7 +249,6 @@ trait EventsAssertionsTrait
         }
 
         foreach ($expectedListeners as $listener) {
-            // @phpstan-ignore function.impossibleType
             if (is_array($listener) && isset($listener[0])) {
                 $listenerName = is_string($listener[0]) ? $listener[0] : (is_object($listener[0]) ? $listener[0]::class : 'array');
             } elseif (is_object($listener)) {
@@ -262,8 +260,7 @@ trait EventsAssertionsTrait
             }
 
             foreach ($expectedEvents as $event) {
-                // @phpstan-ignore booleanOr.alwaysTrue, identical.alwaysTrue
-                $eventStr = is_string($event) || $event === null ? (string) $event : get_debug_type($event);
+                $eventStr = (string) $event;
                 $this->assertSame(
                     $shouldBeCalled,
                     $this->listenerWasCalled($listenerName, $event, $actualEvents),
