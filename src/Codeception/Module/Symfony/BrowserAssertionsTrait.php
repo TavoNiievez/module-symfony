@@ -297,9 +297,7 @@ trait BrowserAssertionsTrait
         $this->doRebootClientKernel();
     }
 
-    protected function doRebootClientKernel(): void
-    {
-    }
+    protected function doRebootClientKernel(): void {}
 
     /**
      * Verifies that a page is available.

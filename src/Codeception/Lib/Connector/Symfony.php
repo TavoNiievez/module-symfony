@@ -84,6 +84,7 @@ class Symfony extends HttpKernelBrowser
 
     protected function ensureKernelShutdown(): void
     {
+        $this->kernel->boot();
         $this->kernel->shutdown();
     }
 
