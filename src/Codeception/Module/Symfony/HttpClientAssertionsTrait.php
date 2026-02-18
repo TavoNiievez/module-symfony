@@ -154,18 +154,12 @@ trait HttpClientAssertionsTrait
 
     private function extractValue(mixed $value): mixed
     {
-        if ($value instanceof Data) {
-            return $value->getValue(true);
-        }
-        if (is_object($value)) {
-            if (method_exists($value, 'getValue')) {
-                return $value->getValue(true);
-            }
-            if (method_exists($value, '__toString')) {
-                return (string) $value;
-            }
-        }
-        return $value;
+        return match (true) {
+            $value instanceof Data => $value->getValue(true),
+            is_object($value) && method_exists($value, 'getValue') => $value->getValue(true),
+            is_object($value) && method_exists($value, '__toString') => (string) $value,
+            default => $value,
+        };
     }
 
     protected function grabHttpClientCollector(string $function): HttpClientDataCollector

@@ -68,7 +68,7 @@ trait FormAssertionsTrait
      */
     public function dontSeeFormErrors(): void
     {
-        $this->assertSame(0, $this->getFormErrorsCount(), 'Expecting that the form does not have errors, but there were!');
+        $this->assertSame(0, $this->getFormErrorsCount(__FUNCTION__), 'Expecting that the form does not have errors, but there were!');
     }
 
     /**
@@ -120,7 +120,7 @@ trait FormAssertionsTrait
      */
     public function seeFormHasErrors(): void
     {
-        $this->assertGreaterThan(0, $this->getFormErrorsCount(), 'Expecting that the form has errors, but there were none!');
+        $this->assertGreaterThan(0, $this->getFormErrorsCount(__FUNCTION__), 'Expecting that the form has errors, but there were none!');
     }
 
     protected function grabFormCollector(string $function): FormDataCollector
@@ -128,10 +128,11 @@ trait FormAssertionsTrait
         return $this->grabCollector(DataCollectorName::FORM, $function);
     }
 
-    private function getFormErrorsCount(): int
+    private function getFormErrorsCount(string $function): int
     {
-        $collector = $this->grabFormCollector(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function']);
+        $collector = $this->grabFormCollector($function);
         $rawData = $this->getRawCollectorData($collector);
+
         return isset($rawData['nb_errors']) && is_numeric($rawData['nb_errors']) ? (int) $rawData['nb_errors'] : 0;
     }
 

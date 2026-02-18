@@ -294,10 +294,10 @@ trait BrowserAssertionsTrait
      */
     public function rebootClientKernel(): void
     {
-        if (method_exists($this->getClient(), 'rebootKernel')) { // @phpstan-ignore function.alreadyNarrowedType
-            $this->getClient()->rebootKernel();
-        }
+        $this->doRebootClientKernel();
     }
+
+    protected function doRebootClientKernel(): void {}
 
     /**
      * Verifies that a page is available.

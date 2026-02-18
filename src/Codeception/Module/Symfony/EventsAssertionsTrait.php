@@ -249,15 +249,12 @@ trait EventsAssertionsTrait
         }
 
         foreach ($expectedListeners as $listener) {
-            if (is_array($listener) && isset($listener[0])) {
-                $listenerName = is_string($listener[0]) ? $listener[0] : (is_object($listener[0]) ? $listener[0]::class : 'array');
-            } elseif (is_object($listener)) {
-                $listenerName = $listener::class;
-            } elseif (is_string($listener)) {
-                $listenerName = $listener;
-            } else {
-                $listenerName = get_debug_type($listener);
-            }
+            $listenerName = match (true) {
+                is_array($listener) && isset($listener[0]) => is_string($listener[0]) ? $listener[0] : (is_object($listener[0]) ? $listener[0]::class : 'array'),
+                is_object($listener) => $listener::class,
+                is_string($listener) => $listener,
+                default => get_debug_type($listener),
+            };
 
             foreach ($expectedEvents as $event) {
                 $eventStr = (string) $event;
