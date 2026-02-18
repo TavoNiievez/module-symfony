@@ -91,7 +91,8 @@ trait ValidatorAssertionsTrait
         if ($constraint !== null) {
             return (array) array_filter(
                 $violations,
-                static fn(ConstraintViolationInterface $violation): bool => get_class((object) $violation->getConstraint()) === $constraint
+                static fn(ConstraintViolationInterface $violation): bool => $violation->getConstraint() !== null
+                    && $violation->getConstraint()::class === $constraint
                     && ($propertyPath === null || $violation->getPropertyPath() === $propertyPath)
             );
         }

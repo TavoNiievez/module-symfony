@@ -127,7 +127,7 @@ trait DomCrawlerAssertionsTrait
      */
     public function assertSelectorTextContains(string $selector, string $text, string $message = ''): void
     {
-        $this->assertThatCrawler(new CrawlerSelectorExists($selector), $message);
+        $this->assertSelectorExists($selector, $message);
         $this->assertThatCrawler(new CrawlerSelectorTextContains($selector, $text), $message);
     }
 
@@ -141,7 +141,7 @@ trait DomCrawlerAssertionsTrait
      */
     public function assertSelectorTextNotContains(string $selector, string $text, string $message = ''): void
     {
-        $this->assertThatCrawler(new CrawlerSelectorExists($selector), $message);
+        $this->assertSelectorExists($selector, $message);
         $this->assertThatCrawler(new LogicalNot(new CrawlerSelectorTextContains($selector, $text)), $message);
     }
 
@@ -155,7 +155,7 @@ trait DomCrawlerAssertionsTrait
      */
     public function assertSelectorTextSame(string $selector, string $text, string $message = ''): void
     {
-        $this->assertThatCrawler(new CrawlerSelectorExists($selector), $message);
+        $this->assertSelectorExists($selector, $message);
         $this->assertThatCrawler(new CrawlerSelectorTextSame($selector, $text), $message);
     }
 

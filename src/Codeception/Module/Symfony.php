@@ -55,7 +55,6 @@ use UnexpectedValueException;
 
 use function array_filter;
 use function array_map;
-use function array_merge;
 use function class_exists;
 use function codecept_root_dir;
 use function count;
@@ -240,7 +239,7 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
     {
         $this->persistentServices = $this->persistentServices === []
             ? $this->permanentServices
-            : array_merge($this->persistentServices, $this->permanentServices);
+            : [...$this->persistentServices, ...$this->permanentServices];
 
         $this->client = new SymfonyConnector(
             $this->kernel,

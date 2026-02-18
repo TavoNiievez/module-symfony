@@ -9,7 +9,6 @@ use Symfony\Component\HttpKernel\DataCollector\EventDataCollector;
 
 use function array_column;
 use function array_flip;
-use function array_merge;
 use function array_values;
 use function count;
 use function get_debug_type;
@@ -198,7 +197,7 @@ trait EventsAssertionsTrait
     private function collectEvents(bool $orphanOnly): array
     {
         $orphaned = $this->getOrphanedEvents();
-        return $orphanOnly ? $orphaned : array_merge($orphaned, array_column($this->getDispatchedEvents(), 'event'));
+        return $orphanOnly ? $orphaned : [...$orphaned, ...array_column($this->getDispatchedEvents(), 'event')];
     }
 
     /**
