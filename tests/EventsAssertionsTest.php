@@ -7,8 +7,9 @@ namespace Tests;
 use Symfony\Component\HttpKernel\Kernel;
 use Tests\App\Event\TestEvent;
 use Tests\App\Listener\TestEventListener;
+use Tests\Support\KernelTestCase;
 
-final class EventsAssertionsTest extends \Tests\Support\KernelTestCase
+final class EventsAssertionsTest extends KernelTestCase
 {
     public function testDontSeeEvent(): void
     {
@@ -33,7 +34,6 @@ final class EventsAssertionsTest extends \Tests\Support\KernelTestCase
         if (Kernel::VERSION_ID < 60000) {
             $this->markTestSkipped('Orphan event detection requires Symfony 6.0+');
         }
-
         $this->client->request('GET', '/dispatch-event');
         $this->dontSeeOrphanEvent();
     }

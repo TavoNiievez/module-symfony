@@ -7,8 +7,9 @@ namespace Tests;
 use Tests\App\Entity\User;
 use Tests\App\Repository\UserRepository;
 use Tests\App\Repository\UserRepositoryInterface;
+use Tests\Support\KernelTestCase;
 
-final class DoctrineAssertionsTest extends \Tests\Support\KernelTestCase
+final class DoctrineAssertionsTest extends KernelTestCase
 {
     public function testGrabNumRecords(): void
     {
@@ -17,20 +18,10 @@ final class DoctrineAssertionsTest extends \Tests\Support\KernelTestCase
 
     public function testGrabRepository(): void
     {
-        $repository = $this->grabRepository(User::class);
-        $this->assertInstanceOf(UserRepository::class, $repository);
-
-        $repositoryFromId = $this->grabRepository(UserRepository::class);
-        $this->assertInstanceOf(UserRepository::class, $repositoryFromId);
-
-        $user = $repository->findOneBy(['email' => 'john_doe@gmail.com']);
-        $this->assertNotNull($user);
-
-        $repositoryFromEntity = $this->grabRepository($user);
-        $this->assertInstanceOf(UserRepository::class, $repositoryFromEntity);
-
-        $repositoryFromInterface = $this->grabRepository(UserRepositoryInterface::class);
-        $this->assertInstanceOf(UserRepository::class, $repositoryFromInterface);
+        $this->assertInstanceOf(UserRepository::class, $this->grabRepository(User::class));
+        $this->assertInstanceOf(UserRepository::class, $this->grabRepository(UserRepository::class));
+        $this->assertInstanceOf(UserRepository::class, $this->grabRepository($this->grabRepository(User::class)->findOneBy(['email' => 'john_doe@gmail.com'])));
+        $this->assertInstanceOf(UserRepository::class, $this->grabRepository(UserRepositoryInterface::class));
     }
 
     public function testSeeNumRecords(): void

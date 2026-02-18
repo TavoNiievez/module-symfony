@@ -6,18 +6,16 @@ namespace Tests;
 
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Notifier\Event\MessageEvent;
-use Symfony\Component\Notifier\EventListener\NotificationLoggerListener;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Tests\App\Notifier\NotifierFixture;
+use Tests\Support\KernelTestCase;
 
-final class NotifierAssertionsTest extends \Tests\Support\KernelTestCase
+final class NotifierAssertionsTest extends KernelTestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
-        $logger = $this->grabService('notifier.notification_logger_listener');
-        $this->assertInstanceOf(NotificationLoggerListener::class, $logger);
-        $logger->reset();
+        $this->grabService('notifier.notification_logger_listener')->reset();
     }
 
     public function testAssertNotificationCount(): void
@@ -31,31 +29,27 @@ final class NotifierAssertionsTest extends \Tests\Support\KernelTestCase
     public function testAssertNotificationIsNotQueued(): void
     {
         $this->checkVersion();
-        $sentEvent = $this->sendNotifications()['sent'];
-        $this->assertNotificationIsNotQueued($sentEvent);
+        $this->assertNotificationIsNotQueued($this->sendNotifications()['sent']);
     }
 
     public function testAssertNotificationIsQueued(): void
     {
         $this->checkVersion();
-        $queuedEvent = $this->sendNotifications()['queued'];
-        $this->assertNotificationIsQueued($queuedEvent);
+        $this->assertNotificationIsQueued($this->sendNotifications()['queued']);
     }
 
     public function testAssertNotificationSubjectContains(): void
     {
         $this->checkVersion();
         $this->sendNotifications();
-        $notification = $this->getNotifierMessage();
-        $this->assertNotificationSubjectContains($notification, 'Welcome');
+        $this->assertNotificationSubjectContains($this->getNotifierMessage(), 'Welcome');
     }
 
     public function testAssertNotificationSubjectNotContains(): void
     {
         $this->checkVersion();
         $this->sendNotifications();
-        $notification = $this->getNotifierMessage();
-        $this->assertNotificationSubjectNotContains($notification, 'missing');
+        $this->assertNotificationSubjectNotContains($this->getNotifierMessage(), 'missing');
     }
 
     public function testAssertNotificationTransportIsEqual(): void
@@ -63,22 +57,15 @@ final class NotifierAssertionsTest extends \Tests\Support\KernelTestCase
         $this->checkVersion();
         $this->sendNotifications();
         $this->grabLastSentNotification();
-
-        $fixture = $this->grabService(NotifierFixture::class);
-        $fixture->sendNotification('Primary alert', 'chat');
-        $last = $this->grabLastSentNotification();
-
-        $this->assertNotificationTransportIsEqual($last, 'chat');
+        $this->grabService(NotifierFixture::class)->sendNotification('Primary alert', 'chat');
+        $this->assertNotificationTransportIsEqual($this->grabLastSentNotification(), 'chat');
     }
 
     public function testAssertNotificationTransportIsNotEqual(): void
     {
         $this->checkVersion();
-        $fixture = $this->grabService(NotifierFixture::class);
-        $fixture->sendNotification('Primary alert', 'chat');
-        $last = $this->grabLastSentNotification();
-
-        $this->assertNotificationTransportIsNotEqual($last, 'email');
+        $this->grabService(NotifierFixture::class)->sendNotification('Primary alert', 'chat');
+        $this->assertNotificationTransportIsNotEqual($this->grabLastSentNotification(), 'email');
     }
 
     public function testAssertQueuedNotificationCount(): void
@@ -99,40 +86,34 @@ final class NotifierAssertionsTest extends \Tests\Support\KernelTestCase
     {
         $this->checkVersion();
         $this->sendNotifications();
-        $event = $this->getNotifierEvent();
-        $this->assertInstanceOf(MessageEvent::class, $event);
+        $this->assertInstanceOf(MessageEvent::class, $this->getNotifierEvent());
     }
 
     public function testGetNotifierEvents(): void
     {
         $this->checkVersion();
         $this->sendNotifications();
-        $events = $this->getNotifierEvents();
-        $this->assertCount(2, $events);
+        $this->assertCount(2, $this->getNotifierEvents());
     }
 
     public function testGetNotifierMessage(): void
     {
         $this->checkVersion();
         $this->sendNotifications();
-        $message = $this->getNotifierMessage();
-        $this->assertInstanceOf(ChatMessage::class, $message);
+        $this->assertInstanceOf(ChatMessage::class, $this->getNotifierMessage());
     }
 
     public function testGetNotifierMessages(): void
     {
         $this->checkVersion();
         $this->sendNotifications();
-        $messages = $this->getNotifierMessages();
-        $this->assertCount(2, $messages);
+        $this->assertCount(2, $this->getNotifierMessages());
     }
 
     public function testGrabLastSentNotification(): void
     {
         $this->checkVersion();
-        $fixture = $this->grabService(NotifierFixture::class);
-        $fixture->sendNotification('Last One', 'chat');
-
+        $this->grabService(NotifierFixture::class)->sendNotification('Last One', 'chat');
         $last = $this->grabLastSentNotification();
         $this->assertInstanceOf(ChatMessage::class, $last);
         $this->assertSame('Last One', $last->getSubject());
@@ -142,8 +123,7 @@ final class NotifierAssertionsTest extends \Tests\Support\KernelTestCase
     {
         $this->checkVersion();
         $this->sendNotifications();
-        $notifications = $this->grabSentNotifications();
-        $this->assertCount(2, $notifications);
+        $this->assertCount(2, $this->grabSentNotifications());
     }
 
     public function testSeeNotificationIsSent(): void
@@ -163,10 +143,9 @@ final class NotifierAssertionsTest extends \Tests\Support\KernelTestCase
     private function sendNotifications(): array
     {
         $fixture = $this->grabService(NotifierFixture::class);
-
-        $sentEvent = $fixture->sendNotification('Welcome notification', 'primary');
-        $queuedEvent = $fixture->sendNotification('Queued notification', 'queued', true);
-
-        return ['sent' => $sentEvent, 'queued' => $queuedEvent];
+        return [
+            'sent' => $fixture->sendNotification('Welcome notification', 'primary'),
+            'queued' => $fixture->sendNotification('Queued notification', 'queued', true)
+        ];
     }
 }

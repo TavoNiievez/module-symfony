@@ -95,7 +95,7 @@ trait RouterAssertionsTrait
      */
     public function seeCurrentRouteIs(string $routeName, array $params = []): void
     {
-        $match    = $this->getCurrentRouteMatch($routeName);
+        $match = $this->getCurrentRouteMatch($routeName);
         $expected = ['_route' => $routeName] + $params;
         $this->assertSame($expected, array_intersect_assoc($expected, $match));
     }
@@ -118,19 +118,13 @@ trait RouterAssertionsTrait
     private function getCurrentRouteMatch(string $routeName): array
     {
         $this->assertRouteExists($routeName);
-
-        $url  = $this->getClient()->getRequest()->getRequestUri();
-        $path = (string) parse_url($url, PHP_URL_PATH);
-
-        /** @var array<string, mixed> $match */
-        $match = $this->grabRouterService()->match($path);
-        return $match;
+        /** @var array<string, mixed> */
+        return $this->grabRouterService()->match((string) parse_url($this->getClient()->getRequest()->getRequestUri(), PHP_URL_PATH));
     }
 
     private function findRouteByActionOrFail(string $action): string
     {
-        $routeCollection = $this->grabRouterService()->getRouteCollection();
-        foreach ($routeCollection->all() as $name => $route) {
+        foreach ($this->grabRouterService()->getRouteCollection()->all() as $name => $route) {
             $ctrl = $route->getDefault('_controller');
             if (is_string($ctrl) && str_ends_with($ctrl, $action)) {
                 return $name;
@@ -155,8 +149,7 @@ trait RouterAssertionsTrait
 
     protected function grabRouterService(): RouterInterface
     {
-        /** @var RouterInterface $router */
-        $router = $this->grabService('router');
-        return $router;
+        /** @var RouterInterface */
+        return $this->grabService('router');
     }
 }

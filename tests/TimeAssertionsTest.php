@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Tests\Support\KernelTestCase;
 
-final class TimeAssertionsTest extends \Tests\Support\KernelTestCase
+final class TimeAssertionsTest extends KernelTestCase
 {
     public function testSeeRequestTimeIsLessThan(): void
     {

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests;
 
 use Tests\App\Controller\AppController;
+use Tests\Support\KernelTestCase;
 
-final class RouterAssertionsTest extends \Tests\Support\KernelTestCase
+final class RouterAssertionsTest extends KernelTestCase
 {
     public function testAmOnAction(): void
     {
         $this->amOnAction(AppController::class . '::index');
-
         $this->assertSame(200, $this->client->getResponse()->getStatusCode());
         $this->assertStringContainsString('Hello World!', $this->client->getResponse()->getContent());
     }
@@ -19,7 +19,6 @@ final class RouterAssertionsTest extends \Tests\Support\KernelTestCase
     public function testAmOnRoute(): void
     {
         $this->amOnRoute('index');
-
         $this->assertStringContainsString('Hello World!', $this->client->getResponse()->getContent());
     }
 
@@ -27,7 +26,6 @@ final class RouterAssertionsTest extends \Tests\Support\KernelTestCase
     {
         $this->persistService('router');
         $this->assertArrayHasKey('router', $this->persistentServices);
-
         $this->invalidateCachedRouter();
         $this->assertArrayNotHasKey('router', $this->persistentServices);
     }
@@ -35,21 +33,18 @@ final class RouterAssertionsTest extends \Tests\Support\KernelTestCase
     public function testSeeCurrentActionIs(): void
     {
         $this->client->request('GET', '/');
-
         $this->seeCurrentActionIs(AppController::class . '::index');
     }
 
     public function testSeeCurrentRouteIs(): void
     {
         $this->client->request('GET', '/login');
-
         $this->seeCurrentRouteIs('app_login');
     }
 
     public function testSeeInCurrentRoute(): void
     {
         $this->client->request('GET', '/register');
-
         $this->seeInCurrentRoute('app_register');
     }
 }

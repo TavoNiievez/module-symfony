@@ -6,12 +6,15 @@ namespace Codeception\Module\Symfony;
 
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Constraint\LogicalNot;
+use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Notifier\Event\MessageEvent;
 use Symfony\Component\Notifier\Event\NotificationEvents;
 use Symfony\Component\Notifier\EventListener\NotificationLoggerListener;
 use Symfony\Component\Notifier\Message\MessageInterface;
 use Symfony\Component\Notifier\Test\Constraint as NotifierConstraint;
-use Symfony\Component\HttpKernel\Kernel;
+
+use function end;
+use function version_compare;
 
 trait NotifierAssertionsTrait
 {
@@ -260,14 +263,14 @@ trait NotifierAssertionsTrait
             }
         }
 
-        $services = ['notifier.notification_logger_listener', 'notifier.logger_notification_listener'];
-        foreach ($services as $serviceId) {
+        foreach (['notifier.notification_logger_listener', 'notifier.logger_notification_listener'] as $serviceId) {
             $notifier = $this->getService($serviceId);
             if ($notifier instanceof NotificationLoggerListener) {
                 $this->notifierLoggerServiceId = $serviceId;
                 return $notifier->getEvents();
             }
         }
+
         Assert::fail("Notifications can't be tested without Symfony Notifier service.");
     }
 }

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Tests\Support\KernelTestCase;
 
-final class TranslationAssertionsTest extends \Tests\Support\KernelTestCase
+final class TranslationAssertionsTest extends KernelTestCase
 {
     public function testDontSeeFallbackTranslations(): void
     {

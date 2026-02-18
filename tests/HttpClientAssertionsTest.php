@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\HttpClientAssertionsTrait;
 use Symfony\Component\HttpKernel\Kernel;
+use Tests\Support\KernelTestCase;
 
-final class HttpClientAssertionsTest extends \Tests\Support\KernelTestCase
+final class HttpClientAssertionsTest extends KernelTestCase
 {
-    use HttpClientAssertionsTrait;
-
     protected function setUp(): void
     {
         parent::setUp();
         if (Kernel::VERSION_ID < 60000) {
             $this->markTestSkipped('HttpClient data collection is not reliable in this test environment for Symfony 5.4');
         }
-
         $this->client->request('GET', '/http-client');
     }
 

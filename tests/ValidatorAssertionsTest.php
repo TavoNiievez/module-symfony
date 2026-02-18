@@ -6,13 +6,13 @@ namespace Tests;
 
 use Symfony\Component\Validator\Constraints as Assert;
 use Tests\App\Entity\User;
+use Tests\Support\KernelTestCase;
 
-final class ValidatorAssertionsTest extends \Tests\Support\KernelTestCase
+final class ValidatorAssertionsTest extends KernelTestCase
 {
     public function testDontSeeViolatedConstraint(): void
     {
         $user = User::create('test@example.com', 'password123');
-
         $this->dontSeeViolatedConstraint($user);
         $this->dontSeeViolatedConstraint($user, 'email');
         $this->dontSeeViolatedConstraint($user, 'email', Assert\Email::class);
@@ -29,7 +29,6 @@ final class ValidatorAssertionsTest extends \Tests\Support\KernelTestCase
     public function testSeeViolatedConstraint(): void
     {
         $user = User::create('invalid_email', 'password123');
-
         $this->seeViolatedConstraint($user);
         $this->seeViolatedConstraint($user, 'email');
 
@@ -43,12 +42,10 @@ final class ValidatorAssertionsTest extends \Tests\Support\KernelTestCase
     public function testSeeViolatedConstraintsCount(): void
     {
         $user = User::create('invalid_email', 'weak');
-
         $this->seeViolatedConstraintsCount(2, $user);
         $this->seeViolatedConstraintsCount(1, $user, 'email');
 
         $user->setEmail('test@example.com');
-
         $this->seeViolatedConstraintsCount(1, $user);
         $this->seeViolatedConstraintsCount(0, $user, 'email');
     }
@@ -56,7 +53,6 @@ final class ValidatorAssertionsTest extends \Tests\Support\KernelTestCase
     public function testSeeViolatedConstraintMessage(): void
     {
         $user = User::create('invalid_email', 'weak');
-
         $this->seeViolatedConstraintMessage('valid email', $user, 'email');
 
         $user->setEmail('');

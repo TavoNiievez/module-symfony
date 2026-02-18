@@ -54,13 +54,7 @@ trait HttpKernelAssertionsTrait
         }
 
         if (!$profile->hasCollector($name->value)) {
-            Assert::fail(
-                $message ?: sprintf(
-                    "The '%s' collector is needed to use the '%s' function.",
-                    $name->value,
-                    $function
-                )
-            );
+            Assert::fail($message ?: sprintf("The '%s' collector is needed to use the '%s' function.", $name->value, $function));
         }
 
         return $profile->getCollector($name->value);

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Tests\Support\KernelTestCase;
 
-final class DomCrawlerAssertionsTest extends \Tests\Support\KernelTestCase
+final class DomCrawlerAssertionsTest extends KernelTestCase
 {
     protected function setUp(): void
     {
