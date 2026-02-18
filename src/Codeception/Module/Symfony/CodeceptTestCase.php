@@ -89,12 +89,9 @@ abstract class CodeceptTestCase extends TestCase
 
     protected function getKernelClass(): string
     {
-        if (isset($_SERVER['KERNEL_CLASS']) && is_string($_SERVER['KERNEL_CLASS'])) {
-            return $_SERVER['KERNEL_CLASS'];
-        }
-
-        if (isset($_ENV['KERNEL_CLASS']) && is_string($_ENV['KERNEL_CLASS'])) {
-            return $_ENV['KERNEL_CLASS'];
+        $class = $_SERVER['KERNEL_CLASS'] ?? $_ENV['KERNEL_CLASS'] ?? null;
+        if (is_string($class)) {
+            return $class;
         }
 
         if (class_exists('App\Kernel')) {
