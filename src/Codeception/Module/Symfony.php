@@ -11,6 +11,7 @@ use Codeception\Lib\Framework;
 use Codeception\Lib\Interfaces\DoctrineProvider;
 use Codeception\Lib\Interfaces\PartedModule;
 use Codeception\Module\Symfony\BrowserAssertionsTrait;
+use Codeception\Module\Symfony\CacheTrait;
 use Codeception\Module\Symfony\ConsoleAssertionsTrait;
 use Codeception\Module\Symfony\DataCollectorName;
 use Codeception\Module\Symfony\DoctrineAssertionsTrait;
@@ -18,6 +19,7 @@ use Codeception\Module\Symfony\DomCrawlerAssertionsTrait;
 use Codeception\Module\Symfony\EventsAssertionsTrait;
 use Codeception\Module\Symfony\FormAssertionsTrait;
 use Codeception\Module\Symfony\HttpClientAssertionsTrait;
+use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
 use Codeception\Module\Symfony\LoggerAssertionsTrait;
 use Codeception\Module\Symfony\MailerAssertionsTrait;
 use Codeception\Module\Symfony\MimeAssertionsTrait;
@@ -149,12 +151,14 @@ use function sprintf;
 class Symfony extends Framework implements DoctrineProvider, PartedModule
 {
     use BrowserAssertionsTrait;
+    use CacheTrait;
     use ConsoleAssertionsTrait;
     use DoctrineAssertionsTrait;
     use DomCrawlerAssertionsTrait;
     use EventsAssertionsTrait;
     use FormAssertionsTrait;
     use HttpClientAssertionsTrait;
+    use HttpKernelAssertionsTrait;
     use LoggerAssertionsTrait;
     use MailerAssertionsTrait;
     use MimeAssertionsTrait;
@@ -203,20 +207,6 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
 
     /** @var class-string<Kernel>|null */
     protected ?string $kernelClass = null;
-
-    /**
-     * Services that should be persistent permanently for all tests
-     *
-     * @var array<non-empty-string, object>
-     */
-    protected array $permanentServices = [];
-
-    /**
-     * Services that should be persistent during test execution between kernel reboots
-     *
-     * @var array<non-empty-string, object>
-     */
-    protected array $persistentServices = [];
 
     /** @return list<string> */
     public function _parts(): array
@@ -461,22 +451,11 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         }
     }
 
-    /** @return list<non-empty-string> */
-    protected function getInternalDomains(): array
+    protected function doRebootClientKernel(): void
     {
-        $domains = [];
-
-        foreach ($this->grabRouterService()->getRouteCollection() as $route) {
-            if ($route->getHost() !== '') {
-                $regex = $route->compile()->getHostRegex();
-                if ($regex !== null && $regex !== '') {
-                    $domains[] = $regex;
-                }
-            }
+        if ($this->client instanceof SymfonyConnector) {
+            $this->client->rebootKernel();
         }
-
-        /** @var list<non-empty-string> */
-        return array_values(array_unique($domains));
     }
 
     /**

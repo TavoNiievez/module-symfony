@@ -68,10 +68,17 @@ trait RouterAssertionsTrait
      */
     public function seeCurrentActionIs(string $action): void
     {
+        if ($action === '') {
+            Assert::fail('Action cannot be empty');
+        }
+
         $this->findRouteByActionOrFail($action);
 
-        /** @var string $current */
         $current = $this->getClient()->getRequest()->attributes->get('_controller');
+        if (!is_string($current)) {
+            Assert::fail('Current action (controller) is not a string.');
+        }
+
         $this->assertStringEndsWith($action, $current, "Current action is '{$current}'.");
     }
 
@@ -111,14 +118,8 @@ trait RouterAssertionsTrait
     private function getCurrentRouteMatch(string $routeName): array
     {
         $this->assertRouteExists($routeName);
-
-        $url  = $this->grabFromCurrentUrl();
-        Assert::assertIsString($url, 'Unable to obtain current URL.');
-        $path = (string) parse_url($url, PHP_URL_PATH);
-
-        /** @var array<string, mixed> $match */
-        $match = $this->grabRouterService()->match($path);
-        return $match;
+        /** @var array<string, mixed> */
+        return $this->grabRouterService()->match((string) parse_url($this->getClient()->getRequest()->getRequestUri(), PHP_URL_PATH));
     }
 
     private function findRouteByActionOrFail(string $action): string
@@ -143,7 +144,7 @@ trait RouterAssertionsTrait
     /** @param array<string, mixed> $params */
     private function openRoute(string $routeName, array $params = []): void
     {
-        $this->amOnPage($this->grabRouterService()->generate($routeName, $params));
+        $this->getClient()->request('GET', $this->grabRouterService()->generate($routeName, $params));
     }
 
     protected function grabRouterService(): RouterInterface

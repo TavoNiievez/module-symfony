@@ -82,7 +82,7 @@ trait SessionAssertionsTrait
      */
     public function goToLogoutPath(): void
     {
-        $this->amOnPage($this->getLogoutUrlGenerator()->getLogoutPath());
+        $this->getClient()->request('GET', $this->getLogoutUrlGenerator()->getLogoutPath());
     }
 
     /**
