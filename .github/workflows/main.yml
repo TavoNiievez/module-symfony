@@ -6,139 +6,121 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: [8.2, 8.3, 8.4, 8.5]
-        symfony: ["5.4.*", "6.4.*", "6.4wApi", "7.3.*", "7.4.*"]
-    env:
-      only_sf_latest: &only_sf_latest ${{ matrix.symfony == '7.4.*' }}
+        php: ["8.2", "8.5"]
+        symfony: ["5.4.*", "6.4.*", "6.4wApi", "7.4.*", "8.0.*"]
+        exclude:
+          - php: "8.2"
+            symfony: "8.0.*"
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-      - name: Setup PHP != 8.5
-        if: ${{ matrix.php != '8.5' }}
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           tools: composer:v2
           extensions: ctype, iconv, intl, json, mbstring, pdo, pdo_sqlite
           coverage: none
-
-      - name: Setup PHP 8.5
-        if: ${{ matrix.php == '8.5' }}
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          tools: composer:v2
-          extensions: ctype, iconv, intl, json, mbstring, pdo, pdo_sqlite
-          coverage: none
-          # this ini directive seems to be off by default in PHP 8.5
-          # see https://github.com/php/php-src/issues/20279
-          # enable it because codeception relies on it.
           ini-values: register_argc_argv=1
 
-      - name: Set Symfony version reference
-        env:
-          MATRIX_SYMFONY: ${{ matrix.symfony }}
+      - name: Resolve Symfony refs
         run: |
-          if [[ "$MATRIX_SYMFONY" == *'*' ]]; then
-            echo "SF_REF=${MATRIX_SYMFONY%.*}" >> "$GITHUB_ENV"
+          symfony='${{ matrix.symfony }}'
+          [[ "$symfony" == *'*' ]] && SF_REF="${symfony%.*}" || SF_REF="$symfony"
+          [[ "$symfony" == "6.4wApi" ]] && COMP_SYMFONY="6.4.*" || COMP_SYMFONY="$symfony"
+
+          if [[ '${{ matrix.php }}' == '8.2' ]]; then
+            PHPUNIT_REQ="^11.0"
           else
-            echo "SF_REF=$MATRIX_SYMFONY" >> "$GITHUB_ENV"
+            PHPUNIT_REQ="^12.0"
           fi
 
-      - name: Set Composer Symfony constraint
-        env:
-          MATRIX_SYMFONY: ${{ matrix.symfony }}
-        run: |
-          if [[ "$MATRIX_SYMFONY" == "6.4wApi" ]]; then
-            echo "COMP_SYMFONY=6.4.*" >> "$GITHUB_ENV"
-          else
-            echo "COMP_SYMFONY=$MATRIX_SYMFONY" >> "$GITHUB_ENV"
-          fi
+          {
+            echo "SF_REF=$SF_REF"
+            echo "COMP_SYMFONY=$COMP_SYMFONY"
+            echo "PHPUNIT_REQ=$PHPUNIT_REQ"
+          } >> "$GITHUB_ENV"
 
       - name: Checkout Symfony ${{ env.SF_REF }} sample
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: Codeception/symfony-module-tests
           path: framework-tests
           ref: ${{ env.SF_REF }}
 
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
-      - name: Cache Composer dependencies
-        uses: actions/cache@v3
+      - name: Cache Composer
+        uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.{json,lock}') }}
-          restore-keys: ${{ runner.os }}-php-${{ matrix.php }}-composer-
-
-      - name: Install PHPUnit 10
-        run: composer require --dev --no-update phpunit/phpunit:^10.0
+          key: ${{ runner.os }}-php-${{ matrix.php }}-symfony-${{ matrix.symfony }}-composer-${{ hashFiles('**/composer.json', '**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-symfony-${{ matrix.symfony }}-composer-
+            ${{ runner.os }}-php-${{ matrix.php }}-composer-
 
       - name: Install dependencies
-        env:
-          MATRIX_SYMFONY: ${{ matrix.symfony }}
         run: |
-          sed -i 's/\^5.4 | \^6.4 | \^7.3/${{ env.COMP_SYMFONY }}/g' composer.json
+          sed -i 's/\^5.4 | \^6.4 | \^7.4 | \^8.0/${{ env.COMP_SYMFONY }}/g' composer.json
 
           if [[ "${{ env.COMP_SYMFONY }}" == "5.4.*" ]]; then
-            sed -i 's/"doctrine\/orm": "\^3.5"/"doctrine\/orm": "^2.14"/g' composer.json
+            composer remove --no-update symfony/clock || true
+          else
+            sed -i 's/\^6.4 | \^7.4 | \^8.0/${{ env.COMP_SYMFONY }}/g' composer.json
           fi
 
-          composer require --dev --no-update \
-            symfony/{finder,yaml,console,event-dispatcher,css-selector,dom-crawler,browser-kit}:${{ env.COMP_SYMFONY }} \
+          if [[ "${{ env.COMP_SYMFONY }}" == "5.4.*" ]]; then
+            sed -i 's/"doctrine\/orm": "\^3.6"/"doctrine\/orm": "^2.14"/g' composer.json
+          fi
+
+          composer require --no-update \
+            phpunit/phpunit:${{ env.PHPUNIT_REQ }} \
             vlucas/phpdotenv \
             codeception/module-asserts:"3.*" \
             codeception/module-doctrine:"3.*"
 
-          if [[ "$MATRIX_SYMFONY" == "6.4wApi" ]]; then
-            composer require codeception/module-rest="3.*" --no-update --dev
+          if [[ '${{ matrix.symfony }}' == "6.4wApi" ]]; then
+            composer require --no-update codeception/module-rest:"3.*"
           fi
 
-          composer update --prefer-dist --no-progress
+          composer update --prefer-dist --no-progress -w
 
-      - name: Run PHPStan (max)
-        if: *only_sf_latest
-        run: composer phpstan
-
-      - name: Run PHP-CS-Fixer
-        if: *only_sf_latest
-        run: composer cs-check
+      - name: Quality checks (latest Symfony only)
+        if: ${{ matrix.symfony == '8.0.*' }}
+        run: |
+          composer phpstan
+          composer cs-check
+          composer audit
 
       - name: Run module tests
         run: vendor/bin/phpunit tests
 
-      - name: Run Composer Audit
-        if: *only_sf_latest
-        run: composer audit
-
-      - name: Validate Composer files
-        run: composer validate --strict
-        working-directory: framework-tests
-
-      - name: Install PHPUnit in framework-tests
-        run: composer require --dev --no-update phpunit/phpunit:^10.0
-        working-directory: framework-tests
-
       - name: Prepare Symfony sample
-        run: |
-          composer remove codeception/codeception codeception/module-asserts codeception/module-doctrine codeception/lib-innerbrowser codeception/module-symfony --dev --no-update
-          composer update --no-progress
         working-directory: framework-tests
+        run: |
+          composer validate --strict
+          composer config platform.php --unset
+          composer require --no-update phpunit/phpunit:${{ env.PHPUNIT_REQ }}
+          composer remove --no-update \
+            codeception/codeception \
+            codeception/module-asserts \
+            codeception/module-doctrine \
+            codeception/lib-innerbrowser \
+            codeception/module-symfony
+          composer update --no-progress -W
 
       - name: Setup Database
+        working-directory: framework-tests
         run: |
           php bin/console doctrine:schema:update --force
           php bin/console doctrine:fixtures:load --quiet
-        working-directory: framework-tests
 
       - name: Generate JWT keypair
         if: ${{ matrix.symfony == '6.4wApi' }}
-        run: php bin/console lexik:jwt:generate-keypair --skip-if-exists
         working-directory: framework-tests
+        run: php bin/console lexik:jwt:generate-keypair --skip-if-exists
 
       - name: Run tests
         run: |

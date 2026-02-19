@@ -6,15 +6,20 @@ namespace Codeception\Module\Symfony;
 
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Constraint\LogicalNot;
+use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Notifier\Event\MessageEvent;
 use Symfony\Component\Notifier\Event\NotificationEvents;
 use Symfony\Component\Notifier\EventListener\NotificationLoggerListener;
 use Symfony\Component\Notifier\Message\MessageInterface;
 use Symfony\Component\Notifier\Test\Constraint as NotifierConstraint;
-use Symfony\Component\HttpKernel\Kernel;
+
+use function end;
+use function version_compare;
 
 trait NotifierAssertionsTrait
 {
+    private ?string $notifierLoggerServiceId = null;
+
     /**
      * Asserts that the expected number of notifications was sent.
      *
@@ -251,13 +256,21 @@ trait NotifierAssertionsTrait
             Assert::fail('Notifier assertions require Symfony 6.2 or higher.');
         }
 
-        $services = ['notifier.notification_logger_listener', 'notifier.logger_notification_listener'];
-        foreach ($services as $serviceId) {
-            $notifier = $this->getService($serviceId);
+        if ($this->notifierLoggerServiceId !== null) {
+            $notifier = $this->getService($this->notifierLoggerServiceId);
             if ($notifier instanceof NotificationLoggerListener) {
                 return $notifier->getEvents();
             }
         }
+
+        foreach (['notifier.notification_logger_listener', 'notifier.logger_notification_listener'] as $serviceId) {
+            $notifier = $this->getService($serviceId);
+            if ($notifier instanceof NotificationLoggerListener) {
+                $this->notifierLoggerServiceId = $serviceId;
+                return $notifier->getEvents();
+            }
+        }
+
         Assert::fail("Notifications can't be tested without Symfony Notifier service.");
     }
 }

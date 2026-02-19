@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 
-use function codecept_debug;
+use function function_exists;
 
 /**
  * @property KernelInterface $kernel
@@ -57,23 +57,28 @@ class Symfony extends HttpKernelBrowser
      */
     public function rebootKernel(): void
     {
-        foreach (array_keys($this->persistentServices) as $service) {
-            if ($this->container->has($service)) {
-                $this->persistentServices[$service] = $this->container->get($service);
+        foreach ($this->persistentServices as $serviceName => $serviceObject) {
+            if ($this->container->has($serviceName)) {
+                $this->persistentServices[$serviceName] = $this->container->get($serviceName);
             }
         }
 
         $this->persistDoctrineConnections();
+
         if ($this->kernel instanceof Kernel) {
             $this->ensureKernelShutdown();
             $this->kernel->boot();
         }
+
         $this->container = $this->resolveContainer();
+
         foreach ($this->persistentServices as $name => $service) {
             try {
                 $this->container->set($name, $service);
             } catch (InvalidArgumentException $e) {
-                codecept_debug("[Symfony] Can't set persistent service {$name}: {$e->getMessage()}");
+                if (function_exists('codecept_debug')) {
+                    codecept_debug("[Symfony] Can't set persistent service {$name}: {$e->getMessage()}");
+                }
             }
         }
 
@@ -90,26 +95,22 @@ class Symfony extends HttpKernelBrowser
     {
         $container = $this->kernel->getContainer();
 
-        if ($container->has('test.service_container')) {
-            $testContainer = $container->get('test.service_container');
-            if (!$testContainer instanceof ContainerInterface) {
-                throw new LogicException('Service "test.service_container" must implement ' . ContainerInterface::class);
-            }
-            $container = $testContainer;
+        if (!$container->has('test.service_container')) {
+            return $container;
         }
 
-        return $container;
+        $testContainer = $container->get('test.service_container');
+
+        return $testContainer instanceof ContainerInterface
+            ? $testContainer
+            : throw new LogicException('Service "test.service_container" must implement ' . ContainerInterface::class);
     }
 
     private function getProfiler(): ?Profiler
     {
-        if (!$this->container->has('profiler')) {
-            return null;
-        }
-
-        $profiler = $this->container->get('profiler');
-
-        return $profiler instanceof Profiler ? $profiler : null;
+        return $this->container->has('profiler') && ($profiler = $this->container->get('profiler')) instanceof Profiler
+            ? $profiler
+            : null;
     }
 
     private function persistDoctrineConnections(): void
@@ -118,12 +119,9 @@ class Symfony extends HttpKernelBrowser
             return;
         }
 
-        if ($this->container instanceof TestContainer) {
-            $method = new ReflectionMethod($this->container, 'getPublicContainer');
-            $publicContainer = $method->invoke($this->container);
-        } else {
-            $publicContainer = $this->container;
-        }
+        $publicContainer = $this->container instanceof TestContainer
+            ? (new ReflectionMethod($this->container, 'getPublicContainer'))->invoke($this->container)
+            : $this->container;
 
         if (!is_object($publicContainer) || !method_exists($publicContainer, 'getParameterBag')) {
             return;
@@ -136,8 +134,8 @@ class Symfony extends HttpKernelBrowser
         if (!is_object($target) || !property_exists($target, 'parameters')) {
             return;
         }
-        $prop = new ReflectionProperty($target, 'parameters');
 
+        $prop = new ReflectionProperty($target, 'parameters');
         $params = (array) $prop->getValue($target);
         unset($params['doctrine.connections']);
         $prop->setValue($target, $params);
