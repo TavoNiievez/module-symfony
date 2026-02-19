@@ -71,7 +71,7 @@
         "symfony/twig-bundle": "^5.4 | ^6.4 | ^7.4 | ^8.0",
         "symfony/validator": "^5.4 | ^6.4 | ^7.4 | ^8.0",
         "symfony/var-dumper": "^5.4 | ^6.4 | ^7.4 | ^8.0",
-        "symfony/var-exporter": "^5.4 | ^6.4 | ^7.4 | ^8.0",
+        "symfony/var-exporter": "^5.4 | ^6.4 | ^7.4",
         "symfony/yaml": "^5.4 | ^6.4 | ^7.4 | ^8.0",
         "vlucas/phpdotenv": "^4.2 | ^5.6"
     },
