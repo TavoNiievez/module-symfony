@@ -70,22 +70,25 @@ abstract class CodeceptTestCase extends TestCase
     protected function tearDown(): void
     {
         $this->kernel->shutdown();
+        $this->restoreErrorHandler();
+        parent::tearDown();
+    }
 
+    private function restoreErrorHandler(): void
+    {
         if (class_exists(\Symfony\Component\ErrorHandler\ErrorHandler::class)) {
-            foreach ([
-                ['set_exception_handler', 'restore_exception_handler'],
-                ['set_error_handler', 'restore_error_handler'],
-            ] as [$set, $restore]) {
-                $handler = $set(null);
-                $restore();
+            $handler = set_exception_handler(null);
+            restore_exception_handler();
+            if (is_array($handler) && $handler[0] instanceof \Symfony\Component\ErrorHandler\ErrorHandler) {
+                restore_exception_handler();
+            }
 
-                if (is_array($handler) && $handler[0] instanceof \Symfony\Component\ErrorHandler\ErrorHandler) {
-                    $restore();
-                }
+            $handler = set_error_handler(null);
+            restore_error_handler();
+            if (is_array($handler) && $handler[0] instanceof \Symfony\Component\ErrorHandler\ErrorHandler) {
+                restore_error_handler();
             }
         }
-
-        parent::tearDown();
     }
 
     protected function createKernel(): KernelInterface
