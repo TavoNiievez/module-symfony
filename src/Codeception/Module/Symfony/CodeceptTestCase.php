@@ -72,16 +72,16 @@ abstract class CodeceptTestCase extends TestCase
         $this->kernel->shutdown();
 
         if (class_exists(\Symfony\Component\ErrorHandler\ErrorHandler::class)) {
-            $handler = set_exception_handler(null);
-            restore_exception_handler();
-            if (is_array($handler) && $handler[0] instanceof \Symfony\Component\ErrorHandler\ErrorHandler) {
-                restore_exception_handler();
-            }
+            foreach ([
+                ['set_exception_handler', 'restore_exception_handler'],
+                ['set_error_handler', 'restore_error_handler'],
+            ] as [$set, $restore]) {
+                $handler = $set(null);
+                $restore();
 
-            $handler = set_error_handler(null);
-            restore_error_handler();
-            if (is_array($handler) && $handler[0] instanceof \Symfony\Component\ErrorHandler\ErrorHandler) {
-                restore_error_handler();
+                if (is_array($handler) && $handler[0] instanceof \Symfony\Component\ErrorHandler\ErrorHandler) {
+                    $restore();
+                }
             }
         }
 
