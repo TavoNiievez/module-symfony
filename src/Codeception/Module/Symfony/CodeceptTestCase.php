@@ -70,6 +70,21 @@ abstract class CodeceptTestCase extends TestCase
     protected function tearDown(): void
     {
         $this->kernel->shutdown();
+
+        if (class_exists(\Symfony\Component\ErrorHandler\ErrorHandler::class)) {
+            $handler = set_exception_handler(null);
+            restore_exception_handler();
+            if (is_array($handler) && $handler[0] instanceof \Symfony\Component\ErrorHandler\ErrorHandler) {
+                restore_exception_handler();
+            }
+
+            $handler = set_error_handler(null);
+            restore_error_handler();
+            if (is_array($handler) && $handler[0] instanceof \Symfony\Component\ErrorHandler\ErrorHandler) {
+                restore_error_handler();
+            }
+        }
+
         parent::tearDown();
     }
 
