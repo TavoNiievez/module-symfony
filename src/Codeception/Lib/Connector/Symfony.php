@@ -113,24 +113,26 @@ class Symfony extends HttpKernelBrowser
 
     private function persistDoctrineConnections(): void
     {
-        if (!$this->container->hasParameter('doctrine.connections')) {
-            return;
-        }
-        $target = $this->container instanceof TestContainer
-            ? (new ReflectionMethod($this->container, 'getPublicContainer'))->invoke($this->container)
-            : $this->container;
+        $container = $this->kernel->getContainer();
+        /**
+         * @param ContainerInterface&object $container
+         */
+        $closure = function (ContainerInterface $container): void {
+            if (!$container->hasParameter('doctrine.connections')) {
+                return;
+            }
+            /** @var array<string, string> $connections */
+            $connections = $container->getParameter('doctrine.connections');
+            foreach ($connections as $id) {
+                if (property_exists($container, 'services') && is_array($container->services)) {
+                    unset($container->services[$id]);
+                }
+                if (property_exists($container, 'privates') && is_array($container->privates)) {
+                    unset($container->privates[$id]);
+                }
+            }
+        };
 
-        if (!is_object($target) || !method_exists($target, 'getParameterBag')) {
-            return;
-        }
-        $bag = property_exists($target, 'parameters') ? $target : $target->getParameterBag();
-
-        if (!is_object($bag) || !property_exists($bag, 'parameters')) {
-            return;
-        }
-        $prop = new ReflectionProperty($bag, 'parameters');
-        $params = (array) $prop->getValue($bag);
-        unset($params['doctrine.connections']);
-        $prop->setValue($bag, $params);
+        $closure->call($container, $container);
     }
 }
