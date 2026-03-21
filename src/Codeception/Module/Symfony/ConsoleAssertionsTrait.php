@@ -37,6 +37,10 @@ trait ConsoleAssertionsTrait
         array $consoleInputs = [],
         int $expectedExitCode = 0
     ): string {
+        if (!isset($this->kernel)) {
+            throw new \RuntimeException(sprintf('The kernel is not initialized. Did you forget to call parent::setUp() in %s?', static::class));
+        }
+
         $consoleCommand = (new Application($this->kernel))->find($command);
         $commandTester  = new CommandTester($consoleCommand);
         $commandTester->setInputs($consoleInputs);

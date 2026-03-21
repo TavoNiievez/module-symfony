@@ -254,6 +254,12 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             }
         }
         $this->persistentServices = [];
+
+        $this->profileCache = null;
+        $this->cachedInternalDomains = null;
+        $this->messageLoggerServiceId = null;
+        $this->notifierLoggerServiceId = null;
+
         parent::_after($test);
     }
 
