@@ -1,153 +1,56 @@
-# Code Smells and Suspicious Code in Symfony Module
+# Code Smells and Issues
 
-## 1. `src/Codeception/Module/Symfony.php`
+## 1. Redundant Kernel Boot in Connector
+**Location:** `src/Codeception/Lib/Connector/Symfony.php` (method `ensureKernelShutdown`)
+**Issue:** The method forcefully calls `$this->kernel->boot()` immediately before calling `$this->kernel->shutdown()`. If the kernel isn't booted, shutting it down should simply be a no-op instead of paying the performance penalty of booting it just to shut it down.
+**Solution:** Remove the `$this->kernel->boot();` call.
 
-### 1.1 `_after` implementation (Service Cleanup)
-```php
-public function _after(TestInterface $test): void
-{
-    foreach ($this->permanentServices as $serviceName => $_) {
-        $service = $this->getService($serviceName);
-        if (is_object($service)) {
-            $this->permanentServices[$serviceName] = $service;
-        } else {
-            unset($this->permanentServices[$serviceName]);
-        }
-    }
-    // ...
-}
-```
-**Issue:** `_after` updates the `$this->permanentServices` from the container, but it's not clear why a permanent service needs to be updated with whatever is currently in the container at the end of a test. If a service is permanent, replacing it with a potentially test-mutated instance could lead to test leakage.
+## 2. Inefficient O(N) Route Lookup
+**Location:** `src/Codeception/Module/Symfony/RouterAssertionsTrait.php` (method `findRouteByActionOrFail`)
+**Issue:** The method iterates over *all* routes in the Symfony `RouteCollection` (`O(N)` complexity) every single time it's called to find a matching controller action. In large applications, this can significantly slow down tests.
+**Solution:** Implement a cached map (`$this->cachedActionMap`) that is populated once per test lifecycle to enable `O(1)` or bounded-array lookups.
 
-### 1.2 `getKernelClass` Path Resolution and File Inclusion
-```php
-$expectedKernelPath = $path . DIRECTORY_SEPARATOR . 'Kernel.php';
-if (file_exists($expectedKernelPath)) {
-    include_once $expectedKernelPath;
-} else {
-    foreach ((new Finder())->name('*Kernel.php')->depth('0')->in($path) as $file) {
-        include_once $file->getRealPath();
-    }
-}
-```
-**Issue:** Using `include_once` on all files matching `*Kernel.php` just to find the kernel class is a massive hack. It pollutes the environment and autoloading should handle class loading, not brute-force file inclusion.
+## 3. Legacy Duck Typing (`__toString`)
+**Location:** `src/Codeception/Module/Symfony/HttpClientAssertionsTrait.php` (method `extractValue`)
+**Issue:** The method checks `is_object($value) && method_exists($value, '__toString')`. In PHP 8+, any object implementing `__toString` automatically implements the built-in `\Stringable` interface.
+**Solution:** Use `$value instanceof \Stringable`.
 
-### 1.3 `debugCollector` Type Check Hack
-```php
-$collector = $profile->getCollector($name);
-match (true) {
-    $collector instanceof SecurityDataCollector => $this->debugSecurityData($collector),
-    $collector instanceof MessageDataCollector => $this->debugMailerData($collector),
-    $collector instanceof NotificationDataCollector => $this->debugNotifierData($collector),
-    $collector instanceof TimeDataCollector => $this->debugTimeData($collector),
-    default => null,
-};
-```
-**Issue:** While it uses `match (true)`, this is an anti-pattern. If the collector was fetched by name (`$name`), its type should be known or it should be mapped explicitly instead of sequentially checking `instanceof` on the resulting object.
+## 4. Bypassing Composer Autoloader
+**Location:** `tests/_app/TestKernel.php`
+**Issue:** The file manually includes a class using `require_once __DIR__ . '/Security/SecurityBundleSecurityAlias.php';` at the top of the file, completely bypassing standard PSR-4 composer autoloading.
+**Solution:** Add the file path directly to the `autoload-dev.files` array in `composer.json` to ensure it is eagerly loaded by Composer, and remove the `require_once`.
 
-### 1.4 `requireAdditionalAutoloader`
-```php
-private function requireAdditionalAutoloader(): void
-{
-    $rootDir  = codecept_root_dir();
-    $autoload = $rootDir . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+## 5. `_after` implementation (Service Cleanup)
+**Location:** `src/Codeception/Module/Symfony.php`
+**Issue:** `_after` attempts to update `$this->permanentServices` from the container blindly at the end of a test instead of simply clearing memory.
+**Solution:** I kept the logic because the Codeception framework explicitly relies on storing instances across tests, but this design is inherently fragile.
 
-    if (file_exists($autoload)) {
-        include_once $autoload;
-    }
-}
-```
-**Issue:** Explicitly requiring the `vendor/autoload.php` from the project root inside a library module is a very suspect workaround ("It is only required for CI jobs to run correctly"). The test runner (Codeception) should already be handling autoloading correctly.
+## 6. `getKernelClass` Path Resolution and File Inclusion
+**Location:** `src/Codeception/Module/Symfony.php`
+**Issue:** Uses a `Finder` to search for `*Kernel.php` files in `app_path`, then calls `include_once` on them until a class matching the configured kernel is found. This is a hacky way to bootstrap a legacy Symfony application without standard autoloading.
+**Solution:** This hack is kept because older Symfony 4/5 setups often relied on weird directory structures where the kernel wasn't properly PSR-4 mapped, but it remains a code smell.
 
-## 2. `src/Codeception/Lib/Connector/Symfony.php`
+## 7. `requireAdditionalAutoloader`
+**Location:** `src/Codeception/Module/Symfony.php`
+**Issue:** A method hardcoded to `include_once codecept_root_dir() . 'vendor/autoload.php'`. This should be entirely unnecessary if PHPUnit or Codeception properly bootstrap the environment, but it states "It is only required for CI jobs to run correctly".
+**Solution:** Kept due to the stated comment, though it implies a misconfigured CI runner.
 
-### 2.1 `rebootKernel` and Exception Swallowing
-```php
-foreach ($this->persistentServices as $name => $service) {
-    try {
-        $this->container->set($name, $service);
-    } catch (InvalidArgumentException $e) {
-        if (function_exists('codecept_debug')) {
-            codecept_debug("[Symfony] Can't set persistent service {$name}: {$e->getMessage()}");
-        }
-    }
-}
-```
-**Issue:** Silently swallowing `InvalidArgumentException` when setting persistent services in the container. If a service cannot be set, the test will likely fail with cryptic errors later, or run with the wrong service instance.
+## 8. Exception Swallowing on Service Persist
+**Location:** `src/Codeception/Lib/Connector/Symfony.php`
+**Issue:** A `try/catch (InvalidArgumentException)` block ignores exceptions when setting persistent services in the container.
+**Solution:** Kept because Symfony containers freeze and synthetic services cannot be reassigned; Codeception must swallow this error to continue testing.
 
-### 2.2 `ensureKernelShutdown` Redundant Boot
-```php
-protected function ensureKernelShutdown(): void
-{
-    $this->kernel->boot();
-    $this->kernel->shutdown();
-}
-```
-**Issue:** Booting the kernel just to shut it down is extremely inefficient and suspicious. If the kernel isn't booted, shutting it down should be a no-op, not require booting first. Memory notes that a redundant `boot()` call was supposedly removed but it is still present in the file!
+## 9. Reflection Hack for Doctrine
+**Location:** `src/Codeception/Lib/Connector/Symfony.php`
+**Issue:** Uses `Closure::bind` (`->call()`) to forcefully hack into the protected `parameters` property of the Symfony DI Container to unset `doctrine.connections`.
+**Solution:** Kept because it is a required workaround to reset database connections between simulated requests in functional testing.
 
-### 2.3 `persistDoctrineConnections` Reflection Hack
-```php
-private function persistDoctrineConnections(): void
-{
-    (function (): void {
-        if (property_exists($this, 'parameters') && is_array($this->parameters)) {
-            unset($this->parameters['doctrine.connections']);
-        }
-    })->call($this->kernel->getContainer());
-}
-```
-**Issue:** Using `Closure::bind` (`->call()`) to forcefully hack into the protected/private properties (`parameters`) of the Symfony DI Container to unset `doctrine.connections` is a huge workaround and heavily tightly-coupled to the internal implementation of the Symfony Container.
+## 10. `debugCollector` Dynamic Type Checking
+**Location:** `src/Codeception/Module/Symfony.php`
+**Issue:** Uses sequential `match (true)` with `instanceof` checks to map DataCollectors to debug formatting methods.
+**Solution:** It is verbose, but it is the fastest native execution path in PHP 8 for dynamic dispatch without creating unnecessary closures or reflection.
 
-## 3. `src/Codeception/Module/Symfony/HttpClientAssertionsTrait.php`
-
-### 3.1 `extractValue` Duck Typing
-```php
-private function extractValue(mixed $value): mixed
-{
-    return match (true) {
-        $value instanceof Data => $value->getValue(true),
-        is_object($value) && method_exists($value, 'getValue') => $value->getValue(true),
-        is_object($value) && method_exists($value, '__toString') => (string) $value,
-        default => $value,
-    };
-}
-```
-**Issue:** The use of `is_object($value) && method_exists($value, 'getValue')` is a workaround for dealing with mixed data types (likely due to Symfony Profiler/VarDumper serialization) instead of strictly typing or knowing the expected data structure.
-
-## 4. `src/Codeception/Module/Symfony/EventsAssertionsTrait.php`
-
-### 4.1 Missing Type Information Fallback
-```php
-$listenerName = match (true) {
-    is_array($listener) && isset($listener[0]) => is_string($listener[0]) ? $listener[0] : (is_object($listener[0]) ? $listener[0]::class : 'array'),
-    is_object($listener) => $listener::class,
-    is_string($listener) => $listener,
-    default => get_debug_type($listener),
-};
-```
-**Issue:** Complex and hard-to-read dynamic type resolution for listener names. It looks like a workaround to support multiple undocumented listener formats (arrays with string class names, arrays with object instances, plain objects, plain strings).
-
-## 5. `src/Codeception/Module/Symfony/RouterAssertionsTrait.php`
-
-### 5.1 O(N) Route Searching
-```php
-private function findRouteByActionOrFail(string $action): string
-{
-    foreach ($this->grabRouterService()->getRouteCollection()->all() as $name => $route) {
-        $ctrl = $route->getDefault('_controller');
-        if (is_string($ctrl) && str_ends_with($ctrl, $action)) {
-            return $name;
-        }
-    }
-    Assert::fail(sprintf("Action '%s' does not exist.", $action));
-}
-```
-**Issue:** Searching for a route by iterating through all routes in the application on every call (`O(N)` complexity). This is inefficient. Memory notes mention an optimization for this trait using a cached map (`$this->cachedActionMap`) that is currently missing from the code.
-
-## 6. `tests/_app/TestKernel.php`
-
-### 6.1 Unconventional Kernel File Inclusion
-```php
-require_once __DIR__ . '/Security/SecurityBundleSecurityAlias.php';
-```
-**Issue:** Directly using `require_once` outside the autoloader context at the top of the test kernel file. This is a workaround, likely to ensure that a test-specific alias/class is loaded when the kernel is instanced.
+## 11. `EventsAssertionsTrait` Missing Type Fallbacks
+**Location:** `src/Codeception/Module/Symfony/EventsAssertionsTrait.php`
+**Issue:** Uses complex dynamic type resolution (nested ternary arrays and class-strings) to determine the listener's actual name.
+**Solution:** It's kept as a `match` expression since the input types to this method are highly variable and undocumented, making it impossible to cleanly strict-type the method signature without breaking backward compatibility.

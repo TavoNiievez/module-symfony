@@ -153,7 +153,7 @@ trait HttpClientAssertionsTrait
         return match (true) {
             $value instanceof Data => $value->getValue(true),
             is_object($value) && method_exists($value, 'getValue') => $value->getValue(true),
-            is_object($value) && method_exists($value, '__toString') => (string) $value,
+            $value instanceof \Stringable => (string) $value,
             default => $value,
         };
     }
