@@ -113,26 +113,10 @@ class Symfony extends HttpKernelBrowser
 
     private function persistDoctrineConnections(): void
     {
-        $container = $this->kernel->getContainer();
-        /**
-         * @param ContainerInterface&object $container
-         */
-        $closure = function (ContainerInterface $container): void {
-            if (!$container->hasParameter('doctrine.connections')) {
-                return;
+        (function (): void {
+            if (property_exists($this, 'parameters') && is_array($this->parameters)) {
+                unset($this->parameters['doctrine.connections']);
             }
-            /** @var array<string, string> $connections */
-            $connections = $container->getParameter('doctrine.connections');
-            foreach ($connections as $id) {
-                if (property_exists($container, 'services') && is_array($container->services)) {
-                    unset($container->services[$id]);
-                }
-                if (property_exists($container, 'privates') && is_array($container->privates)) {
-                    unset($container->privates[$id]);
-                }
-            }
-        };
-
-        $closure->call($container, $container);
+        })->call($this->kernel->getContainer());
     }
 }
