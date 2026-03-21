@@ -21,10 +21,6 @@ trait CacheTrait
 
     public function _getContainer(): ContainerInterface
     {
-        if (!isset($this->kernel)) {
-            throw new \RuntimeException(sprintf('The kernel is not initialized. Did you forget to call parent::setUp() in %s?', static::class));
-        }
-
         $container = $this->kernel->getContainer();
 
         /** @var ContainerInterface $testContainer */

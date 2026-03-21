@@ -49,8 +49,8 @@ abstract class CodeceptTestCase extends TestCase
     use TwigAssertionsTrait;
     use ValidatorAssertionsTrait;
 
-    protected ?KernelBrowser $client = null;
-    protected ?KernelInterface $kernel = null;
+    protected KernelBrowser $client;
+    protected KernelInterface $kernel;
     protected bool $profilerEnabled = true;
 
     /** @var array<string, bool> */
@@ -73,10 +73,6 @@ abstract class CodeceptTestCase extends TestCase
         if ($testClient instanceof KernelBrowser) {
             $this->client = $testClient;
         } else {
-            if ($this->kernel === null) {
-                // Should never happen since createKernel returns KernelInterface, but satisfies PHPStan
-                throw new RuntimeException('The kernel is not initialized.');
-            }
             $this->client = new KernelBrowser($this->kernel);
         }
 
@@ -92,11 +88,9 @@ abstract class CodeceptTestCase extends TestCase
         }
 
         $this->restoreErrorHandler();
-
-        $this->client = null;
-        $this->kernel = null;
-
         parent::tearDown();
+
+        unset($this->kernel, $this->client);
     }
 
     private function restoreErrorHandler(): void
@@ -169,10 +163,6 @@ abstract class CodeceptTestCase extends TestCase
 
     protected function getClient(): KernelBrowser
     {
-        if ($this->client === null) {
-            throw new RuntimeException(sprintf('The client is not initialized. Did you forget to call parent::setUp() in %s?', static::class));
-        }
-
         return $this->client;
     }
 
