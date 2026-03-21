@@ -88,10 +88,7 @@
         "psr-4": {
             "Tests\\": "tests",
             "Tests\\App\\": "tests/_app"
-        },
-        "files": [
-            "tests/_app/Security/SecurityBundleSecurityAlias.php"
-        ]
+        }
     },
     "config": {
         "sort-packages": true

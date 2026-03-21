@@ -8,17 +8,17 @@
 ## 2. Inefficient O(N) Route Lookup
 **Location:** `src/Codeception/Module/Symfony/RouterAssertionsTrait.php` (method `findRouteByActionOrFail`)
 **Issue:** The method iterates over *all* routes in the Symfony `RouteCollection` (`O(N)` complexity) every single time it's called to find a matching controller action. In large applications, this can significantly slow down tests.
-**Solution:** Implement a cached map (`$this->cachedActionMap`) that is populated once per test lifecycle to enable `O(1)` or bounded-array lookups.
+**Solution:** Reverted to original `O(N)` implementation as the cache caused unintended behavior/complexity. Kept as a known, accepted code smell.
 
 ## 3. Legacy Duck Typing (`__toString`)
 **Location:** `src/Codeception/Module/Symfony/HttpClientAssertionsTrait.php` (method `extractValue`)
 **Issue:** The method checks `is_object($value) && method_exists($value, '__toString')`. In PHP 8+, any object implementing `__toString` automatically implements the built-in `\Stringable` interface.
-**Solution:** Use `$value instanceof \Stringable`.
+**Solution:** Fixed using `$value instanceof \Stringable`.
 
 ## 4. Bypassing Composer Autoloader
 **Location:** `tests/_app/TestKernel.php`
 **Issue:** The file manually includes a class using `require_once __DIR__ . '/Security/SecurityBundleSecurityAlias.php';` at the top of the file, completely bypassing standard PSR-4 composer autoloading.
-**Solution:** Add the file path directly to the `autoload-dev.files` array in `composer.json` to ensure it is eagerly loaded by Composer, and remove the `require_once`.
+**Solution:** Reverted fix. The file acts as a polyfill alias dynamically providing missing classes based on the Symfony version. Loading it natively via Composer or modifying `TestKernel`'s bootstrapping sequence is unstable. Kept as an accepted workaround.
 
 ## 5. `_after` implementation (Service Cleanup)
 **Location:** `src/Codeception/Module/Symfony.php`
