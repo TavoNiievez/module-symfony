@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Tests\Support\CodeceptTestCase;
-use Codeception\Module\Symfony\TimeAssertionsTrait;
 use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
+use Codeception\Module\Symfony\TimeAssertionsTrait;
+use Tests\Support\CodeceptTestCase;
 
 final class TimeAssertionsTest extends CodeceptTestCase
 {

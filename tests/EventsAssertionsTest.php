@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Codeception\Module\Symfony\EventsAssertionsTrait;
+use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use Symfony\Component\HttpKernel\Kernel;
 use Tests\App\Event\TestEvent;
 use Tests\App\Listener\TestEventListener;
 use Tests\Support\CodeceptTestCase;
-use Codeception\Module\Symfony\EventsAssertionsTrait;
-use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
-use Codeception\Module\Symfony\ServicesAssertionsTrait;
 
 final class EventsAssertionsTest extends CodeceptTestCase
 {
-    use ServicesAssertionsTrait;
-    use HttpKernelAssertionsTrait;
     use EventsAssertionsTrait;
+    use HttpKernelAssertionsTrait;
+    use ServicesAssertionsTrait;
 
     public function testDontSeeEvent(): void
     {

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Tests\App\Controller\AppController;
-use Tests\Support\CodeceptTestCase;
 use Codeception\Module\Symfony\RouterAssertionsTrait;
 use Codeception\Module\Symfony\ServicesAssertionsTrait;
+use Tests\App\Controller\AppController;
+use Tests\Support\CodeceptTestCase;
 
 final class RouterAssertionsTest extends CodeceptTestCase
 {

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Tests\Support\CodeceptTestCase;
 use Codeception\Module\Symfony\ParameterAssertionsTrait;
 use Codeception\Module\Symfony\ServicesAssertionsTrait;
+use Tests\Support\CodeceptTestCase;
 
 final class ParameterAssertionsTest extends CodeceptTestCase
 {
-    use ServicesAssertionsTrait;
     use ParameterAssertionsTrait;
+    use ServicesAssertionsTrait;
 
     public function testGrabParameter(): void
     {

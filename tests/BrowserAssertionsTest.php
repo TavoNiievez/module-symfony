@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Codeception\Module\Symfony\BrowserAssertionsTrait;
 use Symfony\Component\BrowserKit\Cookie;
 use Tests\Support\CodeceptTestCase;
-use Codeception\Module\Symfony\BrowserAssertionsTrait;
 
 final class BrowserAssertionsTest extends CodeceptTestCase
 {

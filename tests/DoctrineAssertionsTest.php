@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Codeception\Module\Symfony\DoctrineAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 use Tests\App\Entity\User;
 use Tests\App\Repository\UserRepository;
 use Tests\App\Repository\UserRepositoryInterface;
 use Tests\Support\CodeceptTestCase;
-use Codeception\Module\Symfony\DoctrineAssertionsTrait;
-use Codeception\Module\Symfony\ServicesAssertionsTrait;
 
 final class DoctrineAssertionsTest extends CodeceptTestCase
 {
-    use ServicesAssertionsTrait;
     use DoctrineAssertionsTrait;
+    use ServicesAssertionsTrait;
 
     public function testGrabNumRecords(): void
     {

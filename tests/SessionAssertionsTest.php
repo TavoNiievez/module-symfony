@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Codeception\Module\Symfony\SecurityAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
+use Codeception\Module\Symfony\SessionAssertionsTrait;
 use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;
 use Tests\App\Entity\User;
 use Tests\App\Repository\UserRepository;
 use Tests\Support\CodeceptTestCase;
-use Codeception\Module\Symfony\SessionAssertionsTrait;
-use Codeception\Module\Symfony\ServicesAssertionsTrait;
-use Codeception\Module\Symfony\SecurityAssertionsTrait;
 
 final class SessionAssertionsTest extends CodeceptTestCase
 {
-    use SessionAssertionsTrait;
-    use ServicesAssertionsTrait;
     use SecurityAssertionsTrait;
+    use ServicesAssertionsTrait;
+    use SessionAssertionsTrait;
 
     public function testAmLoggedInAs(): void
     {

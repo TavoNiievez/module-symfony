@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Tests\Support\CodeceptTestCase;
-use Codeception\Module\Symfony\FormAssertionsTrait;
 use Codeception\Module\Symfony\DomCrawlerAssertionsTrait;
+use Codeception\Module\Symfony\FormAssertionsTrait;
 use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
+use Tests\Support\CodeceptTestCase;
 
 final class FormAssertionsTest extends CodeceptTestCase
 {
-    use HttpKernelAssertionsTrait;
     use DomCrawlerAssertionsTrait;
     use FormAssertionsTrait;
+    use HttpKernelAssertionsTrait;
 
     protected function setUp(): void
     {

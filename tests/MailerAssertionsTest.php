@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Codeception\Module\Symfony\MailerAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\Event\MessageEvent;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Tests\Support\CodeceptTestCase;
-use Codeception\Module\Symfony\MailerAssertionsTrait;
-use Codeception\Module\Symfony\ServicesAssertionsTrait;
 
 final class MailerAssertionsTest extends CodeceptTestCase
 {
-    use ServicesAssertionsTrait;
     use MailerAssertionsTrait;
+    use ServicesAssertionsTrait;
 
     protected function setUp(): void
     {

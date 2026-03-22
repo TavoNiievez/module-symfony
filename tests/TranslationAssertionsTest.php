@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Tests\Support\CodeceptTestCase;
-use Codeception\Module\Symfony\TranslationAssertionsTrait;
 use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
+use Codeception\Module\Symfony\TranslationAssertionsTrait;
+use Tests\Support\CodeceptTestCase;
 
 final class TranslationAssertionsTest extends CodeceptTestCase
 {

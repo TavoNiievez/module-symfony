@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
+use Codeception\Module\Symfony\LoggerAssertionsTrait;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use Tests\Support\CodeceptTestCase;
-use Codeception\Module\Symfony\LoggerAssertionsTrait;
-use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
 
 final class LoggerAssertionsTest extends CodeceptTestCase
 {

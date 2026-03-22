@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Tests\Support\CodeceptTestCase;
-use Codeception\Module\Symfony\TwigAssertionsTrait;
 use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
+use Codeception\Module\Symfony\TwigAssertionsTrait;
+use Tests\Support\CodeceptTestCase;
 
 final class TwigAssertionsTest extends CodeceptTestCase
 {

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Codeception\Module\Symfony\SecurityAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\BrowserKit\Cookie;
 use Tests\App\Entity\User;
 use Tests\Support\CodeceptTestCase;
-use Codeception\Module\Symfony\SecurityAssertionsTrait;
-use Codeception\Module\Symfony\ServicesAssertionsTrait;
 
 final class SecurityAssertionsTest extends CodeceptTestCase
 {
-    use ServicesAssertionsTrait;
     use SecurityAssertionsTrait;
+    use ServicesAssertionsTrait;
 
     protected function grabSecurityService(): Security
     {

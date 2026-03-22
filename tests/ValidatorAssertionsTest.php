@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
+use Codeception\Module\Symfony\ValidatorAssertionsTrait;
 use Symfony\Component\Validator\Constraints as Assert;
 use Tests\App\Entity\User;
 use Tests\Support\CodeceptTestCase;
-use Codeception\Module\Symfony\ValidatorAssertionsTrait;
-use Codeception\Module\Symfony\ServicesAssertionsTrait;
 
 final class ValidatorAssertionsTest extends CodeceptTestCase
 {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Tests\Support\CodeceptTestCase;
 use Codeception\Module\Symfony\DomCrawlerAssertionsTrait;
+use Tests\Support\CodeceptTestCase;
 
 final class DomCrawlerAssertionsTest extends CodeceptTestCase
 {
