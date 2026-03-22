@@ -18,8 +18,6 @@ use function version_compare;
 
 trait NotifierAssertionsTrait
 {
-    private ?string $notifierLoggerServiceId = null;
-
     /**
      * Asserts that the expected number of notifications was sent.
      *
@@ -262,21 +260,10 @@ trait NotifierAssertionsTrait
 
     private function getNotifierLoggerListener(): ?NotificationLoggerListener
     {
-        if ($this->notifierLoggerServiceId !== null) {
-            $notifier = $this->getService($this->notifierLoggerServiceId);
-            if ($notifier instanceof NotificationLoggerListener) {
-                return $notifier;
-            }
-        }
-
-        foreach (['notifier.notification_logger_listener', 'notifier.logger_notification_listener'] as $serviceId) {
-            $notifier = $this->getService($serviceId);
-            if ($notifier instanceof NotificationLoggerListener) {
-                $this->notifierLoggerServiceId = $serviceId;
-                return $notifier;
-            }
-        }
-
-        return null;
+        return $this->grabCachedService(
+            'notifierLoggerServiceId',
+            ['notifier.notification_logger_listener', 'notifier.logger_notification_listener'],
+            NotificationLoggerListener::class
+        );
     }
 }

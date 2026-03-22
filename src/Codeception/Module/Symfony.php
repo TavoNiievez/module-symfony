@@ -229,6 +229,8 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     public function _before(TestInterface $test): void
     {
+        $this->state = [];
+
         $this->persistentServices = $this->persistentServices === []
             ? $this->permanentServices
             : [...$this->persistentServices, ...$this->permanentServices];
@@ -256,9 +258,6 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         $this->persistentServices = [];
 
         $this->profileCache = null;
-        $this->cachedInternalDomains = null;
-        $this->messageLoggerServiceId = null;
-        $this->notifierLoggerServiceId = null;
 
         parent::_after($test);
     }
