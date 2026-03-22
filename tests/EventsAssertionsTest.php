@@ -8,10 +8,17 @@ use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use Symfony\Component\HttpKernel\Kernel;
 use Tests\App\Event\TestEvent;
 use Tests\App\Listener\TestEventListener;
-use Tests\Support\KernelTestCase;
+use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\EventsAssertionsTrait;
+use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 
-final class EventsAssertionsTest extends KernelTestCase
+final class EventsAssertionsTest extends CodeceptTestCase
 {
+    use ServicesAssertionsTrait;
+    use HttpKernelAssertionsTrait;
+    use EventsAssertionsTrait;
+
     public function testDontSeeEvent(): void
     {
         $this->client->request('GET', '/dispatch-orphan-event');

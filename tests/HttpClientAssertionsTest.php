@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace Tests;
 
 use Symfony\Component\HttpKernel\Kernel;
-use Tests\Support\KernelTestCase;
+use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\HttpClientAssertionsTrait;
+use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
 
-final class HttpClientAssertionsTest extends KernelTestCase
+final class HttpClientAssertionsTest extends CodeceptTestCase
 {
+    use HttpKernelAssertionsTrait;
+    use HttpClientAssertionsTrait;
+
     protected function setUp(): void
     {
         parent::setUp();

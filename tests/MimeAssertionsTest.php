@@ -5,10 +5,17 @@ declare(strict_types=1);
 namespace Tests;
 
 use Symfony\Component\Mime\Email;
-use Tests\Support\KernelTestCase;
+use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\MimeAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
+use Codeception\Module\Symfony\MailerAssertionsTrait;
 
-final class MimeAssertionsTest extends KernelTestCase
+final class MimeAssertionsTest extends CodeceptTestCase
 {
+    use MailerAssertionsTrait;
+    use ServicesAssertionsTrait;
+    use MimeAssertionsTrait;
+
     protected function setUp(): void
     {
         parent::setUp();

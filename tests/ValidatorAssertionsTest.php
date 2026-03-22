@@ -6,10 +6,15 @@ namespace Tests;
 
 use Symfony\Component\Validator\Constraints as Assert;
 use Tests\App\Entity\User;
-use Tests\Support\KernelTestCase;
+use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\ValidatorAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 
-final class ValidatorAssertionsTest extends KernelTestCase
+final class ValidatorAssertionsTest extends CodeceptTestCase
 {
+    use ServicesAssertionsTrait;
+    use ValidatorAssertionsTrait;
+
     public function testDontSeeViolatedConstraint(): void
     {
         $user = User::create('test@example.com', 'password123');

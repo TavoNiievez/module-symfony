@@ -7,10 +7,15 @@ namespace Tests;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\BrowserKit\Cookie;
 use Tests\App\Entity\User;
-use Tests\Support\KernelTestCase;
+use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\SecurityAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 
-final class SecurityAssertionsTest extends KernelTestCase
+final class SecurityAssertionsTest extends CodeceptTestCase
 {
+    use ServicesAssertionsTrait;
+    use SecurityAssertionsTrait;
+
     protected function grabSecurityService(): Security
     {
         return new Security($this->_getContainer());

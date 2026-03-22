@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Tests\Support\KernelTestCase;
+use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 
-final class ServicesAssertionsTest extends KernelTestCase
+final class ServicesAssertionsTest extends CodeceptTestCase
 {
+    use ServicesAssertionsTrait;
+
     public function testGrabService(): void
     {
         $this->assertIsObject($this->grabService('security.helper'));

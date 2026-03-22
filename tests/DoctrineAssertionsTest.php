@@ -7,10 +7,15 @@ namespace Tests;
 use Tests\App\Entity\User;
 use Tests\App\Repository\UserRepository;
 use Tests\App\Repository\UserRepositoryInterface;
-use Tests\Support\KernelTestCase;
+use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\DoctrineAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 
-final class DoctrineAssertionsTest extends KernelTestCase
+final class DoctrineAssertionsTest extends CodeceptTestCase
 {
+    use ServicesAssertionsTrait;
+    use DoctrineAssertionsTrait;
+
     public function testGrabNumRecords(): void
     {
         $this->assertSame(1, $this->grabNumRecords(User::class));

@@ -8,10 +8,15 @@ use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Notifier\Event\MessageEvent;
 use Symfony\Component\Notifier\Message\ChatMessage;
 use Tests\App\Notifier\NotifierFixture;
-use Tests\Support\KernelTestCase;
+use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\NotifierAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 
-final class NotifierAssertionsTest extends KernelTestCase
+final class NotifierAssertionsTest extends CodeceptTestCase
 {
+    use NotifierAssertionsTrait;
+    use ServicesAssertionsTrait;
+
     protected function setUp(): void
     {
         parent::setUp();

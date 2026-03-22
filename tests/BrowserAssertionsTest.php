@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Tests;
 
 use Symfony\Component\BrowserKit\Cookie;
-use Tests\Support\KernelTestCase;
+use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\BrowserAssertionsTrait;
 
-final class BrowserAssertionsTest extends KernelTestCase
+final class BrowserAssertionsTest extends CodeceptTestCase
 {
+    use BrowserAssertionsTrait;
+
     protected function setUp(): void
     {
         parent::setUp();
