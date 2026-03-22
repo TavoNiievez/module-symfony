@@ -16,8 +16,6 @@ use function array_key_last;
 
 trait MailerAssertionsTrait
 {
-    private ?string $messageLoggerServiceId = null;
-
     /**
      * Asserts that the expected number of emails was sent.
      *
@@ -165,19 +163,13 @@ trait MailerAssertionsTrait
 
     protected function getMessageMailerEvents(): MessageEvents
     {
-        if ($this->messageLoggerServiceId !== null) {
-            $logger = $this->getService($this->messageLoggerServiceId);
-            if ($logger instanceof MessageLoggerListener) {
-                return $logger->getEvents();
-            }
-        }
+        $logger = $this->grabCachedService(
+            MessageLoggerListener::class,
+            ['mailer.message_logger_listener', 'mailer.logger_message_listener']
+        );
 
-        foreach (['mailer.message_logger_listener', 'mailer.logger_message_listener'] as $serviceId) {
-            $logger = $this->getService($serviceId);
-            if ($logger instanceof MessageLoggerListener) {
-                $this->messageLoggerServiceId = $serviceId;
-                return $logger->getEvents();
-            }
+        if ($logger !== null) {
+            return $logger->getEvents();
         }
 
         Assert::fail("Emails can't be tested without Symfony Mailer service.");
