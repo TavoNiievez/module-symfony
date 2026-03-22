@@ -6,7 +6,6 @@ namespace Tests;
 
 use Codeception\Module\Symfony\MailerAssertionsTrait;
 use Codeception\Module\Symfony\MimeAssertionsTrait;
-use Codeception\Module\Symfony\ServicesAssertionsTrait;
 use Symfony\Component\Mime\Email;
 use Tests\Support\CodeceptTestCase;
 
@@ -14,7 +13,6 @@ final class MimeAssertionsTest extends CodeceptTestCase
 {
     use MailerAssertionsTrait;
     use MimeAssertionsTrait;
-    use ServicesAssertionsTrait;
 
     protected function setUp(): void
     {

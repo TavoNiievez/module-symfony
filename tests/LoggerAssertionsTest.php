@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
 use Codeception\Module\Symfony\LoggerAssertionsTrait;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
@@ -12,9 +11,7 @@ use Tests\Support\CodeceptTestCase;
 
 final class LoggerAssertionsTest extends CodeceptTestCase
 {
-    use HttpKernelAssertionsTrait;
     use LoggerAssertionsTrait;
-
     #[IgnoreDeprecations]
     public function testDeprecationsAreReported(): void
     {

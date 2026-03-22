@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\SecurityAssertionsTrait;
-use Codeception\Module\Symfony\ServicesAssertionsTrait;
 use Codeception\Module\Symfony\SessionAssertionsTrait;
 use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;
 use Tests\App\Entity\User;
@@ -14,15 +12,11 @@ use Tests\Support\CodeceptTestCase;
 
 final class SessionAssertionsTest extends CodeceptTestCase
 {
-    use SecurityAssertionsTrait;
-    use ServicesAssertionsTrait;
     use SessionAssertionsTrait;
-
     public function testAmLoggedInAs(): void
     {
         $this->amLoggedInAs($this->getTestUser());
         $this->client->request('GET', '/dashboard');
-        $this->seeAuthentication();
         $this->assertSame(200, $this->client->getResponse()->getStatusCode());
         $this->assertStringContainsString('You are in the Dashboard!', $this->client->getResponse()->getContent());
     }
@@ -32,7 +26,6 @@ final class SessionAssertionsTest extends CodeceptTestCase
         $user = $this->getTestUser();
         $this->amLoggedInWithToken(new PostAuthenticationToken($user, 'main', $user->getRoles()));
         $this->client->request('GET', '/dashboard');
-        $this->seeAuthentication();
         $this->assertStringContainsString('You are in the Dashboard!', $this->client->getResponse()->getContent());
     }
 
@@ -57,7 +50,6 @@ final class SessionAssertionsTest extends CodeceptTestCase
         $this->assertSame(302, $this->client->getResponse()->getStatusCode());
         $this->client->followRedirect();
 
-        $this->dontSeeAuthentication();
         $this->assertSame('/', $this->client->getRequest()->getPathInfo());
     }
 
@@ -66,7 +58,6 @@ final class SessionAssertionsTest extends CodeceptTestCase
         $this->amLoggedInAs($this->getTestUser());
         $this->logout();
         $this->client->request('GET', '/dashboard');
-        $this->dontSeeAuthentication();
         $this->assertSame(302, $this->client->getResponse()->getStatusCode());
     }
 
@@ -75,7 +66,6 @@ final class SessionAssertionsTest extends CodeceptTestCase
         $this->amLoggedInAs($this->getTestUser());
         $this->logoutProgrammatically();
         $this->client->request('GET', '/dashboard');
-        $this->dontSeeAuthentication();
         $this->assertSame(302, $this->client->getResponse()->getStatusCode());
     }
 

@@ -10,7 +10,6 @@ use Tests\Support\CodeceptTestCase;
 final class ConsoleAssertionsTest extends CodeceptTestCase
 {
     use ConsoleAssertionsTrait;
-
     public function testRunSymfonyConsoleCommand(): void
     {
         $this->assertStringContainsString('No option', $this->runSymfonyConsoleCommand('app:test-command'));

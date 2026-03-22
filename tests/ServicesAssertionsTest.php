@@ -10,7 +10,6 @@ use Tests\Support\CodeceptTestCase;
 final class ServicesAssertionsTest extends CodeceptTestCase
 {
     use ServicesAssertionsTrait;
-
     public function testGrabService(): void
     {
         $this->assertIsObject($this->grabService('security.helper'));

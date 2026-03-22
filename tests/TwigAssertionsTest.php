@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
 use Codeception\Module\Symfony\TwigAssertionsTrait;
 use Tests\Support\CodeceptTestCase;
 
 final class TwigAssertionsTest extends CodeceptTestCase
 {
-    use HttpKernelAssertionsTrait;
     use TwigAssertionsTrait;
-
     public function testDontSeeRenderedTemplate(): void
     {
         $this->client->request('GET', '/register');

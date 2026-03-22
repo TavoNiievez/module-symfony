@@ -10,7 +10,6 @@ use Tests\Support\CodeceptTestCase;
 final class DomCrawlerAssertionsTest extends CodeceptTestCase
 {
     use DomCrawlerAssertionsTrait;
-
     protected function setUp(): void
     {
         parent::setUp();

@@ -165,4 +165,59 @@ abstract class CodeceptTestCase extends TestCase
 
         return null;
     }
+
+    /**
+     * Helper to retrieve a service, mimicking Codeception's internal grabService
+     * to avoid test classes needing to manually import ServicesAssertionsTrait
+     * simply to satisfy an internal module trait dependency.
+     */
+    public function grabService(string $serviceId): object
+    {
+        $container = $this->_getContainer();
+        if ($container->has($serviceId)) {
+            return $container->get($serviceId);
+        }
+        $kernelContainer = $this->kernel->getContainer();
+        if ($kernelContainer->has($serviceId)) {
+            return $kernelContainer->get($serviceId);
+        }
+        $this->fail(sprintf('Service %s is not available in container', $serviceId));
+    }
+
+    protected function getService(string $serviceId): ?object
+    {
+        $container = $this->_getContainer();
+        if ($container->has($serviceId)) {
+            return $container->get($serviceId);
+        }
+        $kernelContainer = $this->kernel->getContainer();
+        if ($kernelContainer->has($serviceId)) {
+            return $kernelContainer->get($serviceId);
+        }
+        return null;
+    }
+
+    protected function unpersistService(string $name): void
+    {
+        if (isset($this->persistentServices[$name])) {
+            unset($this->persistentServices[$name]);
+        }
+    }
+
+    /**
+     * Helper to retrieve a data collector, mimicking Codeception's internal grabCollector
+     * to avoid test classes needing to manually import HttpKernelAssertionsTrait.
+     */
+    public function grabCollector(string|\Codeception\Module\Symfony\DataCollectorName $collectorName, ?string $message = null): \Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface
+    {
+        $name = is_string($collectorName) ? $collectorName : $collectorName->value;
+        $profile = $this->getProfile();
+        if (!$profile) {
+            $this->fail('Profiler is disabled.');
+        }
+        if (!$profile->hasCollector($name)) {
+            $this->fail($message ?? "Collector '{$name}' not found.");
+        }
+        return $profile->getCollector($name);
+    }
 }

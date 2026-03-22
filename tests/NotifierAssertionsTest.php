@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests;
 
 use Codeception\Module\Symfony\NotifierAssertionsTrait;
-use Codeception\Module\Symfony\ServicesAssertionsTrait;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Notifier\Event\MessageEvent;
 use Symfony\Component\Notifier\Message\ChatMessage;
@@ -15,8 +14,6 @@ use Tests\Support\CodeceptTestCase;
 final class NotifierAssertionsTest extends CodeceptTestCase
 {
     use NotifierAssertionsTrait;
-    use ServicesAssertionsTrait;
-
     protected function setUp(): void
     {
         parent::setUp();

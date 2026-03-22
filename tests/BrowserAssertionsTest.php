@@ -11,7 +11,6 @@ use Tests\Support\CodeceptTestCase;
 final class BrowserAssertionsTest extends CodeceptTestCase
 {
     use BrowserAssertionsTrait;
-
     protected function setUp(): void
     {
         parent::setUp();
