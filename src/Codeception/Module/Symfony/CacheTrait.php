@@ -6,15 +6,14 @@ namespace Codeception\Module\Symfony;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Profiler\Profile;
-use WeakMap;
 
 use function array_unique;
 use function array_values;
 
 trait CacheTrait
 {
-    /** @var WeakMap<object, Profile>|null */
-    private ?WeakMap $profileCache = null;
+    private ?object $cachedResponse = null;
+    private ?Profile $cachedProfile = null;
 
     /** @var array<string, mixed> */
     protected array $state = [];
@@ -27,17 +26,6 @@ trait CacheTrait
         $testContainer = $container->has('test.service_container') ? $container->get('test.service_container') : $container;
 
         return $testContainer;
-    }
-
-    protected function getProfileFromCache(object $response): ?Profile
-    {
-        return $this->profileCache !== null ? ($this->profileCache[$response] ?? null) : null;
-    }
-
-    protected function cacheProfile(object $response, Profile $profile): void
-    {
-        $this->profileCache ??= new WeakMap();
-        $this->profileCache[$response] = $profile;
     }
 
     /** @return list<non-empty-string> */

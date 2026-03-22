@@ -257,7 +257,8 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         }
         $this->persistentServices = [];
 
-        $this->profileCache = null;
+        $this->cachedResponse = null;
+        $this->cachedProfile  = null;
 
         parent::_after($test);
     }
@@ -362,14 +363,15 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
 
         try {
             $response = $this->getClient()->getResponse();
-            if ($profile = $this->getProfileFromCache($response)) {
-                return $profile;
+
+            if ($this->cachedResponse === $response) {
+                return $this->cachedProfile;
             }
 
             $profile = $profiler->loadProfileFromResponse($response);
-            if ($profile !== null) {
-                $this->cacheProfile($response, $profile);
-            }
+
+            $this->cachedResponse = $response;
+            $this->cachedProfile  = $profile;
 
             return $profile;
         } catch (BadMethodCallException) {

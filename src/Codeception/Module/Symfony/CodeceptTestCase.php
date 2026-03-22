@@ -84,6 +84,9 @@ abstract class CodeceptTestCase extends TestCase
             $this->kernel->shutdown();
         }
 
+        $this->cachedResponse = null;
+        $this->cachedProfile  = null;
+
         $this->restoreErrorHandler();
         parent::tearDown();
     }
@@ -184,8 +187,8 @@ abstract class CodeceptTestCase extends TestCase
             return null;
         }
 
-        if ($cachedProfile = $this->getProfileFromCache($response)) {
-            return $cachedProfile;
+        if ($this->cachedResponse === $response) {
+            return $this->cachedProfile;
         }
 
         $container = $this->_getContainer();
@@ -198,7 +201,9 @@ abstract class CodeceptTestCase extends TestCase
         $profile = $profiler->collect($request, $response);
 
         if ($profile instanceof Profile) {
-            $this->cacheProfile($response, $profile);
+            $this->cachedResponse = $response;
+            $this->cachedProfile  = $profile;
+
             return $profile;
         }
 
