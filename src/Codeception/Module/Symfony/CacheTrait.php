@@ -17,11 +17,7 @@ trait CacheTrait
     private ?WeakMap $profileCache = null;
 
     /**
-     * @var array{
-     *     internalDomains?: list<non-empty-string>,
-     *     messageLoggerServiceId?: ?string,
-     *     notifierLoggerServiceId?: ?string
-     * }
+     * @var array<string, mixed>
      */
     protected array $state = [];
 
@@ -50,7 +46,10 @@ trait CacheTrait
     protected function getInternalDomains(): array
     {
         if (isset($this->state['internalDomains'])) {
-            return $this->state['internalDomains'];
+            /** @var list<non-empty-string> $domains */
+            $domains = $this->state['internalDomains'];
+
+            return $domains;
         }
 
         $domains = [];
@@ -73,19 +72,20 @@ trait CacheTrait
 
     /**
      * @template T of object
-     * @param 'messageLoggerServiceId'|'notifierLoggerServiceId' $key
-     * @param string[] $serviceIds
      * @param class-string<T> $expectedClass
+     * @param string[] $serviceIds
      * @return T|null
      */
-    protected function grabCachedService(string $key, array $serviceIds, string $expectedClass): ?object
+    protected function grabCachedService(string $expectedClass, array $serviceIds): ?object
     {
-        $serviceId = $this->state[$key] ??= (function () use ($serviceIds, $expectedClass): ?string {
+        /** @var ?string $serviceId */
+        $serviceId = $this->state[$expectedClass] ??= (function () use ($serviceIds, $expectedClass): ?string {
             foreach ($serviceIds as $id) {
                 if ($this->getService($id) instanceof $expectedClass) {
                     return $id;
                 }
             }
+
             return null;
         })();
 
@@ -94,10 +94,7 @@ trait CacheTrait
         }
 
         $service = $this->getService($serviceId);
-        if ($service instanceof $expectedClass) {
-            return $service;
-        }
 
-        return null;
+        return $service instanceof $expectedClass ? $service : null;
     }
 }

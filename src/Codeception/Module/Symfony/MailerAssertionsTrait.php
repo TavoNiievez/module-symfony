@@ -164,9 +164,8 @@ trait MailerAssertionsTrait
     protected function getMessageMailerEvents(): MessageEvents
     {
         $logger = $this->grabCachedService(
-            'messageLoggerServiceId',
-            ['mailer.message_logger_listener', 'mailer.logger_message_listener'],
-            MessageLoggerListener::class
+            MessageLoggerListener::class,
+            ['mailer.message_logger_listener', 'mailer.logger_message_listener']
         );
 
         if ($logger !== null) {

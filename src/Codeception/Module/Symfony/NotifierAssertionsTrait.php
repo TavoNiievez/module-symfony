@@ -261,9 +261,8 @@ trait NotifierAssertionsTrait
     private function getNotifierLoggerListener(): ?NotificationLoggerListener
     {
         return $this->grabCachedService(
-            'notifierLoggerServiceId',
-            ['notifier.notification_logger_listener', 'notifier.logger_notification_listener'],
-            NotificationLoggerListener::class
+            NotificationLoggerListener::class,
+            ['notifier.notification_logger_listener', 'notifier.logger_notification_listener']
         );
     }
 }
