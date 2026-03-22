@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Tests\Support\KernelTestCase;
+use Codeception\Module\Symfony\DomCrawlerAssertionsTrait;
+use Tests\Support\CodeceptTestCase;
 
-final class DomCrawlerAssertionsTest extends KernelTestCase
+final class DomCrawlerAssertionsTest extends CodeceptTestCase
 {
+    use DomCrawlerAssertionsTrait;
+
     protected function setUp(): void
     {
         parent::setUp();

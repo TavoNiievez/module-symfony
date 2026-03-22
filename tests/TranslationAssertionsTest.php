@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Tests\Support\KernelTestCase;
+use Codeception\Module\Symfony\TranslationAssertionsTrait;
+use Tests\Support\CodeceptTestCase;
 
-final class TranslationAssertionsTest extends KernelTestCase
+final class TranslationAssertionsTest extends CodeceptTestCase
 {
+    use TranslationAssertionsTrait;
+
     public function testDontSeeFallbackTranslations(): void
     {
         $this->client->request('GET', '/register');

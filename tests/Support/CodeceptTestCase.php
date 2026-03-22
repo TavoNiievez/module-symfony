@@ -2,52 +2,27 @@
 
 declare(strict_types=1);
 
-namespace Codeception\Module\Symfony;
+namespace Tests\Support;
 
 use BadMethodCallException;
+use Codeception\Module\Symfony\CacheTrait;
+use Codeception\Module\Symfony\HttpKernelAssertionsTrait;
+use Codeception\Module\Symfony\ServicesAssertionsTrait;
 use Doctrine\ORM\EntityManagerInterface;
-use LogicException;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\ErrorHandler\ErrorHandler;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpKernel\Profiler\Profile;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
+use Tests\App\Doctrine\TestDatabaseSetup;
+use Tests\App\TestKernel;
 
-/**
- * @experimental
- *
- * This class is intended to serve as an alternative to Symfony's WebTestCase,
- * with the goal of using the module-symfony directly with PHPUnit (without Codeception in between).
- * It is marked as experimental until sufficient feedback is received about its correct functioning in real applications.
- *
- * This means that its API may change even between minor versions of this module while it is marked as experimental.
- */
 abstract class CodeceptTestCase extends TestCase
 {
-    use BrowserAssertionsTrait;
     use CacheTrait;
-    use ConsoleAssertionsTrait;
-    use DoctrineAssertionsTrait;
-    use DomCrawlerAssertionsTrait;
-    use EventsAssertionsTrait;
-    use FormAssertionsTrait;
-    use HttpClientAssertionsTrait;
     use HttpKernelAssertionsTrait;
-    use LoggerAssertionsTrait;
-    use MailerAssertionsTrait;
-    use MimeAssertionsTrait;
-    use NotifierAssertionsTrait;
-    use ParameterAssertionsTrait;
-    use RouterAssertionsTrait;
-    use SecurityAssertionsTrait;
     use ServicesAssertionsTrait;
-    use SessionAssertionsTrait;
-    use TimeAssertionsTrait;
-    use TranslationAssertionsTrait;
-    use TwigAssertionsTrait;
-    use ValidatorAssertionsTrait;
 
     protected KernelBrowser $client;
     protected KernelInterface $kernel;
@@ -58,6 +33,8 @@ abstract class CodeceptTestCase extends TestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->state = [];
         $this->kernel = $this->createKernel();
         $this->kernel->boot();
@@ -134,29 +111,12 @@ abstract class CodeceptTestCase extends TestCase
 
     protected function getKernelClass(): string
     {
-        if (!isset($_SERVER['KERNEL_CLASS']) && !isset($_ENV['KERNEL_CLASS'])) {
-            throw new LogicException(sprintf(
-                'You must set the KERNEL_CLASS environment variable in phpunit.xml or override %1$s::createKernel() / %1$s::getKernelClass().',
-                static::class,
-            ));
-        }
-
-        $class = $_ENV['KERNEL_CLASS'] ?? $_SERVER['KERNEL_CLASS'];
-
-        if (!is_string($class) || !class_exists($class)) {
-            throw new RuntimeException(sprintf(
-                'Class "%s" doesn\'t exist or cannot be autoloaded. Check KERNEL_CLASS or override %s::createKernel().',
-                is_scalar($class) ? (string) $class : gettype($class),
-                static::class,
-            ));
-        }
-
-        return $class;
+        return TestKernel::class;
     }
 
     protected function setUpDatabase(EntityManagerInterface $em): void
     {
-        // Override this method to perform database setup
+        TestDatabaseSetup::init($em);
     }
 
     protected function getClient(): KernelBrowser
@@ -167,7 +127,7 @@ abstract class CodeceptTestCase extends TestCase
     protected function _getEntityManager(): EntityManagerInterface
     {
         /** @var EntityManagerInterface $em */
-        $em = $this->_getContainer()->get('doctrine.orm.entity_manager');
+        $em = $this->grabService('doctrine.orm.entity_manager');
         return $em;
     }
 

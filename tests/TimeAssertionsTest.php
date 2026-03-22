@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Tests\Support\KernelTestCase;
+use Codeception\Module\Symfony\TimeAssertionsTrait;
+use Tests\Support\CodeceptTestCase;
 
-final class TimeAssertionsTest extends KernelTestCase
+final class TimeAssertionsTest extends CodeceptTestCase
 {
+    use TimeAssertionsTrait;
+
     public function testSeeRequestTimeIsLessThan(): void
     {
         $this->client->request('GET', '/register');

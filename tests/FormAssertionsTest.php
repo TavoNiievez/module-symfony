@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Tests\Support\KernelTestCase;
+use Codeception\Module\Symfony\FormAssertionsTrait;
+use Tests\Support\CodeceptTestCase;
 
-final class FormAssertionsTest extends KernelTestCase
+final class FormAssertionsTest extends CodeceptTestCase
 {
+    use FormAssertionsTrait;
+
     protected function setUp(): void
     {
         parent::setUp();

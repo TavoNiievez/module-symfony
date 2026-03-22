@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Codeception\Module\Symfony\RouterAssertionsTrait;
 use Tests\App\Controller\AppController;
-use Tests\Support\KernelTestCase;
+use Tests\Support\CodeceptTestCase;
 
-final class RouterAssertionsTest extends KernelTestCase
+final class RouterAssertionsTest extends CodeceptTestCase
 {
+    use RouterAssertionsTrait;
+
     public function testAmOnAction(): void
     {
         $this->amOnAction(AppController::class . '::index');
