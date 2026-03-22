@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\RouterAssertionsTrait;
 use Tests\App\Controller\AppController;
 use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\RouterAssertionsTrait;
 
 final class RouterAssertionsTest extends CodeceptTestCase
 {
     use RouterAssertionsTrait;
+
     public function testAmOnAction(): void
     {
         $this->amOnAction(AppController::class . '::index');
@@ -26,7 +27,7 @@ final class RouterAssertionsTest extends CodeceptTestCase
 
     public function testInvalidateCachedRouter(): void
     {
-        $this->persistentServices['router'] = $this->_getContainer()->get('router');
+        $this->persistService('router');
         $this->assertArrayHasKey('router', $this->persistentServices);
         $this->invalidateCachedRouter();
         $this->assertArrayNotHasKey('router', $this->persistentServices);

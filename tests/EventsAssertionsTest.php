@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\EventsAssertionsTrait;
 use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use Symfony\Component\HttpKernel\Kernel;
 use Tests\App\Event\TestEvent;
 use Tests\App\Listener\TestEventListener;
 use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\EventsAssertionsTrait;
 
 final class EventsAssertionsTest extends CodeceptTestCase
 {
     use EventsAssertionsTrait;
+
     public function testDontSeeEvent(): void
     {
         $this->client->request('GET', '/dispatch-orphan-event');

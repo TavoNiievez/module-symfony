@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\MailerAssertionsTrait;
-use Codeception\Module\Symfony\MimeAssertionsTrait;
 use Symfony\Component\Mime\Email;
 use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\MimeAssertionsTrait;
+use Codeception\Module\Symfony\MailerAssertionsTrait;
 
 final class MimeAssertionsTest extends CodeceptTestCase
 {

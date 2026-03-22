@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Tests;
 
 use Symfony\Component\Validator\Constraints as Assert;
-use Codeception\Module\Symfony\ValidatorAssertionsTrait;
 use Tests\App\Entity\User;
+use Codeception\Module\Symfony\ValidatorAssertionsTrait;
 use Tests\Support\CodeceptTestCase;
 
 final class ValidatorAssertionsTest extends CodeceptTestCase
 {
     use ValidatorAssertionsTrait;
+
     public function testDontSeeViolatedConstraint(): void
     {
         $user = User::create('test@example.com', 'password123');

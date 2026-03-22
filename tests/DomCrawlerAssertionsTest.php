@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\DomCrawlerAssertionsTrait;
 use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\DomCrawlerAssertionsTrait;
 
 final class DomCrawlerAssertionsTest extends CodeceptTestCase
 {
     use DomCrawlerAssertionsTrait;
+
     protected function setUp(): void
     {
         parent::setUp();

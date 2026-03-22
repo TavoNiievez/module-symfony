@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Codeception\Module\Symfony\SecurityAssertionsTrait;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\BrowserKit\Cookie;
 use Tests\App\Entity\User;
 use Tests\Support\CodeceptTestCase;
+use Codeception\Module\Symfony\SecurityAssertionsTrait;
 
 final class SecurityAssertionsTest extends CodeceptTestCase
 {
     use SecurityAssertionsTrait;
+
     protected function grabSecurityService(): Security
     {
         return new Security($this->_getContainer());
