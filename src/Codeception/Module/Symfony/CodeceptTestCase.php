@@ -58,6 +58,7 @@ abstract class CodeceptTestCase extends TestCase
 
     protected function setUp(): void
     {
+        $this->state = [];
         $this->kernel = $this->createKernel();
         $this->kernel->boot();
 

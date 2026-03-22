@@ -16,8 +16,8 @@ trait CacheTrait
     /** @var WeakMap<object, Profile>|null */
     private ?WeakMap $profileCache = null;
 
-    /** @var list<non-empty-string>|null */
-    private ?array $cachedInternalDomains = null;
+    /** @var array<string, mixed> */
+    protected array $state = [];
 
     public function _getContainer(): ContainerInterface
     {
@@ -43,12 +43,14 @@ trait CacheTrait
     /** @return list<non-empty-string> */
     protected function getInternalDomains(): array
     {
-        if ($this->cachedInternalDomains !== null) {
-            return $this->cachedInternalDomains;
+        if (isset($this->state['internalDomains'])) {
+            /** @var list<non-empty-string> $domains */
+            $domains = $this->state['internalDomains'];
+
+            return $domains;
         }
 
         $domains = [];
-
         foreach ($this->grabRouterService()->getRouteCollection() as $route) {
             if ($route->getHost() !== '') {
                 $regex = $route->compile()->getHostRegex();
@@ -58,13 +60,39 @@ trait CacheTrait
             }
         }
 
-        $this->cachedInternalDomains = array_values(array_unique($domains));
-
-        return $this->cachedInternalDomains;
+        return $this->state['internalDomains'] = array_values(array_unique($domains));
     }
 
     protected function clearInternalDomainsCache(): void
     {
-        $this->cachedInternalDomains = null;
+        unset($this->state['internalDomains']);
+    }
+
+    /**
+     * @template T of object
+     * @param class-string<T> $expectedClass
+     * @param string[] $serviceIds
+     * @return T|null
+     */
+    protected function grabCachedService(string $expectedClass, array $serviceIds): ?object
+    {
+        /** @var ?string $serviceId */
+        $serviceId = $this->state[$expectedClass] ??= (function () use ($serviceIds, $expectedClass): ?string {
+            foreach ($serviceIds as $id) {
+                if ($this->getService($id) instanceof $expectedClass) {
+                    return $id;
+                }
+            }
+
+            return null;
+        })();
+
+        if ($serviceId === null) {
+            return null;
+        }
+
+        $service = $this->getService($serviceId);
+
+        return $service instanceof $expectedClass ? $service : null;
     }
 }
