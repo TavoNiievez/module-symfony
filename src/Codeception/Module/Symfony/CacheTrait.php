@@ -31,11 +31,13 @@ trait CacheTrait
     /** @return list<non-empty-string> */
     protected function getInternalDomains(): array
     {
-        if (isset($this->state['internalDomains'])) {
-            /** @var list<non-empty-string> $domains */
-            $domains = $this->state['internalDomains'];
+        if ($this->config['cache_router_domain']) {
+            if (isset($this->state['internalDomains'])) {
+                /** @var list<non-empty-string> $domains */
+                $domains = $this->state['internalDomains'];
 
-            return $domains;
+                return $domains;
+            }
         }
 
         $domains = [];
@@ -48,7 +50,11 @@ trait CacheTrait
             }
         }
 
-        return $this->state['internalDomains'] = array_values(array_unique($domains));
+        if ($this->config['cache_router_domain']) {
+            return $this->state['internalDomains'] = array_values(array_unique($domains));
+        }
+
+        return array_values(array_unique($domains));
     }
 
     protected function clearInternalDomainsCache(): void

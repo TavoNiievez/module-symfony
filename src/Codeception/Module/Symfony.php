@@ -88,6 +88,7 @@ use function sprintf;
  * * `em_service`: 'doctrine.orm.entity_manager' - Use the stated EntityManager to pair with Doctrine Module.
  * * `debug`: true - Turn on/off [debug mode](https://codeception.com/docs/Debugging)
  * * `cache_router`: 'false' - Enable router caching between tests in order to [increase performance](http://lakion.com/blog/how-did-we-speed-up-sylius-behat-suite-with-blackfire) (can have an impact on ajax requests sending via '$I->sendAjaxPostRequest()')
+ * * `cache_router_domain`: 'false' - Enable router domain caching between tests in order to increase performance
  * * `rebootable_client`: 'true' - Reboot client's kernel before each request
  * * `guard`: 'false' - Enable custom authentication system with guard (only for Symfony 5.4)
  * * `bootstrap`: 'false' - Enable the test environment setup with the tests/bootstrap.php file if it exists or with Symfony DotEnv otherwise. If false, it does nothing.
@@ -173,6 +174,7 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      *     environment:string,
      *     debug:bool,
      *     cache_router:bool,
+     *     cache_router_domain:bool,
      *     em_service:string,
      *     rebootable_client:bool,
      *     authenticator:bool,
@@ -186,6 +188,7 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         'environment'       => 'test',
         'debug'             => true,
         'cache_router'      => false,
+        'cache_router_domain' => false,
         'em_service'        => 'doctrine.orm.entity_manager',
         'rebootable_client' => true,
         'authenticator'     => false,
