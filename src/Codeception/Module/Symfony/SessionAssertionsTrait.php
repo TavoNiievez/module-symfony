@@ -199,13 +199,13 @@ trait SessionAssertionsTrait
     {
         $roles = $user->getRoles();
 
-        if ($this->getSymfonyMajorVersion() >= 6 && ($this->config['authenticator'] ?? false) === true) {
+        if ($this->getSymfonyMajorVersion() >= 6 && $this->config['authenticator'] === true) {
             /** @var AuthenticatorInterface $authenticator */
             $authenticator = $this->grabService(AuthenticatorInterface::class);
             return $authenticator->createToken(new SelfValidatingPassport(new UserBadge($user->getUserIdentifier(), static fn() => $user)), $firewallName);
         }
 
-        if ($this->getSymfonyMajorVersion() < 6 && ($this->config['guard'] ?? false) === true) {
+        if ($this->getSymfonyMajorVersion() < 6 && $this->config['guard'] === true) {
             $postClass = 'Symfony\\Component\\Security\\Guard\\Token\\PostAuthenticationGuardToken';
             if (class_exists($postClass)) {
                 /** @var TokenInterface */
