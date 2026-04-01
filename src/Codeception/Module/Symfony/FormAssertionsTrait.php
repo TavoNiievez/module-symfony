@@ -8,7 +8,6 @@ use PHPUnit\Framework\Assert;
 use Symfony\Component\Form\Extension\DataCollector\FormDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
 
-use function count;
 use function implode;
 use function is_array;
 use function is_int;
@@ -29,7 +28,7 @@ trait FormAssertionsTrait
     public function assertFormValue(string $formSelector, string $fieldName, string $value, string $message = ''): void
     {
         $node = $this->getClient()->getCrawler()->filter($formSelector);
-        $this->assertGreaterThan(0, count($node), sprintf('Form "%s" not found.', $formSelector));
+        $this->assertGreaterThan(0, $node->count(), sprintf('Form "%s" not found.', $formSelector));
 
         $values = $node->form()->getValues();
         $this->assertArrayHasKey(
@@ -51,7 +50,7 @@ trait FormAssertionsTrait
     public function assertNoFormValue(string $formSelector, string $fieldName, string $message = ''): void
     {
         $node = $this->getClient()->getCrawler()->filter($formSelector);
-        $this->assertGreaterThan(0, count($node), sprintf('Form "%s" not found.', $formSelector));
+        $this->assertGreaterThan(0, $node->count(), sprintf('Form "%s" not found.', $formSelector));
 
         $values = $node->form()->getValues();
         $this->assertArrayNotHasKey(
@@ -86,19 +85,10 @@ trait FormAssertionsTrait
      */
     public function seeFormErrorMessage(string $field, ?string $message = null): void
     {
-        $errors = $this->getErrorsForField($field);
+        $collector = $this->grabFormCollector(__FUNCTION__);
+        $formsData = $this->getRawCollectorData($collector)['forms'] ?? [];
 
-        if ($errors === []) {
-            Assert::fail("No form error message for field '{$field}'.");
-        }
-
-        if ($message !== null) {
-            $this->assertStringContainsString(
-                $message,
-                implode("\n", $errors),
-                sprintf("There is an error message for the field '%s', but it does not match the expected message.", $field)
-            );
-        }
+        $this->assertFormErrorMessage($field, $message, $formsData);
     }
 
     /**
@@ -140,8 +130,32 @@ trait FormAssertionsTrait
      */
     public function seeFormErrorMessages(array $expectedErrors): void
     {
+        $collector = $this->grabFormCollector(__FUNCTION__);
+        $formsData = $this->getRawCollectorData($collector)['forms'] ?? [];
+
         foreach ($expectedErrors as $field => $msg) {
-            is_int($field) ? $this->seeFormErrorMessage((string) $msg) : $this->seeFormErrorMessage($field, $msg);
+            if (is_int($field)) {
+                $this->assertFormErrorMessage((string) $msg, null, $formsData);
+            } else {
+                $this->assertFormErrorMessage($field, $msg, $formsData);
+            }
+        }
+    }
+
+    private function assertFormErrorMessage(string $field, ?string $message, mixed $formsData): void
+    {
+        $errors = $this->getErrorsForField($field, $formsData);
+
+        if ($errors === []) {
+            Assert::fail("No form error message for field '{$field}'.");
+        }
+
+        if ($message !== null) {
+            $this->assertStringContainsString(
+                $message,
+                implode("\n", $errors),
+                sprintf("There is an error message for the field '%s', but it does not match the expected message.", $field)
+            );
         }
     }
 
@@ -174,10 +188,8 @@ trait FormAssertionsTrait
     /**
      * @return list<string>
      */
-    private function getErrorsForField(string $field): array
+    private function getErrorsForField(string $field, mixed $formsData): array
     {
-        $collector = $this->grabFormCollector('seeFormErrorMessage');
-        $formsData = $this->getRawCollectorData($collector)['forms'] ?? [];
         if (!is_array($formsData)) {
             return [];
         }
