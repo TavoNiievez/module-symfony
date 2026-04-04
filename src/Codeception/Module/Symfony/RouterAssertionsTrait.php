@@ -56,7 +56,7 @@ trait RouterAssertionsTrait
     {
         $this->unpersistService('router');
         $this->clearInternalDomainsCache();
-        unset($this->state['cachedRoutesByAction']);
+        unset($this->state['cachedRoutes']);
     }
 
     /**
@@ -119,8 +119,7 @@ trait RouterAssertionsTrait
 
     private function findRouteByActionOrFail(string $action): string
     {
-        /** @var array<string, string> $cachedRoutes */
-        $cachedRoutes = $this->state['cachedRoutesByAction'] ??= (function (): array {
+        $cachedRoutes = $this->state['cachedRoutes'] ??= (function (): array {
             $routes = [];
             foreach ($this->grabRouterService()->getRouteCollection()->all() as $name => $route) {
                 $ctrl = $route->getDefault('_controller');
@@ -131,9 +130,13 @@ trait RouterAssertionsTrait
             return $routes;
         })();
 
+        if (!is_array($cachedRoutes)) {
+            $cachedRoutes = [];
+        }
+
         foreach ($cachedRoutes as $ctrl => $name) {
-            if (str_ends_with((string) $ctrl, $action)) {
-                return (string) $name;
+            if (is_string($ctrl) && is_string($name) && str_ends_with($ctrl, $action)) {
+                return $name;
             }
         }
 
