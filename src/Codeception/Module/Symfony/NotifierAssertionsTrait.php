@@ -14,7 +14,7 @@ use Symfony\Component\Notifier\Message\MessageInterface;
 use Symfony\Component\Notifier\Test\Constraint as NotifierConstraint;
 
 use function array_key_last;
-use function class_exists;
+use function version_compare;
 
 trait NotifierAssertionsTrait
 {
