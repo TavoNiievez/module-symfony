@@ -130,7 +130,7 @@ trait RouterAssertionsTrait
     /** @return array<string, string> */
     private function getCachedRoutes(): array
     {
-        if (isset($this->state['cachedRoutes']) && is_array($this->state['cachedRoutes'])) {
+        if (isset($this->state['cachedRoutes'])) {
             /** @var array<string, string> */
             return $this->state['cachedRoutes'];
         }
@@ -143,9 +143,7 @@ trait RouterAssertionsTrait
             }
         }
 
-        $this->state['cachedRoutes'] = $routes;
-
-        return $routes;
+        return $this->state['cachedRoutes'] = $routes;
     }
 
     private function assertRouteExists(string $routeName): void
