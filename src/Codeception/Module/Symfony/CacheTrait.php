@@ -31,21 +31,26 @@ trait CacheTrait
     /** @return list<non-empty-string> */
     protected function getInternalDomains(): array
     {
-        if (!isset($this->state['internalDomains'])) {
-            $this->state['internalDomains'] = [];
-            foreach ($this->grabRouterService()->getRouteCollection() as $route) {
-                if ($route->getHost() !== '') {
-                    $regex = $route->compile()->getHostRegex();
-                    if ($regex !== null && $regex !== '') {
-                        $this->state['internalDomains'][] = $regex;
-                    }
-                }
-            }
-            $this->state['internalDomains'] = array_values(array_unique($this->state['internalDomains']));
+        if (isset($this->state['internalDomains']) && is_array($this->state['internalDomains'])) {
+            /** @var list<non-empty-string> */
+            return $this->state['internalDomains'];
         }
 
-        /** @var list<non-empty-string> */
-        return $this->state['internalDomains'];
+        $domains = [];
+        foreach ($this->grabRouterService()->getRouteCollection() as $route) {
+            if ($route->getHost() !== '') {
+                $regex = $route->compile()->getHostRegex();
+                if ($regex !== null && $regex !== '') {
+                    $domains[] = $regex;
+                }
+            }
+        }
+
+        /** @var list<non-empty-string> $domains */
+        $domains = array_values(array_unique($domains));
+        $this->state['internalDomains'] = $domains;
+
+        return $domains;
     }
 
     protected function clearRouterCache(): void

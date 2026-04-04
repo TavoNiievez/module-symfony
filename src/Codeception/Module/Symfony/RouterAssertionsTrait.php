@@ -130,18 +130,22 @@ trait RouterAssertionsTrait
     /** @return array<string, string> */
     private function getCachedRoutes(): array
     {
-        if (!isset($this->state['cachedRoutes'])) {
-            $this->state['cachedRoutes'] = [];
-            foreach ($this->grabRouterService()->getRouteCollection()->all() as $name => $route) {
-                $ctrl = $route->getDefault('_controller');
-                if (is_string($ctrl) && !isset($this->state['cachedRoutes'][$ctrl])) {
-                    $this->state['cachedRoutes'][$ctrl] = (string) $name;
-                }
+        if (isset($this->state['cachedRoutes']) && is_array($this->state['cachedRoutes'])) {
+            /** @var array<string, string> */
+            return $this->state['cachedRoutes'];
+        }
+
+        $routes = [];
+        foreach ($this->grabRouterService()->getRouteCollection()->all() as $name => $route) {
+            $ctrl = $route->getDefault('_controller');
+            if (is_string($ctrl) && !isset($routes[$ctrl])) {
+                $routes[$ctrl] = (string) $name;
             }
         }
 
-        /** @var array<string, string> */
-        return $this->state['cachedRoutes'];
+        $this->state['cachedRoutes'] = $routes;
+
+        return $routes;
     }
 
     private function assertRouteExists(string $routeName): void
