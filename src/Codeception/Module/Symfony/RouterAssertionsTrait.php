@@ -15,9 +15,6 @@ use function str_ends_with;
 
 trait RouterAssertionsTrait
 {
-    /** @var array<string, string>|null */
-    private ?array $cachedRoutesByAction = null;
-
     /**
      * Opens web page by action name
      *
@@ -59,7 +56,7 @@ trait RouterAssertionsTrait
     {
         $this->unpersistService('router');
         $this->clearInternalDomainsCache();
-        $this->cachedRoutesByAction = null;
+        unset($this->state['cachedRoutesByAction']);
     }
 
     /**
@@ -122,17 +119,20 @@ trait RouterAssertionsTrait
 
     private function findRouteByActionOrFail(string $action): string
     {
-        if ($this->cachedRoutesByAction === null) {
-            $this->cachedRoutesByAction = [];
+        if (!isset($this->state['cachedRoutesByAction'])) {
+            $this->state['cachedRoutesByAction'] = [];
             foreach ($this->grabRouterService()->getRouteCollection()->all() as $name => $route) {
                 $ctrl = $route->getDefault('_controller');
-                if (is_string($ctrl) && !isset($this->cachedRoutesByAction[$ctrl])) {
-                    $this->cachedRoutesByAction[$ctrl] = (string) $name;
+                if (is_string($ctrl) && !isset($this->state['cachedRoutesByAction'][$ctrl])) {
+                    $this->state['cachedRoutesByAction'][$ctrl] = (string) $name;
                 }
             }
         }
 
-        foreach ($this->cachedRoutesByAction as $ctrl => $name) {
+        /** @var array<string, string> $cachedRoutes */
+        $cachedRoutes = $this->state['cachedRoutesByAction'];
+
+        foreach ($cachedRoutes as $ctrl => $name) {
             if (str_ends_with($ctrl, $action)) {
                 return $name;
             }
