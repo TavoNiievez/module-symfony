@@ -142,8 +142,7 @@ trait SecurityAssertionsTrait
             && $this->grabSecurityService()->isGranted(AuthenticatedVoter::IS_AUTHENTICATED_REMEMBERED);
     }
 
-    /** @return Security */
-    protected function grabSecurityService()
+    protected function grabSecurityService(): Security
     {
         /** @var Security */
         return $this->grabService('security.helper');
