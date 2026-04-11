@@ -1,0 +1,20 @@
+--- src/Codeception/Module/Symfony/NotifierAssertionsTrait.php
++++ src/Codeception/Module/Symfony/NotifierAssertionsTrait.php
+@@ -16,7 +16,7 @@
+ use Symfony\Component\Notifier\Test\Constraint as NotifierConstraint;
+
+ use function array_key_last;
+-use function version_compare;
++use function class_exists;
+
+ trait NotifierAssertionsTrait
+ {
+@@ -243,8 +243,7 @@
+
+     protected function getNotificationEvents(): NotificationEvents
+     {
+-        // @phpstan-ignore if.alwaysFalse
+-        if (version_compare(Kernel::VERSION, '6.2', '<')) {
++        if (!class_exists(NotificationEvents::class)) {
+             Assert::fail('Notifier assertions require Symfony 6.2 or higher.');
+         }
