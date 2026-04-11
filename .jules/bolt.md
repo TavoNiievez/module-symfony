@@ -1,0 +1,3 @@
+## 2024-04-11 - Optimized logoutProgrammatically session cookies cleanup
+**Learning:** Found an O(N) lookup pattern inside a loop iterating over cookies in `SessionAssertionsTrait::logoutProgrammatically`. `in_array` was used with a dynamically created array to match cookie names. This causes redundant memory allocation and method calls on every iteration.
+**Action:** Replaced `in_array` with direct strict equality comparisons (`===`) and a logical OR (`||`) check. Also extracted `$cookie->getName()` into a variable to avoid calling it repeatedly if the first condition fails. This eliminates array allocations inside the loop and improves performance without sacrificing readability.

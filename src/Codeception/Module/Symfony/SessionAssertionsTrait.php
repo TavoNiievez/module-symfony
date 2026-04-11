@@ -20,7 +20,6 @@ use Symfony\Component\Security\Http\Logout\LogoutUrlGenerator;
 
 use function class_exists;
 use function get_debug_type;
-use function in_array;
 use function is_int;
 use function is_string;
 use function serialize;
@@ -125,8 +124,9 @@ trait SessionAssertionsTrait
 
         $cookieJar = $this->getClient()->getCookieJar();
         foreach ($cookieJar->all() as $cookie) {
-            if (in_array($cookie->getName(), ['MOCKSESSID', 'REMEMBERME', $sessionName], true)) {
-                $cookieJar->expire($cookie->getName());
+            $cookieName = $cookie->getName();
+            if ($cookieName === 'MOCKSESSID' || $cookieName === 'REMEMBERME' || $cookieName === $sessionName) {
+                $cookieJar->expire($cookieName);
             }
         }
         $cookieJar->flushExpiredCookies();
