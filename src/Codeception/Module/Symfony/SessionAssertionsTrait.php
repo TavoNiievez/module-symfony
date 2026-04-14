@@ -164,18 +164,15 @@ trait SessionAssertionsTrait
      */
     public function seeSessionHasValues(array $bindings): void
     {
-        $session = $this->getCurrentSession();
-
         foreach ($bindings as $key => $value) {
             if (!is_int($key)) {
-                $this->assertTrue($session->has($key), "No session attribute with name '{$key}'");
-                $this->assertSame($value, $session->get($key));
+                $this->seeInSession($key, $value);
                 continue;
             }
             if (!is_string($value)) {
                 throw new InvalidArgumentException(sprintf('Attribute name must be string, %s given.', get_debug_type($value)));
             }
-            $this->assertTrue($session->has($value), "No session attribute with name '{$value}'");
+            $this->seeInSession($value);
         }
     }
 
