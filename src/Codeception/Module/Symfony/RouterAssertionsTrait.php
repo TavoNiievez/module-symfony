@@ -118,32 +118,27 @@ trait RouterAssertionsTrait
 
     private function findRouteByActionOrFail(string $action): string
     {
-        foreach ($this->getCachedRoutes() as $ctrl => $name) {
+        if (isset($this->cachedRoutesByAction[$action])) {
+            return $this->cachedRoutesByAction[$action];
+        }
+
+        if ($this->cachedRoutesByAction === null) {
+            $this->cachedRoutesByAction = [];
+            foreach ($this->grabRouterService()->getRouteCollection()->all() as $name => $route) {
+                $ctrl = $route->getDefault('_controller');
+                if (is_string($ctrl) && !isset($this->cachedRoutesByAction[$ctrl])) {
+                    $this->cachedRoutesByAction[$ctrl] = (string) $name;
+                }
+            }
+        }
+
+        foreach ($this->cachedRoutesByAction as $ctrl => $name) {
             if (str_ends_with($ctrl, $action)) {
-                return $name;
+                return $this->cachedRoutesByAction[$action] = $name;
             }
         }
 
         Assert::fail(sprintf("Action '%s' does not exist.", $action));
-    }
-
-    /** @return array<string, string> */
-    private function getCachedRoutes(): array
-    {
-        if (isset($this->state['cachedRoutes'])) {
-            /** @var array<string, string> */
-            return $this->state['cachedRoutes'];
-        }
-
-        $routes = [];
-        foreach ($this->grabRouterService()->getRouteCollection()->all() as $name => $route) {
-            $ctrl = $route->getDefault('_controller');
-            if (is_string($ctrl) && !isset($routes[$ctrl])) {
-                $routes[$ctrl] = (string) $name;
-            }
-        }
-
-        return $this->state['cachedRoutes'] = $routes;
     }
 
     private function assertRouteExists(string $routeName): void
