@@ -15,7 +15,7 @@ trait CacheTrait
     private ?object $cachedResponse = null;
     private ?Profile $cachedProfile = null;
     /** @var array<string, string>|null */
-    protected ?array $cachedRoutesByAction = null;
+    protected ?array $cachedRoutes = null;
 
     /** @var array<string, mixed> */
     protected array $state = [];
@@ -56,7 +56,7 @@ trait CacheTrait
     protected function clearRouterCache(): void
     {
         unset($this->state['internalDomains']);
-        $this->cachedRoutesByAction = null;
+        $this->cachedRoutes = null;
     }
 
     /**

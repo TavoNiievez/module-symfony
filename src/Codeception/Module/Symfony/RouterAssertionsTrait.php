@@ -118,23 +118,23 @@ trait RouterAssertionsTrait
 
     private function findRouteByActionOrFail(string $action): string
     {
-        if (isset($this->cachedRoutesByAction[$action])) {
-            return $this->cachedRoutesByAction[$action];
+        if (isset($this->cachedRoutes[$action])) {
+            return $this->cachedRoutes[$action];
         }
 
-        if ($this->cachedRoutesByAction === null) {
-            $this->cachedRoutesByAction = [];
+        if ($this->cachedRoutes === null) {
+            $this->cachedRoutes = [];
             foreach ($this->grabRouterService()->getRouteCollection()->all() as $name => $route) {
                 $ctrl = $route->getDefault('_controller');
-                if (is_string($ctrl) && !isset($this->cachedRoutesByAction[$ctrl])) {
-                    $this->cachedRoutesByAction[$ctrl] = (string) $name;
+                if (is_string($ctrl) && !isset($this->cachedRoutes[$ctrl])) {
+                    $this->cachedRoutes[$ctrl] = (string) $name;
                 }
             }
         }
 
-        foreach ($this->cachedRoutesByAction as $ctrl => $name) {
+        foreach ($this->cachedRoutes as $ctrl => $name) {
             if (str_ends_with($ctrl, $action)) {
-                return $this->cachedRoutesByAction[$action] = $name;
+                return $this->cachedRoutes[$action] = $name;
             }
         }
 

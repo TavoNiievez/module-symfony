@@ -63,7 +63,7 @@ abstract class CodeceptTestCase extends TestCase
 
         $this->cachedResponse = null;
         $this->cachedProfile  = null;
-        $this->cachedRoutesByAction = null;
+        $this->cachedRoutes = null;
 
         $this->restoreErrorHandler();
         parent::tearDown();
