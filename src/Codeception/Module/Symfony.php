@@ -259,6 +259,7 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
 
         $this->cachedResponse = null;
         $this->cachedProfile  = null;
+        $this->cachedRoutes = null;
 
         parent::_after($test);
     }
