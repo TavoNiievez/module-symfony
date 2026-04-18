@@ -8,7 +8,6 @@ use PHPUnit\Framework\Assert;
 use Symfony\Component\Form\Extension\DataCollector\FormDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
 
-use function count;
 use function implode;
 use function is_array;
 use function is_int;
@@ -29,7 +28,7 @@ trait FormAssertionsTrait
     public function assertFormValue(string $formSelector, string $fieldName, string $value, string $message = ''): void
     {
         $node = $this->getClient()->getCrawler()->filter($formSelector);
-        $this->assertGreaterThan(0, count($node), sprintf('Form "%s" not found.', $formSelector));
+        $this->assertGreaterThan(0, $node->count(), sprintf('Form "%s" not found.', $formSelector));
 
         $values = $node->form()->getValues();
         $this->assertArrayHasKey(
@@ -51,7 +50,7 @@ trait FormAssertionsTrait
     public function assertNoFormValue(string $formSelector, string $fieldName, string $message = ''): void
     {
         $node = $this->getClient()->getCrawler()->filter($formSelector);
-        $this->assertGreaterThan(0, count($node), sprintf('Form "%s" not found.', $formSelector));
+        $this->assertGreaterThan(0, $node->count(), sprintf('Form "%s" not found.', $formSelector));
 
         $values = $node->form()->getValues();
         $this->assertArrayNotHasKey(
