@@ -94,8 +94,7 @@ trait ValidatorAssertionsTrait
         if ($constraint !== null) {
             $filteredViolations = [];
             foreach ($violations as $violation) {
-                $violationConstraint = $violation->getConstraint();
-                if ($violationConstraint !== null && $violationConstraint::class === $constraint) {
+                if ($violation->getConstraint() !== null && $violation->getConstraint()::class === $constraint) {
                     $filteredViolations[] = $violation;
                 }
             }

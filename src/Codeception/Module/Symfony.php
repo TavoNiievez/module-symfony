@@ -444,13 +444,13 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             $roles = $roles->getValue(true);
         }
 
-        $rolesArr = [];
+        $scalars = [];
         foreach ((array) $roles as $role) {
             if (is_scalar($role)) {
-                $rolesArr[] = (string) $role;
+                $scalars[] = (string) $role;
             }
         }
-        $rolesStr = implode(',', $rolesArr);
+        $rolesStr = implode(',', $scalars);
         $this->debugSection('User', sprintf('%s [%s]', $securityCollector->getUser(), $rolesStr));
     }
 
