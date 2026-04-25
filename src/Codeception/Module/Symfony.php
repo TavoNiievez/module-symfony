@@ -50,8 +50,6 @@ use Symfony\Component\Mailer\DataCollector\MessageDataCollector;
 use Symfony\Component\Notifier\DataCollector\NotificationDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
 
-use function array_filter;
-use function array_map;
 use function class_exists;
 use function codecept_root_dir;
 use function count;
@@ -445,7 +443,13 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             $roles = $roles->getValue(true);
         }
 
-        $rolesStr = implode(',', array_map('strval', array_filter((array) $roles, 'is_scalar')));
+        $rolesStrArr = [];
+        foreach ((array) $roles as $role) {
+            if (is_scalar($role)) {
+                $rolesStrArr[] = (string) $role;
+            }
+        }
+        $rolesStr = implode(',', $rolesStrArr);
         $this->debugSection('User', sprintf('%s [%s]', $securityCollector->getUser(), $rolesStr));
     }
 
