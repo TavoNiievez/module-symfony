@@ -25,7 +25,7 @@ trait FormAssertionsTrait
      * $I->assertFormValue('#loginForm', 'username', 'john_doe');
      * ```
      */
-    public function assertFormValue(string $formSelector, string $fieldName, string $value, string $message = ''): void
+    public function assertFormValue(string $formSelector, string $fieldName, string $expectedValue, string $message = ''): void
     {
         $node = $this->getClient()->getCrawler()->filter($formSelector);
         $this->assertGreaterThan(0, $node->count(), sprintf('Form "%s" not found.', $formSelector));
@@ -36,7 +36,7 @@ trait FormAssertionsTrait
             $values,
             $message ?: sprintf('Field "%s" not found in form "%s".', $fieldName, $formSelector)
         );
-        $this->assertSame($value, $values[$fieldName]);
+        $this->assertSame($expectedValue, $values[$fieldName]);
     }
 
     /**
