@@ -273,8 +273,8 @@ trait BrowserAssertionsTrait
         $request = $this->getClient()->getRequest();
         $this->assertThat($request, new RequestAttributeValueSame('_route', $expectedRoute));
 
-        foreach ($parameters as $key => $value) {
-            $this->assertThat($request, new RequestAttributeValueSame($key, (string) $value), $message);
+        foreach ($parameters as $key => $parameterValue) {
+            $this->assertThat($request, new RequestAttributeValueSame($key, (string) $parameterValue), $message);
         }
     }
 
@@ -366,8 +366,8 @@ trait BrowserAssertionsTrait
         $selector = sprintf('form[name=%s]', $name);
 
         $params = [];
-        foreach ($fields as $key => $value) {
-            $params[$name . $key] = $value;
+        foreach ($fields as $key => $fieldValue) {
+            $params[$name . $key] = $fieldValue;
         }
 
         $node = $this->getClient()->getCrawler()->filter($selector);

@@ -214,11 +214,11 @@ trait FormAssertionsTrait
     /** @return array<string, mixed> */
     private function getRawCollectorData(FormDataCollector $collector): array
     {
-        $data = $collector->getData();
-        if ($data instanceof Data) {
-            $data = $data->getValue(true);
+        $collectorData = $collector->getData();
+        if ($collectorData instanceof Data) {
+            $collectorData = $collectorData->getValue(true);
         }
         /** @var array<string, mixed> */
-        return is_array($data) ? $data : [];
+        return is_array($collectorData) ? $collectorData : [];
     }
 }
