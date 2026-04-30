@@ -334,8 +334,8 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         if (file_exists($expectedKernelPath)) {
             include_once $expectedKernelPath;
         } else {
-            foreach ((new Finder())->name('*Kernel.php')->depth('0')->in($path) as $file) {
-                include_once $file->getRealPath();
+            foreach (glob($path . DIRECTORY_SEPARATOR . '*Kernel.php') ?: [] as $file) {
+                include_once $file;
             }
         }
 
