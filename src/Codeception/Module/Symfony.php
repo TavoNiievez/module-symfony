@@ -41,7 +41,6 @@ use ReflectionException;
 use Symfony\Bundle\SecurityBundle\DataCollector\SecurityDataCollector;
 use Symfony\Component\BrowserKit\AbstractBrowser;
 use Symfony\Component\Dotenv\Dotenv;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\DataCollector\TimeDataCollector;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpKernel\Profiler\Profile;
@@ -334,8 +333,8 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
         if (file_exists($expectedKernelPath)) {
             include_once $expectedKernelPath;
         } else {
-            foreach ((new Finder())->name('*Kernel.php')->depth('0')->in($path) as $file) {
-                include_once $file->getRealPath();
+            foreach (glob($path . DIRECTORY_SEPARATOR . '*Kernel.php') ?: [] as $file) {
+                include_once $file;
             }
         }
 
