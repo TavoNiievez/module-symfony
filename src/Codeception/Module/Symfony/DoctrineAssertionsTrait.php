@@ -44,8 +44,9 @@ trait DoctrineAssertionsTrait
      * $I->grabRepository(UserRepositoryInterface::class); // interface
      * ```
      *
-     * @param  object|class-string $entityOrClass
-     * @return EntityRepository<object>
+     * @template T of object
+     * @param  T|class-string<T> $entityOrClass
+     * @return EntityRepository<T>
      */
     public function grabRepository(object|string $entityOrClass): EntityRepository
     {
