@@ -74,12 +74,12 @@ trait SessionAssertionsTrait
      * $I->dontSeeInSession('attribute', 'value');
      * ```
      */
-    public function dontSeeInSession(string $attribute, mixed $value = null): void
+    public function dontSeeInSession(string $attribute, mixed $expectedValue = null): void
     {
         $session = $this->getCurrentSession();
-        $value === null
+        $expectedValue === null
             ? $this->assertFalse($session->has($attribute), "Session attribute '{$attribute}' exists.")
-            : $this->assertNotSame($value, $session->get($attribute));
+            : $this->assertNotSame($expectedValue, $session->get($attribute));
     }
 
     /**
@@ -141,13 +141,13 @@ trait SessionAssertionsTrait
      * $I->seeInSession('attribute', 'value');
      * ```
      */
-    public function seeInSession(string $attribute, mixed $value = null): void
+    public function seeInSession(string $attribute, mixed $expectedValue = null): void
     {
         $session = $this->getCurrentSession();
         $this->assertTrue($session->has($attribute), "No session attribute with name '{$attribute}'");
 
-        if ($value !== null) {
-            $this->assertSame($value, $session->get($attribute));
+        if ($expectedValue !== null) {
+            $this->assertSame($expectedValue, $session->get($attribute));
         }
     }
 
