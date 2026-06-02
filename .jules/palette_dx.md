@@ -1,3 +1,3 @@
-## 2024-04-14 - Rename mystery meat parameters for clarity
-**Learning:** Method parameters with vague, type-like names (e.g. `$mixed`, `$data`, `$value`) force developers to read the PHPDoc or function implementation to understand what is actually required. This increases cognitive load.
-**Action:** Always rename vague parameter names to descriptive ones that indicate their purpose or expected domain object (e.g. `$mixed` -> `$entityOrClass`), strictly improving code discoverability.
+## 2024-05-18 - [Add Generics for Doctrine Repositories]
+**Learning:** Returning `EntityRepository` without generics forces developers to add `@var` annotations or lose autocomplete and type safety.
+**Action:** Adding `@template T of object` and updating return types dynamically `($entityOrClass is class-string<T> ? EntityRepository<T> : EntityRepository<object>)` allows IDEs and PHPStan to correctly infer the repository type when a class-string is provided to `grabRepository`.

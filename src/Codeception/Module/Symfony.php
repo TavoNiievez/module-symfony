@@ -56,6 +56,7 @@ use function codecept_root_dir;
 use function count;
 use function extension_loaded;
 use function file_exists;
+use function glob;
 use function implode;
 use function ini_get;
 use function ini_set;
