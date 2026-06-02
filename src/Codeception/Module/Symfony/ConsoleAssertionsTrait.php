@@ -62,8 +62,8 @@ trait ConsoleAssertionsTrait
     {
         $options = [];
 
-        foreach ($parameters as $key => $value) {
-            $option = is_int($key) ? (string) $value : $key;
+        foreach ($parameters as $key => $parameterValue) {
+            $option = is_int($key) ? (string) $parameterValue : $key;
 
             match ($option) {
                 '--ansi'                 => $options['decorated'] = true,
@@ -73,7 +73,7 @@ trait ConsoleAssertionsTrait
                 '-v', '--verbose=1'      => $options['verbosity'] = OutputInterface::VERBOSITY_VERBOSE,
                 '-vv', '--verbose=2'     => $options['verbosity'] = OutputInterface::VERBOSITY_VERY_VERBOSE,
                 '-vvv', '--verbose=3'    => $options['verbosity'] = OutputInterface::VERBOSITY_DEBUG,
-                '--verbose'              => $options['verbosity'] = match ((int) $value) {
+                '--verbose'              => $options['verbosity'] = match ((int) $parameterValue) {
                     3       => OutputInterface::VERBOSITY_DEBUG,
                     2       => OutputInterface::VERBOSITY_VERY_VERBOSE,
                     default => OutputInterface::VERBOSITY_VERBOSE,
