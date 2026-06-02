@@ -44,8 +44,9 @@ trait DoctrineAssertionsTrait
      * $I->grabRepository(UserRepositoryInterface::class); // interface
      * ```
      *
-     * @param  object|class-string $entityOrClass
-     * @return EntityRepository<object>
+     * @template T of object
+     * @param object|class-string<T> $entityOrClass
+     * @return ($entityOrClass is class-string<T> ? EntityRepository<T> : EntityRepository<object>)
      */
     public function grabRepository(object|string $entityOrClass): EntityRepository
     {
@@ -56,6 +57,7 @@ trait DoctrineAssertionsTrait
             if (!($repo instanceof EntityRepository && $repo instanceof $id)) {
                 Assert::fail(sprintf("'%s' is not an entity repository", $id));
             }
+            /** @var EntityRepository<T>|EntityRepository<object> $repo */
             return $repo;
         }
 
@@ -64,7 +66,10 @@ trait DoctrineAssertionsTrait
             Assert::fail(sprintf("'%s' is not a managed Doctrine entity", $id));
         }
 
-        return $em->getRepository($id);
+        /** @var EntityRepository<T>|EntityRepository<object> $repo */
+        $repo = $em->getRepository($id);
+
+        return $repo;
     }
 
     /**
