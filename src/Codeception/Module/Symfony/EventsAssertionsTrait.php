@@ -58,25 +58,6 @@ trait EventsAssertionsTrait
     }
 
     /**
-     * Verifies that one or more event listeners were not called during the test.
-     *
-     * ```php
-     * <?php
-     * $I->dontSeeEventTriggered('App\MyEvent');
-     * $I->dontSeeEventTriggered(new App\Events\MyEvent());
-     * $I->dontSeeEventTriggered(['App\MyEvent', 'App\MyOtherEvent']);
-     * ```
-     *
-     * @param      class-string|object|list<class-string|object> $expected
-     * @deprecated Use {@see dontSeeEventListenerIsCalled()} instead.
-     */
-    public function dontSeeEventTriggered(array|object|string $expected): void
-    {
-        trigger_error('dontSeeEventTriggered is deprecated, please use dontSeeEventListenerIsCalled instead', E_USER_DEPRECATED);
-        $this->dontSeeEventListenerIsCalled($expected);
-    }
-
-    /**
      * Verifies that there were no orphan events during the test.
      *
      * An orphan event is an event that was triggered by manually executing the
@@ -130,25 +111,6 @@ trait EventsAssertionsTrait
     public function seeEventListenerIsCalled(array|object|string $expected, array|string $events = []): void
     {
         $this->assertListenerCalled($expected, $events, shouldBeCalled: true);
-    }
-
-    /**
-     * Verifies that one or more event listeners were called during the test.
-     *
-     * ```php
-     * <?php
-     * $I->seeEventTriggered('App\MyEvent');
-     * $I->seeEventTriggered(new App\Events\MyEvent());
-     * $I->seeEventTriggered(['App\MyEvent', 'App\MyOtherEvent']);
-     * ```
-     *
-     * @param class-string|object|list<class-string|object> $expected
-     * @deprecated Use {@see seeEventListenerIsCalled()} instead.
-     */
-    public function seeEventTriggered(array|object|string $expected): void
-    {
-        trigger_error('seeEventTriggered is deprecated, please use seeEventListenerIsCalled instead', E_USER_DEPRECATED);
-        $this->seeEventListenerIsCalled($expected);
     }
 
     /**

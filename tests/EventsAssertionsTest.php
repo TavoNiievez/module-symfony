@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests;
 
 use Codeception\Module\Symfony\EventsAssertionsTrait;
-use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use Symfony\Component\HttpKernel\Kernel;
 use Tests\App\Event\TestEvent;
 use Tests\App\Listener\TestEventListener;
@@ -25,13 +24,6 @@ final class EventsAssertionsTest extends CodeceptTestCase
     {
         $this->client->request('GET', '/dispatch-orphan-event');
         $this->dontSeeEventListenerIsCalled(TestEventListener::class);
-    }
-
-    #[IgnoreDeprecations]
-    public function testDontSeeEventTriggered(): void
-    {
-        $this->client->request('GET', '/dispatch-orphan-event');
-        $this->dontSeeEventTriggered(TestEventListener::class);
     }
 
     public function testDontSeeOrphanEvent(): void
@@ -56,13 +48,6 @@ final class EventsAssertionsTest extends CodeceptTestCase
 
         $this->client->request('GET', '/dispatch-named-event');
         $this->seeEventListenerIsCalled(TestEventListener::class, 'named.event');
-    }
-
-    #[IgnoreDeprecations]
-    public function testSeeEventTriggered(): void
-    {
-        $this->client->request('GET', '/dispatch-event');
-        $this->seeEventTriggered(TestEventListener::class);
     }
 
     public function testSeeOrphanEvent(): void
