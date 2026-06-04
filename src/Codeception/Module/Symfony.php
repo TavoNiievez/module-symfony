@@ -246,12 +246,15 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      */
     public function _after(TestInterface $test): void
     {
-        foreach ($this->permanentServices as $serviceName => $_) {
-            $service = $this->getService($serviceName);
-            if (is_object($service)) {
-                $this->permanentServices[$serviceName] = $service;
-            } else {
-                unset($this->permanentServices[$serviceName]);
+        if ($this->permanentServices !== []) {
+            $container = $this->_getContainer();
+            foreach ($this->permanentServices as $serviceName => $_) {
+                $service = $container->has($serviceName) ? $container->get($serviceName) : null;
+                if (is_object($service)) {
+                    $this->permanentServices[$serviceName] = $service;
+                } else {
+                    unset($this->permanentServices[$serviceName]);
+                }
             }
         }
         $this->persistentServices = [];
