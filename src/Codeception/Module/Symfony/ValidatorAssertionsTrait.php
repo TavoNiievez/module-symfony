@@ -89,6 +89,7 @@ trait ValidatorAssertionsTrait
         $validator = $this->getValidatorService();
         $violations = $propertyPath ? $validator->validateProperty($subject, $propertyPath) : $validator->validate($subject);
 
+        /** @var ConstraintViolationInterface[] $violations */
         $violations = iterator_to_array($violations);
 
         if ($constraint !== null) {
