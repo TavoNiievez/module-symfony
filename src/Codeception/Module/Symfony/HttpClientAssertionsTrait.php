@@ -103,7 +103,7 @@ trait HttpClientAssertionsTrait
                 continue;
             }
 
-            $info = $this->extractValue($trace['info'] ?? []);
+            $info = $this->extractTraceData($trace['info'] ?? []);
             $infoUrl = is_array($info) ? ($info['url'] ?? $info['original_url'] ?? null) : null;
             if ($expectedUrl !== $infoUrl && $expectedUrl !== ($trace['url'] ?? null)) {
                 continue;
@@ -113,9 +113,9 @@ trait HttpClientAssertionsTrait
                 return true;
             }
 
-            $options = $this->extractValue($trace['options'] ?? []);
+            $options = $this->extractTraceData($trace['options'] ?? []);
             $options = is_array($options) ? $options : [];
-            if ($expectedBody !== null && $expectedBody !== $this->extractValue($options['body'] ?? $options['json'] ?? null)) {
+            if ($expectedBody !== null && $expectedBody !== $this->extractTraceData($options['body'] ?? $options['json'] ?? null)) {
                 continue;
             }
 
@@ -123,7 +123,7 @@ trait HttpClientAssertionsTrait
                 return true;
             }
 
-            $actualHeaders = $this->extractValue($options['headers'] ?? []);
+            $actualHeaders = $this->extractTraceData($options['headers'] ?? []);
             if (is_array($actualHeaders) && $expectedHeadersLower === array_intersect_key(array_change_key_case($actualHeaders), $expectedHeadersLower)) {
                 return true;
             }
@@ -145,13 +145,13 @@ trait HttpClientAssertionsTrait
         return $clientData['traces'];
     }
 
-    private function extractValue(mixed $value): mixed
+    private function extractTraceData(mixed $traceData): mixed
     {
         return match (true) {
-            $value instanceof Data => $value->getValue(true),
-            is_object($value) && method_exists($value, 'getValue') => $value->getValue(true),
-            $value instanceof Stringable => (string) $value,
-            default => $value,
+            $traceData instanceof Data => $traceData->getValue(true),
+            is_object($traceData) && method_exists($traceData, 'getValue') => $traceData->getValue(true),
+            $traceData instanceof Stringable => (string) $traceData,
+            default => $traceData,
         };
     }
 

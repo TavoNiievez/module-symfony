@@ -1,0 +1,6 @@
+parameters:
+    ignoreErrors:
+        -
+            message: '#If condition is always false\.#'
+            identifier: if.alwaysFalse
+            path: src/Codeception/Module/Symfony.php
