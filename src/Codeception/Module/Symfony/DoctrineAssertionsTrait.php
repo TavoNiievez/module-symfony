@@ -24,7 +24,8 @@ trait DoctrineAssertionsTrait
      * $I->grabNumRecords(User::class, ['status' => 'active']);
      * ```
      *
-     * @param class-string<object> $entityClass Fully-qualified entity class name
+     * @template T of object
+     * @param class-string<T> $entityClass Fully-qualified entity class name
      * @param array<string, mixed> $criteria    Optional query criteria
      */
     public function grabNumRecords(string $entityClass, array $criteria = []): int
@@ -82,8 +83,9 @@ trait DoctrineAssertionsTrait
      * $I->seeNumRecords(80, User::class);
      * ```
      *
+     * @template T of object
      * @param int                  $expectedNum Expected count
-     * @param class-string<object> $className   Entity class
+     * @param class-string<T> $className   Entity class
      * @param array<string, mixed> $criteria    Optional criteria
      */
     public function seeNumRecords(int $expectedNum, string $className, array $criteria = []): void
