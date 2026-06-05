@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Codeception\Module\Symfony\Exception\InvalidSessionAttributeException;
 use Codeception\Module\Symfony\SessionAssertionsTrait;
 use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;
 use Tests\App\Entity\User;
@@ -82,6 +83,13 @@ final class SessionAssertionsTest extends CodeceptTestCase
         $this->initSession(['key1' => 'value1', 'key2' => 'value2']);
         $this->seeSessionHasValues(['key1', 'key2']);
         $this->seeSessionHasValues(['key1' => 'value1', 'key2' => 'value2']);
+    }
+
+    public function testSeeSessionHasValuesThrowsException(): void
+    {
+        $this->expectException(InvalidSessionAttributeException::class);
+        $this->expectExceptionMessage('Attribute name must be string, int given.');
+        $this->seeSessionHasValues([1]);
     }
 
     private function getTestUser(): User
