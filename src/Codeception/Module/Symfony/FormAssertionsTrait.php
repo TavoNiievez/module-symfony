@@ -86,6 +86,7 @@ trait FormAssertionsTrait
     public function seeFormErrorMessage(string $field, ?string $message = null): void
     {
         $collector = $this->grabFormCollector(__FUNCTION__);
+        /** @var array<string, mixed> $formsData */
         $formsData = $this->getRawCollectorData($collector)['forms'] ?? [];
 
         $this->assertFormErrorMessage($field, $message, $formsData);
@@ -131,6 +132,7 @@ trait FormAssertionsTrait
     public function seeFormErrorMessages(array $expectedErrors): void
     {
         $collector = $this->grabFormCollector(__FUNCTION__);
+        /** @var array<string, mixed> $formsData */
         $formsData = $this->getRawCollectorData($collector)['forms'] ?? [];
 
         foreach ($expectedErrors as $field => $msg) {
@@ -142,7 +144,8 @@ trait FormAssertionsTrait
         }
     }
 
-    private function assertFormErrorMessage(string $field, ?string $message, mixed $formsData): void
+    /** @param array<string, mixed> $formsData */
+    private function assertFormErrorMessage(string $field, ?string $message, array $formsData): void
     {
         $errors = $this->getErrorsForField($field, $formsData);
 
@@ -186,14 +189,11 @@ trait FormAssertionsTrait
     }
 
     /**
+     * @param array<string, mixed> $formsData
      * @return list<string>
      */
-    private function getErrorsForField(string $field, mixed $formsData): array
+    private function getErrorsForField(string $field, array $formsData): array
     {
-        if (!is_array($formsData)) {
-            return [];
-        }
-
         $errorsForField = [];
         $fieldFound = false;
 
