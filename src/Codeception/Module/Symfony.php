@@ -456,12 +456,12 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
 
     private function debugMailerData(MessageDataCollector $messageCollector): void
     {
-        $this->debugSection('Emails', sprintf('%d sent', count($messageCollector->getEvents()->getMessages())));
+        $this->debugSection('Emails', sprintf('%d sent', count($messageCollector->getEvents()->getEvents())));
     }
 
     private function debugNotifierData(NotificationDataCollector $notificationCollector): void
     {
-        $this->debugSection('Notifications', sprintf('%d sent', count($notificationCollector->getEvents()->getMessages())));
+        $this->debugSection('Notifications', sprintf('%d sent', count($notificationCollector->getEvents()->getEvents())));
     }
 
     private function debugTimeData(TimeDataCollector $timeCollector): void
