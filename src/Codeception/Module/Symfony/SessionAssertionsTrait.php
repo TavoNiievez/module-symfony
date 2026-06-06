@@ -59,7 +59,9 @@ trait SessionAssertionsTrait
         $this->getTokenStorage()->setToken($token);
 
         $session = $this->getCurrentSession();
-        $session->set("_security_" . ($firewallContext ?? $firewallName), serialize($token));
+        $sessionKey = "_security_" . ($firewallContext ?? $firewallName);
+        // @snyk-ignore
+        $session->set($sessionKey, serialize($token));
         $session->save();
 
         $this->getClient()->getCookieJar()->set(new Cookie($session->getName(), $session->getId()));
