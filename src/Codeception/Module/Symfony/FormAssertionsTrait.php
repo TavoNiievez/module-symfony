@@ -25,7 +25,7 @@ trait FormAssertionsTrait
      * $I->assertFormValue('#loginForm', 'username', 'john_doe');
      * ```
      */
-    public function assertFormValue(string $formSelector, string $fieldName, string $value, string $message = ''): void
+    public function assertFormValue(string $formSelector, string $fieldName, string $expectedValue, string $message = ''): void
     {
         $node = $this->getClient()->getCrawler()->filter($formSelector);
         $this->assertGreaterThan(0, $node->count(), sprintf('Form "%s" not found.', $formSelector));
@@ -36,7 +36,7 @@ trait FormAssertionsTrait
             $values,
             $message ?: sprintf('Field "%s" not found in form "%s".', $fieldName, $formSelector)
         );
-        $this->assertSame($value, $values[$fieldName]);
+        $this->assertSame($expectedValue, $values[$fieldName]);
     }
 
     /**
@@ -85,19 +85,11 @@ trait FormAssertionsTrait
      */
     public function seeFormErrorMessage(string $field, ?string $message = null): void
     {
-        $errors = $this->getErrorsForField($field);
+        $collector = $this->grabFormCollector(__FUNCTION__);
+        /** @var array<string, mixed> $formsData */
+        $formsData = $this->getRawCollectorData($collector)['forms'] ?? [];
 
-        if ($errors === []) {
-            Assert::fail("No form error message for field '{$field}'.");
-        }
-
-        if ($message !== null) {
-            $this->assertStringContainsString(
-                $message,
-                implode("\n", $errors),
-                sprintf("There is an error message for the field '%s', but it does not match the expected message.", $field)
-            );
-        }
+        $this->assertFormErrorMessage($field, $message, $formsData);
     }
 
     /**
@@ -139,8 +131,34 @@ trait FormAssertionsTrait
      */
     public function seeFormErrorMessages(array $expectedErrors): void
     {
+        $collector = $this->grabFormCollector(__FUNCTION__);
+        /** @var array<string, mixed> $formsData */
+        $formsData = $this->getRawCollectorData($collector)['forms'] ?? [];
+
         foreach ($expectedErrors as $field => $msg) {
-            is_int($field) ? $this->seeFormErrorMessage((string) $msg) : $this->seeFormErrorMessage($field, $msg);
+            if (is_int($field)) {
+                $this->assertFormErrorMessage((string) $msg, null, $formsData);
+            } else {
+                $this->assertFormErrorMessage($field, $msg, $formsData);
+            }
+        }
+    }
+
+    /** @param array<string, mixed> $formsData */
+    private function assertFormErrorMessage(string $field, ?string $message, array $formsData): void
+    {
+        $errors = $this->getErrorsForField($field, $formsData);
+
+        if ($errors === []) {
+            Assert::fail("No form error message for field '{$field}'.");
+        }
+
+        if ($message !== null) {
+            $this->assertStringContainsString(
+                $message,
+                implode("\n", $errors),
+                sprintf("There is an error message for the field '%s', but it does not match the expected message.", $field)
+            );
         }
     }
 
@@ -171,16 +189,11 @@ trait FormAssertionsTrait
     }
 
     /**
+     * @param array<string, mixed> $formsData
      * @return list<string>
      */
-    private function getErrorsForField(string $field): array
+    private function getErrorsForField(string $field, array $formsData): array
     {
-        $collector = $this->grabFormCollector('seeFormErrorMessage');
-        $formsData = $this->getRawCollectorData($collector)['forms'] ?? [];
-        if (!is_array($formsData)) {
-            return [];
-        }
-
         $errorsForField = [];
         $fieldFound = false;
 
@@ -214,11 +227,11 @@ trait FormAssertionsTrait
     /** @return array<string, mixed> */
     private function getRawCollectorData(FormDataCollector $collector): array
     {
-        $data = $collector->getData();
-        if ($data instanceof Data) {
-            $data = $data->getValue(true);
+        $collectorData = $collector->getData();
+        if ($collectorData instanceof Data) {
+            $collectorData = $collectorData->getValue(true);
         }
         /** @var array<string, mixed> */
-        return is_array($data) ? $data : [];
+        return is_array($collectorData) ? $collectorData : [];
     }
 }

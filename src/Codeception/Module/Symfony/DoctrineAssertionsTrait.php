@@ -24,7 +24,8 @@ trait DoctrineAssertionsTrait
      * $I->grabNumRecords(User::class, ['status' => 'active']);
      * ```
      *
-     * @param class-string<object> $entityClass Fully-qualified entity class name
+     * @template T of object
+     * @param class-string<T> $entityClass Fully-qualified entity class name
      * @param array<string, mixed> $criteria    Optional query criteria
      */
     public function grabNumRecords(string $entityClass, array $criteria = []): int
@@ -44,8 +45,9 @@ trait DoctrineAssertionsTrait
      * $I->grabRepository(UserRepositoryInterface::class); // interface
      * ```
      *
-     * @param  object|class-string $entityOrClass
-     * @return EntityRepository<object>
+     * @template T of object
+     * @param object|class-string<T> $entityOrClass
+     * @return ($entityOrClass is class-string<T> ? EntityRepository<T> : EntityRepository<object>)
      */
     public function grabRepository(object|string $entityOrClass): EntityRepository
     {
@@ -56,6 +58,7 @@ trait DoctrineAssertionsTrait
             if (!($repo instanceof EntityRepository && $repo instanceof $id)) {
                 Assert::fail(sprintf("'%s' is not an entity repository", $id));
             }
+            /** @var EntityRepository<T>|EntityRepository<object> $repo */
             return $repo;
         }
 
@@ -64,7 +67,10 @@ trait DoctrineAssertionsTrait
             Assert::fail(sprintf("'%s' is not a managed Doctrine entity", $id));
         }
 
-        return $em->getRepository($id);
+        /** @var EntityRepository<T>|EntityRepository<object> $repo */
+        $repo = $em->getRepository($id);
+
+        return $repo;
     }
 
     /**
@@ -77,8 +83,9 @@ trait DoctrineAssertionsTrait
      * $I->seeNumRecords(80, User::class);
      * ```
      *
+     * @template T of object
      * @param int                  $expectedNum Expected count
-     * @param class-string<object> $className   Entity class
+     * @param class-string<T> $className   Entity class
      * @param array<string, mixed> $criteria    Optional criteria
      */
     public function seeNumRecords(int $expectedNum, string $className, array $criteria = []): void

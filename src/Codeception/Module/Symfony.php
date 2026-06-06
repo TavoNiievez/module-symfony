@@ -49,8 +49,6 @@ use Symfony\Component\Mailer\DataCollector\MessageDataCollector;
 use Symfony\Component\Notifier\DataCollector\NotificationDataCollector;
 use Symfony\Component\VarDumper\Cloner\Data;
 
-use function array_filter;
-use function array_map;
 use function class_exists;
 use function codecept_root_dir;
 use function count;
@@ -61,6 +59,7 @@ use function implode;
 use function ini_get;
 use function ini_set;
 use function is_object;
+use function is_scalar;
 use function is_subclass_of;
 use function sprintf;
 
@@ -80,7 +79,7 @@ use function sprintf;
  *
  * ## Config
  *
- * ### Symfony 5.4 or higher
+ * ### Symfony 5.4, 6.4, 7.4 or 8.0
  *
  * * `app_path`: 'src' - Specify custom path to your app dir, where the kernel interface is located.
  * * `environment`: 'local' - Environment used for load kernel
@@ -91,7 +90,7 @@ use function sprintf;
  * * `rebootable_client`: 'true' - Reboot client's kernel before each request
  * * `guard`: 'false' - Enable custom authentication system with guard (only for Symfony 5.4)
  * * `bootstrap`: 'false' - Enable the test environment setup with the tests/bootstrap.php file if it exists or with Symfony DotEnv otherwise. If false, it does nothing.
- * * `authenticator`: 'false' - Reboot client's kernel before each request (only for Symfony 6.0 or higher)
+ * * `authenticator`: 'false' - Enable custom authentication system with authenticator (only for Symfony 6.0 or higher)
  *
  * #### Sample `Functional.suite.yml`
  *
@@ -181,7 +180,7 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
      * }
      */
     public array $config = [
-        'app_path'          => 'app',
+        'app_path'          => 'src',
         'kernel_class'      => 'App\\Kernel',
         'environment'       => 'test',
         'debug'             => true,
@@ -445,18 +444,24 @@ class Symfony extends Framework implements DoctrineProvider, PartedModule
             $roles = $roles->getValue(true);
         }
 
-        $rolesStr = implode(',', array_map('strval', array_filter((array) $roles, 'is_scalar')));
+        $rolesStrParts = [];
+        foreach ((array) $roles as $role) {
+            if (is_scalar($role)) {
+                $rolesStrParts[] = (string) $role;
+            }
+        }
+        $rolesStr = implode(',', $rolesStrParts);
         $this->debugSection('User', sprintf('%s [%s]', $securityCollector->getUser(), $rolesStr));
     }
 
     private function debugMailerData(MessageDataCollector $messageCollector): void
     {
-        $this->debugSection('Emails', sprintf('%d sent', count($messageCollector->getEvents()->getMessages())));
+        $this->debugSection('Emails', sprintf('%d sent', count($messageCollector->getEvents()->getEvents())));
     }
 
     private function debugNotifierData(NotificationDataCollector $notificationCollector): void
     {
-        $this->debugSection('Notifications', sprintf('%d sent', count($notificationCollector->getEvents()->getMessages())));
+        $this->debugSection('Notifications', sprintf('%d sent', count($notificationCollector->getEvents()->getEvents())));
     }
 
     private function debugTimeData(TimeDataCollector $timeCollector): void

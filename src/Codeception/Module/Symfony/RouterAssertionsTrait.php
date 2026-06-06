@@ -25,7 +25,7 @@ trait RouterAssertionsTrait
      * $I->amOnAction('ArticleController', ['slug' => 'lorem-ipsum']);
      * ```
      *
-     * @param array<non-empty-string, mixed> $params
+     * @param array<non-empty-string, scalar|\Stringable> $params
      */
     public function amOnAction(string $action, array $params = []): void
     {
@@ -41,7 +41,7 @@ trait RouterAssertionsTrait
      * $I->amOnRoute('posts.show', ['id' => 34]);
      * ```
      *
-     * @param array<string, mixed> $params
+     * @param array<string, scalar|\Stringable> $params
      */
     public function amOnRoute(string $routeName, array $params = []): void
     {
@@ -85,7 +85,7 @@ trait RouterAssertionsTrait
      * $I->seeCurrentRouteIs('posts.show', ['id' => 8]);
      * ```
      *
-     * @param array<string, mixed> $params
+     * @param array<string, scalar|\Stringable> $params
      */
     public function seeCurrentRouteIs(string $routeName, array $params = []): void
     {
@@ -157,7 +157,7 @@ trait RouterAssertionsTrait
         );
     }
 
-    /** @param array<string, mixed> $params */
+    /** @param array<string, scalar|\Stringable> $params */
     private function openRoute(string $routeName, array $params = []): void
     {
         $this->getClient()->request('GET', $this->grabRouterService()->generate($routeName, $params));
