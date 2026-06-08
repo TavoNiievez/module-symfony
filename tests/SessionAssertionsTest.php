@@ -84,6 +84,13 @@ final class SessionAssertionsTest extends CodeceptTestCase
         $this->seeSessionHasValues(['key1' => 'value1', 'key2' => 'value2']);
     }
 
+    public function testSeeSessionHasValuesThrowsExceptionForInvalidAttributeNameType(): void
+    {
+        $this->expectException(\Codeception\Exception\InvalidSessionAttributeException::class);
+        $this->expectExceptionMessage('Attribute name must be string, array given.');
+        $this->seeSessionHasValues([['invalid']]);
+    }
+
     private function getTestUser(): User
     {
         return $this->grabService(UserRepository::class)->getByEmail('john_doe@gmail.com') ?? $this->fail('User not found');
