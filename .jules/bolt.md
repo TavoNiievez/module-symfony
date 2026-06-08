@@ -1,0 +1,2 @@
+### 2026-06-05: `getEvents()` vs `getMessages()` in Symfony Mailer/Notifier Collectors
+**Learning:** When retrieving events from Symfony's `MessageEvents` or `NotificationEvents` (e.g. `$this->getMessageMailerEvents()`), calling `getMessages()` creates a new array by iterating over all events (O(N) operation). If you only need to check the last event, count the events, or fetch an event by a specific index, use `getEvents()` instead. It returns the internal array directly (O(1) operation), avoiding unnecessary memory allocation.
