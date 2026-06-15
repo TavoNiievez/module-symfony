@@ -297,8 +297,8 @@ trait EventsAssertionsTrait
         return 'event_dispatcher';
     }
 
-    protected function grabEventCollector(string $function): EventDataCollector
+    protected function grabEventCollector(string $callingFunction): EventDataCollector
     {
-        return $this->grabCollector(DataCollectorName::EVENTS, $function);
+        return $this->grabCollector(DataCollectorName::EVENTS, $callingFunction);
     }
 }

@@ -90,14 +90,14 @@ trait HttpClientAssertionsTrait
      */
     private function hasHttpClientRequest(
         string $httpClientId,
-        string $function,
+        string $callingFunction,
         string $expectedUrl,
         string $expectedMethod,
         string|array|null $expectedBody = null,
         array $expectedHeaders = []
     ): bool {
         $expectedHeadersLower = $expectedHeaders === [] ? [] : array_change_key_case($expectedHeaders);
-        $traces = $this->getHttpClientTraces($httpClientId, $function);
+        $traces = $this->getHttpClientTraces($httpClientId, $callingFunction);
 
         foreach ($traces as $trace) {
             if (!is_array($trace) || ($trace['method'] ?? null) !== $expectedMethod) {
@@ -138,9 +138,9 @@ trait HttpClientAssertionsTrait
     }
 
     /** @return array<mixed> */
-    private function getHttpClientTraces(string $httpClientId, string $function): array
+    private function getHttpClientTraces(string $httpClientId, string $callingFunction): array
     {
-        $clients = $this->grabHttpClientCollector($function)->getClients();
+        $clients = $this->grabHttpClientCollector($callingFunction)->getClients();
         if (!isset($clients[$httpClientId]) || !is_array($clients[$httpClientId])) {
             Assert::fail(sprintf('HttpClient "%s" is not registered.', $httpClientId));
         }
@@ -160,8 +160,8 @@ trait HttpClientAssertionsTrait
         };
     }
 
-    protected function grabHttpClientCollector(string $function): HttpClientDataCollector
+    protected function grabHttpClientCollector(string $callingFunction): HttpClientDataCollector
     {
-        return $this->grabCollector(DataCollectorName::HTTP_CLIENT, $function);
+        return $this->grabCollector(DataCollectorName::HTTP_CLIENT, $callingFunction);
     }
 }
