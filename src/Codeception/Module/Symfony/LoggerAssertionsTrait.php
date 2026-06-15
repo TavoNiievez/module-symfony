@@ -57,8 +57,8 @@ trait LoggerAssertionsTrait
         $this->assertEmpty($foundDeprecations, $errorMessage);
     }
 
-    protected function grabLoggerCollector(string $function): LoggerDataCollector
+    protected function grabLoggerCollector(string $callingFunction): LoggerDataCollector
     {
-        return $this->grabCollector(DataCollectorName::LOGGER, $function);
+        return $this->grabCollector(DataCollectorName::LOGGER, $callingFunction);
     }
 }

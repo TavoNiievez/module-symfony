@@ -169,12 +169,12 @@ trait MimeAssertionsTrait
     /**
      * Returns the last email sent if $email is null. If no email has been sent it fails.
      */
-    private function verifyEmailObject(?Email $email, string $function): Email
+    private function verifyEmailObject(?Email $email, string $callingFunction): Email
     {
         $email = $email ?: $this->grabLastSentEmail();
         $errorMsgTemplate = "There is no email to verify. An Email object was not specified when invoking '%s' and the application has not sent one.";
         return $email ?? Assert::fail(
-            sprintf($errorMsgTemplate, $function)
+            sprintf($errorMsgTemplate, $callingFunction)
         );
     }
 }
