@@ -109,7 +109,8 @@ trait BrowserAssertionsTrait
      */
     public function assertResponseFormatSame(?string $expectedFormat, string $message = ''): void
     {
-        $this->assertThatForResponse(new ResponseFormatSame($this->getClient()->getRequest(), $expectedFormat), $message);
+        $client = $this->getClient();
+        $this->assertThatForResponse(new ResponseFormatSame($client->getRequest(), $expectedFormat), $message);
     }
 
     /**
