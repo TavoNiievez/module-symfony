@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Codeception\Module\Symfony;
 
+use Codeception\Exception\InvalidSessionAttributeException;
 use InvalidArgumentException;
 use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\HttpFoundation\Session\SessionFactoryInterface;
@@ -174,7 +175,7 @@ trait SessionAssertionsTrait
                 continue;
             }
             if (!is_string($expectedAttr)) {
-                throw new InvalidArgumentException(sprintf('Attribute name must be string, %s given.', get_debug_type($expectedAttr)));
+                throw new InvalidSessionAttributeException(sprintf('Attribute name must be string, %s given.', get_debug_type($expectedAttr)));
             }
             $this->assertTrue($session->has($expectedAttr), "No session attribute with name '{$expectedAttr}'");
         }
