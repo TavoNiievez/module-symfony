@@ -55,6 +55,32 @@ trait ServicesAssertionsTrait
     }
 
     /**
+     * Replaces a service in the container with the given object, for example a mock or a stub.
+     * The replacement is injected immediately and re-injected after each kernel reboot,
+     * so it stays in effect across requests until [`unmockService()`](#unmockService) is called.
+     * Build the double with Codeception `Stub`, PHPUnit, Mockery, or any plain object.
+     *
+     * The service must not have been initialized yet (Symfony forbids replacing an
+     * already instantiated service), so mock it before the request that uses it.
+     *
+     * ```php
+     * <?php
+     * $I->mockService(PaymentGateway::class, $this->makeEmpty(PaymentGateway::class));
+     * $I->mockService('http_client', new MockHttpClient($responses));
+     * $I->mockService('clock', new MockClock('2030-01-01'));
+     * ```
+     *
+     * @part services
+     * @param non-empty-string $serviceId
+     */
+    public function mockService(string $serviceId, object $replacement): void
+    {
+        $this->persistentServices[$serviceId] = $replacement;
+        $this->updateClientPersistentService($serviceId, $replacement);
+        $this->_getContainer()->set($serviceId, $replacement);
+    }
+
+    /**
      * Get service $serviceName and add it to the lists of persistent services.
      *
      * @part services
@@ -75,6 +101,24 @@ trait ServicesAssertionsTrait
     public function persistPermanentService(string $serviceName): void
     {
         $this->doPersistService($serviceName, true);
+    }
+
+    /**
+     * Removes a service replacement set with [`mockService()`](#mockService),
+     * restoring the original service on the next request.
+     *
+     * ```php
+     * <?php
+     * $I->unmockService('http_client');
+     * ```
+     *
+     * @part services
+     * @param non-empty-string $serviceId
+     */
+    public function unmockService(string $serviceId): void
+    {
+        unset($this->persistentServices[$serviceId], $this->permanentServices[$serviceId]);
+        $this->updateClientPersistentService($serviceId, null);
     }
 
     /**
