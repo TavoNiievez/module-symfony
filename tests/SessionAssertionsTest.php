@@ -30,6 +30,16 @@ final class SessionAssertionsTest extends CodeceptTestCase
         $this->assertStringContainsString('You are in the Dashboard!', $this->client->getResponse()->getContent());
     }
 
+    public function testAssertSessionHasFlashMessage(): void
+    {
+        $this->client->followRedirects(false);
+        $this->client->request('GET', '/flash');
+
+        $this->assertSessionHasFlashMessage('success');
+        $this->assertSessionHasFlashMessage('success', 'Profile updated.');
+        $this->assertSessionHasFlashMessage('success', ['Another message.', 'Profile updated.']);
+    }
+
     public function testDontSeeInSession(): void
     {
         $this->client->request('GET', '/');

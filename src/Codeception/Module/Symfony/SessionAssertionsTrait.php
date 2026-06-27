@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Codeception\Module\Symfony;
 
+use BadMethodCallException;
 use InvalidArgumentException;
+use PHPUnit\Framework\Assert;
 use Symfony\Component\BrowserKit\Cookie;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\HttpFoundation\Session\SessionFactoryInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Kernel;
@@ -18,6 +21,8 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\Logout\LogoutUrlGenerator;
 
+use function array_filter;
+use function array_intersect;
 use function class_exists;
 use function get_debug_type;
 use function is_int;
@@ -63,6 +68,55 @@ trait SessionAssertionsTrait
         $session->save();
 
         $this->getClient()->getCookieJar()->set(new Cookie($session->getName(), $session->getId()));
+    }
+
+    /**
+     * Asserts that the current request's session flash bag has a message of the given type.
+     * Optionally, asserts that the type's channel contains (at least one of) the given message(s).
+     * The flash bag is read with `peek()`, so the messages stay available to the template and to later assertions.
+     *
+     * Because templates consume flash messages when they render them, call
+     * [`stopFollowingRedirects()`](https://codeception.com/docs/modules/Symfony#stopFollowingRedirects) first
+     * so the redirect target does not drain the bag before the assertion runs.
+     *
+     * ```php
+     * <?php
+     * $I->stopFollowingRedirects();
+     * $I->amOnPage('/checkout');
+     * $I->assertSessionHasFlashMessage('success');
+     * $I->assertSessionHasFlashMessage('success', 'Your changes were saved.');
+     * $I->assertSessionHasFlashMessage('error', ['Invalid input.', 'Please try again.']);
+     * ```
+     *
+     * @param string|list<string> $messages
+     */
+    public function assertSessionHasFlashMessage(string $messageType, string|array $messages = ''): void
+    {
+        try {
+            $request = $this->getClient()->getRequest();
+        } catch (BadMethodCallException) {
+            Assert::fail('You must perform a request before asserting flash messages.');
+        }
+
+        $session = $request->hasSession() ? $request->getSession() : null;
+        if (!$session instanceof FlashBagAwareSessionInterface) {
+            Assert::fail('The current request does not have a session with a flash bag.');
+        }
+
+        $actualMessages = $session->getFlashBag()->peek($messageType);
+        $this->assertNotEmpty(
+            $actualMessages,
+            sprintf("The session does not have a flash message of type '%s'.", $messageType)
+        );
+
+        if ($messages === '') {
+            return;
+        }
+
+        $this->assertNotEmpty(
+            array_intersect((array) $messages, array_filter($actualMessages, 'is_string')),
+            sprintf("The '%s' flash messages do not contain any of the expected messages.", $messageType)
+        );
     }
 
     /**

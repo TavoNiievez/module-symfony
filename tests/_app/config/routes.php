@@ -14,6 +14,7 @@ return function (RoutingConfigurator $routes): void {
     $routes->add('dispatch_message', '/dispatch-message')->controller(AppController::class . '::dispatchTestMessage');
     $routes->add('dispatch_named_event', '/dispatch-named-event')->controller(AppController::class . '::dispatchNamedEvent');
     $routes->add('dispatch_orphan_event', '/dispatch-orphan-event')->controller(AppController::class . '::dispatchOrphanEvent');
+    $routes->add('flash', '/flash')->controller(AppController::class . '::setFlash');
     $routes->add('form_handler', '/form')->controller(AppController::class . '::form');
     $routes->add('http_client', '/http-client')->controller(AppController::class . '::httpClientRequests');
     $routes->add('index', '/')->controller(AppController::class . '::index');

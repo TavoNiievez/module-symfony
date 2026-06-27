@@ -148,6 +148,13 @@ final class AppController extends AbstractController
         return new Response($twig->render('security/register.html.twig'));
     }
 
+    public function setFlash(): RedirectResponse
+    {
+        $this->addFlash('success', 'Profile updated.');
+
+        return new RedirectResponse('/');
+    }
+
     public function requestWithAttribute(Request $request): Response
     {
         $request->attributes->set('page', 'register');
