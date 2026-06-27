@@ -6,15 +6,54 @@ namespace Codeception\Module\Symfony;
 
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\Assert;
+use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 
+use function array_count_values;
+use function array_filter;
+use function array_keys;
+use function implode;
 use function interface_exists;
+use function is_array;
 use function is_object;
+use function is_string;
 use function is_subclass_of;
 use function json_encode;
 use function sprintf;
 
 trait DoctrineAssertionsTrait
 {
+    /**
+     * Asserts that no SQL query was executed more than once during the last request,
+     * which usually reveals an N+1 query problem.
+     * Reads the Doctrine `db` profiler collector, so DoctrineBundle and the profiler must be enabled.
+     *
+     * ```php
+     * <?php
+     * $I->dontSeeDuplicateQueries();
+     * ```
+     */
+    public function dontSeeDuplicateQueries(): void
+    {
+        $statements = [];
+        foreach ($this->grabDoctrineCollector(__FUNCTION__)->getQueries() as $connectionQueries) {
+            if (!is_array($connectionQueries)) {
+                continue;
+            }
+            foreach ($connectionQueries as $query) {
+                if (is_array($query) && is_string($query['sql'] ?? null)) {
+                    $statements[] = $query['sql'];
+                }
+            }
+        }
+
+        $duplicates = array_keys(array_filter(array_count_values($statements), static fn(int $count): bool => $count > 1));
+
+        $this->assertEmpty(
+            $duplicates,
+            sprintf("Expected no duplicate queries, but found:\n%s", implode("\n", $duplicates))
+        );
+    }
+
     /**
      * Returns the number of rows that match the given criteria for the
      * specified Doctrine entity.
@@ -72,6 +111,27 @@ trait DoctrineAssertionsTrait
     }
 
     /**
+     * Asserts that fewer than the expected number of SQL queries were executed during the last request.
+     * Useful as a ceiling to guard against N+1 regressions.
+     * Reads the Doctrine `db` profiler collector, so DoctrineBundle and the profiler must be enabled.
+     *
+     * ```php
+     * <?php
+     * $I->seeNumQueriesIsLessThan(5);
+     * ```
+     */
+    public function seeNumQueriesIsLessThan(int $expectedNumber): void
+    {
+        $actualNumber = $this->grabDoctrineCollector(__FUNCTION__)->getQueryCount();
+
+        $this->assertLessThan(
+            $expectedNumber,
+            $actualNumber,
+            sprintf('Expected less than %d queries, but %d were executed.', $expectedNumber, $actualNumber)
+        );
+    }
+
+    /**
      * Asserts that a given number of records exists for the entity.
      * 'id' is the default search parameter.
      *
@@ -101,5 +161,15 @@ trait DoctrineAssertionsTrait
                 json_encode($criteria, JSON_THROW_ON_ERROR)
             )
         );
+    }
+
+    protected function grabDoctrineCollector(string $callingFunction): DoctrineDataCollector
+    {
+        $collector = $this->grabCollector(DataCollectorName::DB, $callingFunction);
+        if (!$collector instanceof DoctrineDataCollector) {
+            Assert::fail(sprintf("The 'db' collector is not a Doctrine collector, required by '%s'.", $callingFunction));
+        }
+
+        return $collector;
     }
 }

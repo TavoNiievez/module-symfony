@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests;
 
 use Codeception\Module\Symfony\DoctrineAssertionsTrait;
+use PHPUnit\Framework\AssertionFailedError;
 use Tests\App\Entity\User;
 use Tests\App\Repository\UserRepository;
 use Tests\App\Repository\UserRepositoryInterface;
@@ -14,9 +15,31 @@ final class DoctrineAssertionsTest extends CodeceptTestCase
 {
     use DoctrineAssertionsTrait;
 
+    public function testDontSeeDuplicateQueries(): void
+    {
+        $this->client->request('GET', '/');
+
+        $this->dontSeeDuplicateQueries();
+    }
+
+    public function testDontSeeDuplicateQueriesFailsWhenQueriesRepeat(): void
+    {
+        $this->client->request('GET', '/?duplicateQueries=1');
+
+        $this->expectException(AssertionFailedError::class);
+        $this->dontSeeDuplicateQueries();
+    }
+
     public function testGrabNumRecords(): void
     {
         $this->assertSame(1, $this->grabNumRecords(User::class));
+    }
+
+    public function testSeeNumQueriesIsLessThan(): void
+    {
+        $this->client->request('GET', '/');
+
+        $this->seeNumQueriesIsLessThan(3);
     }
 
     public function testGrabRepository(): void
