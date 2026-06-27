@@ -15,6 +15,7 @@ use Symfony\Component\HttpClient\TraceableHttpClient;
 use Symfony\Component\HttpKernel\DataCollector\LoggerDataCollector;
 use Symfony\Component\Mailer\EventListener\MessageLoggerListener;
 use Symfony\Component\Notifier\EventListener\NotificationLoggerListener;
+use Tests\App\Command\ResultCommand;
 use Tests\App\Command\TestCommand;
 use Tests\App\Controller\AppController;
 use Tests\App\Doctrine\DbDataCollector;
@@ -42,6 +43,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set(AppController::class);
     $services->set(TestCommand::class)->tag('console.command', ['command' => 'app:test-command']);
+    $services->set(ResultCommand::class)->tag('console.command', ['command' => 'app:result-command']);
 
     $services->set(DbDataCollector::class)
         ->tag('data_collector', ['id' => 'db', 'template' => '@WebProfiler/Collector/db.html.twig', 'priority' => 250]);
