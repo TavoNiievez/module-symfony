@@ -7,11 +7,34 @@ namespace Tests;
 use Codeception\Module\Symfony\MessengerAssertionsTrait;
 use stdClass;
 use Tests\App\Message\TestMessage;
+use Tests\App\MessageHandler\TestMessageHandler;
 use Tests\Support\CodeceptTestCase;
 
 final class MessengerAssertionsTest extends CodeceptTestCase
 {
     use MessengerAssertionsTrait;
+
+    public function testSeeMessengerTransportAssertions(): void
+    {
+        $this->client->request('GET', '/dispatch-message');
+
+        $this->seeMessengerQueueCount(1, 'async');
+        $this->seeMessengerTransportContains(TestMessage::class, 'async');
+
+        $envelope = $this->grabMessengerTransport('async')->getSent()[0];
+        $this->assertInstanceOf(TestMessage::class, $envelope->getMessage());
+    }
+
+    public function testConsumeMessengerMessages(): void
+    {
+        $this->client->request('GET', '/dispatch-message');
+        $this->seeMessengerQueueCount(1, 'async');
+
+        $this->consumeMessengerMessages('async');
+
+        $handler = $this->grabService(TestMessageHandler::class);
+        $this->assertSame(['Hello from Messenger'], $handler->handled);
+    }
 
     public function testSeeDispatchedMessageCount(): void
     {
