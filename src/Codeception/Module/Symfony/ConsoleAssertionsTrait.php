@@ -132,9 +132,10 @@ trait ConsoleAssertionsTrait
      * $I->assertStringContainsString('Invalid CSV', $result->getErrorOutput());
      * ```
      *
-     * @param array<string, mixed>            $input             Command arguments and options
-     * @param list<string>                    $interactiveInputs Inputs for interactive questions
-     * @param array<\Closure(string): string> $normalizers
+     * @param array<string, mixed>             $input             Command arguments and options
+     * @param list<string>                     $interactiveInputs Inputs for interactive questions
+     * @param OutputInterface::VERBOSITY_*|null $verbosity
+     * @param array<\Closure(string): string>  $normalizers
      */
     public function runCommand(
         string $name,
