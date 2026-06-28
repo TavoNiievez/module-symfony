@@ -25,6 +25,7 @@ use Tests\App\Event\TestEvent;
 use Tests\App\Mailer\MessageMailer;
 use Tests\App\Mailer\RegistrationMailer;
 use Tests\App\Message\TestMessage;
+use Tests\App\Repository\UserRepository;
 use Twig\Environment;
 
 final class AppController extends AbstractController
@@ -73,6 +74,19 @@ final class AppController extends AbstractController
         $bus->dispatch(new TestMessage('Hello from Messenger'));
 
         return new Response('Message dispatched');
+    }
+
+    public function doctrineQueries(Request $request, UserRepository $repository): Response
+    {
+        $repository->findAll();
+
+        if ($request->query->getBoolean('duplicate')) {
+            $repository->findAll();
+        } else {
+            $repository->count([]);
+        }
+
+        return new Response('Doctrine queries executed');
     }
 
     public function form(Request $request, FormFactoryInterface $formFactory, Environment $twig): Response

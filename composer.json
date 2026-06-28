@@ -29,6 +29,7 @@
     "require-dev": {
         "codeception/module-asserts": "^3.3",
         "codeception/module-doctrine": "^3.3",
+        "doctrine/doctrine-bundle": "^3.2",
         "doctrine/orm": "^3.6",
         "friendsofphp/php-cs-fixer": "^3.94",
         "phpstan/phpstan": "^2.2",
