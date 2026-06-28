@@ -17,14 +17,14 @@ final class DoctrineAssertionsTest extends CodeceptTestCase
 
     public function testDontSeeDuplicateQueries(): void
     {
-        $this->requestDoctrineQueries('/doctrine-queries');
+        $this->client->request('GET', '/');
 
         $this->dontSeeDuplicateQueries();
     }
 
     public function testDontSeeDuplicateQueriesDetectsDuplicates(): void
     {
-        $this->requestDoctrineQueries('/doctrine-queries?duplicate=1');
+        $this->client->request('GET', '/?duplicateQueries=1');
 
         $this->expectException(AssertionFailedError::class);
         $this->dontSeeDuplicateQueries();
@@ -45,24 +45,13 @@ final class DoctrineAssertionsTest extends CodeceptTestCase
 
     public function testSeeNumQueriesIsLessThan(): void
     {
-        $this->requestDoctrineQueries('/doctrine-queries');
+        $this->client->request('GET', '/');
 
-        $this->seeNumQueriesIsLessThan(5);
+        $this->seeNumQueriesIsLessThan(3);
     }
 
     public function testSeeNumRecords(): void
     {
         $this->seeNumRecords(1, User::class);
-    }
-
-    /**
-     * The mini-app recreates the schema per test, which pollutes the query log.
-     * Reset it before the request so the profiler only records the request's own
-     * queries, as it would for a real request (the holder resets between requests).
-     */
-    private function requestDoctrineQueries(string $uri): void
-    {
-        $this->grabService('doctrine.debug_data_holder')->reset();
-        $this->client->request('GET', $uri);
     }
 }

@@ -6,7 +6,6 @@ namespace Tests\App;
 
 require_once __DIR__ . '/Security/SecurityBundleSecurityAlias.php';
 
-use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
@@ -28,7 +27,6 @@ class TestKernel extends BaseKernel
             new FrameworkBundle(),
             new SecurityBundle(),
             new TwigBundle(),
-            new DoctrineBundle(),
         ];
     }
 
@@ -72,24 +70,6 @@ class TestKernel extends BaseKernel
         ]);
 
         $container->extension('twig', ['default_path' => __DIR__ . '/templates', 'debug' => true]);
-
-        $container->extension('doctrine', [
-            'dbal' => [
-                'driver' => 'pdo_sqlite',
-                'path' => '%kernel.cache_dir%/test.db',
-                'profiling_collect_schema_errors' => false,
-            ],
-            'orm' => [
-                'mappings' => [
-                    'App' => [
-                        'type' => 'attribute',
-                        'dir' => __DIR__ . '/Entity',
-                        'prefix' => 'Tests\\App\\Entity',
-                        'is_bundle' => false,
-                    ],
-                ],
-            ],
-        ]);
 
         $this->configureSecurity($container);
     }

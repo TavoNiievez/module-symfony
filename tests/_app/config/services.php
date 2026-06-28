@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\App\config;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -15,6 +17,8 @@ use Symfony\Component\Mailer\EventListener\MessageLoggerListener;
 use Symfony\Component\Notifier\EventListener\NotificationLoggerListener;
 use Tests\App\Command\TestCommand;
 use Tests\App\Controller\AppController;
+use Tests\App\Doctrine\DbDataCollector;
+use Tests\App\Doctrine\DoctrineSetup;
 use Tests\App\Entity\User;
 use Tests\App\Event\TestEvent;
 use Tests\App\HttpClient\MockResponseFactory;
@@ -39,8 +43,14 @@ return static function (ContainerConfigurator $container): void {
     $services->set(AppController::class);
     $services->set(TestCommand::class)->tag('console.command', ['command' => 'app:test-command']);
 
-    // The DoctrineBundle provides doctrine.orm.entity_manager / doctrine.dbal.default_connection.
-    $services->alias('doctrine.orm.entity_manager', 'doctrine.orm.default_entity_manager')->public();
+    $services->set(DbDataCollector::class)
+        ->tag('data_collector', ['id' => 'db', 'template' => '@WebProfiler/Collector/db.html.twig', 'priority' => 250]);
+
+    $services->set('doctrine.orm.entity_manager', EntityManagerInterface::class)
+        ->factory([DoctrineSetup::class, 'createEntityManager']);
+    $services->alias('doctrine.orm.default_entity_manager', 'doctrine.orm.entity_manager')->public();
+    $services->set('doctrine.dbal.default_connection', Connection::class)
+        ->factory([DoctrineSetup::class, 'createConnection']);
 
     $services->set(UserRepository::class)
         ->factory([service('doctrine.orm.entity_manager'), 'getRepository'])

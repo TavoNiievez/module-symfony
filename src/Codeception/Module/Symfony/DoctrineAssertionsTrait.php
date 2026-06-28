@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Codeception\Module\Symfony;
 
-use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\Assert;
+use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 
 use function array_count_values;
 use function array_filter;

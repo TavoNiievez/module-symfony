@@ -37,7 +37,7 @@ final class SessionAssertionsTest extends CodeceptTestCase
 
         $this->assertSessionHasFlashMessage('success');
         $this->assertSessionHasFlashMessage('success', 'Welcome aboard!');
-        $this->assertSessionHasFlashMessage('success', ['Welcome aboard!']);
+        $this->assertSessionHasFlashMessage('success', ['Another message.', 'Welcome aboard!']);
     }
 
     public function testDontSeeInSession(): void

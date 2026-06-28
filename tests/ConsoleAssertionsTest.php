@@ -38,9 +38,13 @@ final class ConsoleAssertionsTest extends CodeceptTestCase
     {
         $this->requireExecutionResult();
 
-        $result = $this->runCommand('app:test-command', ['--invalid' => true]);
+        $result = $this->runCommand('app:test-command', ['--fail' => true]);
 
-        $this->assertCommandResultEquals($result, expectedStatusCode: 2);
+        $this->assertCommandResultEquals(
+            $result,
+            expectedStatusCode: 1,
+            expectedErrorOutput: 'Something went wrong',
+        );
     }
 
     public function testRunCommand(): void

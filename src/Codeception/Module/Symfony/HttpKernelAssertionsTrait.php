@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Codeception\Module\Symfony;
 
-use Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector;
 use PHPUnit\Framework\Assert;
+use Symfony\Bridge\Doctrine\DataCollector\DoctrineDataCollector;
 use Symfony\Bridge\Twig\DataCollector\TwigDataCollector;
 use Symfony\Bundle\SecurityBundle\DataCollector\SecurityDataCollector;
 use Symfony\Component\Form\Extension\DataCollector\FormDataCollector;

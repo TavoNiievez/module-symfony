@@ -28,7 +28,7 @@ final class TestCommand extends Command
 
         if ($input->getOption('fail')) {
             $errorOutput = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
-            $errorOutput->writeln('Something went wrong');
+            $errorOutput->write('Something went wrong');
 
             return Command::FAILURE;
         }

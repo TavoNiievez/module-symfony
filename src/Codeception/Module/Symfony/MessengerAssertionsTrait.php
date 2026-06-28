@@ -286,7 +286,12 @@ trait MessengerAssertionsTrait
 
     private function grabMessageBus(): MessageBusInterface
     {
-        return $this->grabService(MessageBusInterface::class);
+        $bus = $this->grabService('messenger.routable_message_bus');
+        if (!$bus instanceof MessageBusInterface) {
+            Assert::fail("The 'messenger.routable_message_bus' service is not a message bus.");
+        }
+
+        return $bus;
     }
 
     private function busSuffix(?string $bus): string

@@ -89,23 +89,23 @@ trait ConsoleAssertionsTrait
         string $message = ''
     ): void {
         $expected = [];
-        $actual   = [];
+        $actual = [];
 
         if ($expectedStatusCode !== null) {
             $expected['statusCode'] = $expectedStatusCode;
-            $actual['statusCode']   = $result->statusCode;
+            $actual['statusCode'] = $result->statusCode;
         }
         if ($expectedOutput !== null) {
             $expected['output'] = $expectedOutput;
-            $actual['output']   = $result->getOutput();
+            $actual['output'] = $result->getOutput();
         }
         if ($expectedErrorOutput !== null) {
             $expected['errorOutput'] = $expectedErrorOutput;
-            $actual['errorOutput']   = $result->getErrorOutput();
+            $actual['errorOutput'] = $result->getErrorOutput();
         }
         if ($expectedDisplay !== null) {
             $expected['display'] = $expectedDisplay;
-            $actual['display']   = $result->getDisplay();
+            $actual['display'] = $result->getDisplay();
         }
 
         $this->assertSame($expected, $actual, $message);
