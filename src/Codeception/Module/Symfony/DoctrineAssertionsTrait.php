@@ -20,6 +20,7 @@ use function is_object;
 use function is_string;
 use function is_subclass_of;
 use function json_encode;
+use function preg_match;
 use function sprintf;
 
 trait DoctrineAssertionsTrait
@@ -27,6 +28,9 @@ trait DoctrineAssertionsTrait
     /**
      * Asserts that no identical SQL query was executed more than once during the
      * last request — a common symptom of an N+1 problem.
+     *
+     * Transaction-control statements (`START TRANSACTION`, `COMMIT`, ...) are ignored,
+     * so legitimately repeated transaction boundaries are not flagged as duplicates.
      *
      * Reads Doctrine's `db` profiler collector, so it requires `doctrine/doctrine-bundle`.
      *
@@ -37,20 +41,7 @@ trait DoctrineAssertionsTrait
      */
     public function dontSeeDuplicateQueries(): void
     {
-        $collector = $this->grabDoctrineCollector(__FUNCTION__);
-
-        $statements = [];
-        foreach ($collector->getQueries() as $connectionQueries) {
-            if (!is_array($connectionQueries)) {
-                continue;
-            }
-            foreach ($connectionQueries as $query) {
-                $sql = is_array($query) ? ($query['sql'] ?? null) : null;
-                if (is_string($sql)) {
-                    $statements[] = $sql;
-                }
-            }
-        }
+        $statements = $this->grabExecutedStatements(__FUNCTION__);
 
         $duplicates = array_keys(array_filter(array_count_values($statements), static fn(int $count): bool => $count > 1));
 
@@ -121,6 +112,9 @@ trait DoctrineAssertionsTrait
      * Asserts that fewer than the given number of database queries were executed
      * during the last request — a ceiling guard against N+1 problems.
      *
+     * Transaction-control statements (`START TRANSACTION`, `COMMIT`, ...) are not
+     * counted, so the number reflects the application queries only.
+     *
      * Reads Doctrine's `db` profiler collector, so it requires `doctrine/doctrine-bundle`.
      * Counts are environment-sensitive, so assert a ceiling rather than an exact number.
      *
@@ -131,7 +125,7 @@ trait DoctrineAssertionsTrait
      */
     public function seeNumQueriesIsLessThan(int $expectedCount): void
     {
-        $actualCount = $this->grabDoctrineCollector(__FUNCTION__)->getQueryCount();
+        $actualCount = count($this->grabExecutedStatements(__FUNCTION__));
 
         $this->assertLessThan(
             $expectedCount,
@@ -183,5 +177,34 @@ trait DoctrineAssertionsTrait
             $function,
             sprintf("The Doctrine 'db' collector is needed to use '%s'. Is DoctrineBundle enabled with the profiler?", $function)
         );
+    }
+
+    /**
+     * Flattens the executed SQL of every connection into a single list, dropping
+     * transaction-control statements so the N+1 guards count application queries only.
+     *
+     * @return list<string>
+     */
+    private function grabExecutedStatements(string $function): array
+    {
+        $statements = [];
+        foreach ($this->grabDoctrineCollector($function)->getQueries() as $connectionQueries) {
+            if (!is_array($connectionQueries)) {
+                continue;
+            }
+            foreach ($connectionQueries as $query) {
+                $sql = is_array($query) ? ($query['sql'] ?? null) : null;
+                if (is_string($sql) && !$this->isTransactionStatement($sql)) {
+                    $statements[] = $sql;
+                }
+            }
+        }
+
+        return $statements;
+    }
+
+    private function isTransactionStatement(string $sql): bool
+    {
+        return preg_match('/^\s*("|`)?(START\s+TRANSACTION|BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE\s+SAVEPOINT)\b/i', $sql) === 1;
     }
 }
