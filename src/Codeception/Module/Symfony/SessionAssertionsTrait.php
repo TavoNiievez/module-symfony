@@ -6,6 +6,7 @@ namespace Codeception\Module\Symfony;
 
 use InvalidArgumentException;
 use Symfony\Component\BrowserKit\Cookie;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\HttpFoundation\Session\SessionFactoryInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Kernel;
@@ -20,6 +21,7 @@ use Symfony\Component\Security\Http\Logout\LogoutUrlGenerator;
 
 use function class_exists;
 use function get_debug_type;
+use function is_array;
 use function is_int;
 use function is_string;
 use function serialize;
@@ -63,6 +65,62 @@ trait SessionAssertionsTrait
         $session->save();
 
         $this->getClient()->getCookieJar()->set(new Cookie($session->getName(), $session->getId()));
+    }
+
+    /**
+     * Asserts that the session has a flash message of the given type,
+     * optionally checking that it contains the given message(s).
+     *
+     * The flash bag is read with `peek()`, so the assertion is non-destructive:
+     * a later `see()` on the rendered page still works.
+     *
+     * Because templates consume the flash bag while rendering, the followed
+     * redirect page drains it before the assertion runs. Call
+     * [`stopFollowingRedirects()`](https://codeception.com/docs/modules/Symfony#stopFollowingRedirects)
+     * before the request so the flash survives.
+     *
+     * ```php
+     * <?php
+     * $I->stopFollowingRedirects();
+     * $I->amOnPage('/register'); // an action that adds a flash and redirects
+     * $I->assertSessionHasFlashMessage('success');
+     * $I->assertSessionHasFlashMessage('success', 'Your account has been created.');
+     * $I->assertSessionHasFlashMessage('notice', ['First notice', 'Second notice']);
+     * ```
+     *
+     * @param string|string[] $messages
+     */
+    public function assertSessionHasFlashMessage(string $messageType, string|array $messages = ''): void
+    {
+        $request = $this->getClient()->getRequest();
+
+        $this->assertTrue(
+            $request->hasSession(),
+            sprintf("The request has no session, so it cannot hold a '%s' flash message.", $messageType)
+        );
+
+        $session = $request->getSession();
+        $this->assertInstanceOf(
+            FlashBagAwareSessionInterface::class,
+            $session,
+            'The session does not have a flash bag.'
+        );
+
+        $actualMessages = $session->getFlashBag()->peek($messageType);
+
+        $this->assertNotEmpty(
+            $actualMessages,
+            sprintf("The session does not have a '%s' flash message.", $messageType)
+        );
+
+        $expectedMessages = is_array($messages) ? $messages : ($messages === '' ? [] : [$messages]);
+        foreach ($expectedMessages as $expectedMessage) {
+            $this->assertContains(
+                $expectedMessage,
+                $actualMessages,
+                sprintf("The '%s' flash message does not contain '%s'.", $messageType, $expectedMessage)
+            );
+        }
     }
 
     /**
