@@ -8,8 +8,7 @@ final class TestMessage
 {
     public function __construct(
         private readonly string $content = '',
-    ) {
-    }
+    ) {}
 
     public function getContent(): string
     {
