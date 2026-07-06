@@ -1,0 +1,3 @@
+## 2024-07-06 - O(N) Array Deduplication Pattern
+**Learning:** In PHP, using `array_values(array_unique($array))` on arrays constructed inside a loop creates an O(N log N) operation overhead due to sorting/hashing mechanisms under the hood. For large collections, like compiling Symfony routes into domains, this is a measurable bottleneck.
+**Action:** When deduplicating strings or integers inside a loop, immediately use them as associative array keys (`$array[$value] = true;`). After the loop, use `array_keys($array)` to extract the unique values. This achieves O(N) time complexity and avoids the overhead of `array_unique`.
