@@ -198,7 +198,7 @@ trait MailerAssertionsTrait
      */
     public function getMailerMessage(int $index = 0, ?string $transport = null): ?RawMessage
     {
-        return $this->getMailerMessages($transport)[$index] ?? null;
+        return $this->getMailerEvent($index, $transport)?->getMessage();
     }
 
     protected function grabLastSentRawMessage(): ?RawMessage
